@@ -10,7 +10,7 @@
 .q-table td { padding: 12px 14px; vertical-align: top; }
 
 /* ── STICKY THEAD ── */
-.q-table thead { position: sticky; top: var(--sticky-thead-top, 120px); z-index: 9; }
+.q-table thead { position: sticky; top: calc(var(--controls-h) + var(--section-h)); z-index: 9; }
 .q-table thead tr { background: var(--surface2); }
 
 /* ── CHECKBOX ── */
@@ -33,6 +33,9 @@
 .diff-badge.easy   { background: var(--easy-bg);   color: var(--easy);   border: 1px solid rgba(6,214,160,0.2); }
 .diff-badge.medium { background: var(--medium-bg); color: var(--medium); border: 1px solid rgba(248,181,0,0.2); }
 .diff-badge.hard   { background: var(--hard-bg);   color: var(--hard);   border: 1px solid rgba(255,71,87,0.2); }
+
+/* ── COLUMN WIDTHS — prob-name expands to fill hidden columns ── */
+.prob-name { width: auto; }
 
 /* ── SOLUTION BOX ── */
 .sol-cell { min-width: 200px; width: 25%; }

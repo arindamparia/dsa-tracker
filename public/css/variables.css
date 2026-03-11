@@ -9,4 +9,8 @@
   --easy: #06d6a0; --medium: #f8b500; --hard: #ff4757;
   --easy-bg: rgba(6,214,160,0.08); --medium-bg: rgba(248,181,0,0.08); --hard-bg: rgba(255,71,87,0.08);
   --done-bg: rgba(6,214,160,0.05);
+
+  /* Sticky layout heights — update if controls bar height changes */
+  --controls-h: 126px;   /* two-row controls bar */
+  --section-h:  55px;    /* section header */
 }
