@@ -1,17 +1,11 @@
 /* ── QUESTION TABLE ── */
 .q-table { width: 100%; border-collapse: collapse; }
-.q-table thead tr { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface2); }
-.q-table thead th { padding: 10px 14px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 500; }
 .q-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
 .q-table tbody tr:last-child { border-bottom: none; }
 .q-table tbody tr:hover { background: var(--surface2); }
 .q-table tbody tr.done-row { background: var(--done-bg); }
 .q-table tbody tr.done-row:hover { background: rgba(6,214,160,0.07); }
 .q-table td { padding: 12px 14px; vertical-align: top; }
-
-/* ── STICKY THEAD ── */
-.q-table thead { position: sticky; top: calc(var(--controls-h) + var(--section-h)); z-index: 9; }
-.q-table thead tr { background: var(--surface2); }
 
 /* ── CHECKBOX ── */
 .check-cell  { width: 40px; }
@@ -22,6 +16,8 @@
 .custom-check.saving        { border-color: var(--accent); animation: pulse-border 0.6s ease; }
 
 /* ── CELLS ── */
+.prob-name { width: auto; }           /* flex column — expands into hidden columns' space */
+.diff-cell { width: 90px; }           /* fixed, never changes */
 .prob-name a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; display: block; margin-bottom: 3px; }
 .prob-name a:hover { color: var(--accent); }
 .done-row .prob-name a { color: var(--text-muted); text-decoration: line-through; text-decoration-color: rgba(6,214,160,0.4); }
@@ -33,9 +29,6 @@
 .diff-badge.easy   { background: var(--easy-bg);   color: var(--easy);   border: 1px solid rgba(6,214,160,0.2); }
 .diff-badge.medium { background: var(--medium-bg); color: var(--medium); border: 1px solid rgba(248,181,0,0.2); }
 .diff-badge.hard   { background: var(--hard-bg);   color: var(--hard);   border: 1px solid rgba(255,71,87,0.2); }
-
-/* ── COLUMN WIDTHS — prob-name expands to fill hidden columns ── */
-.prob-name { width: auto; }
 
 /* ── SOLUTION BOX ── */
 .sol-cell { min-width: 200px; width: 25%; }

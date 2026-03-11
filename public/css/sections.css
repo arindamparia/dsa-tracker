@@ -2,16 +2,22 @@
 .section { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); transition: border-color 0.2s; }
 .section:hover { border-color: var(--border2); }
 
-.section-header {
-  display: flex; align-items: center; gap: 14px; padding: 16px 20px;
-  cursor: pointer; user-select: none; transition: background 0.15s;
+/* ── STICKY WRAPPER — section title + column headers stick together ── */
+.section-sticky {
   position: sticky; top: var(--controls-h); z-index: 20;
   background: var(--surface);
   border-radius: 14px 14px 0 0;
-  border-bottom: 1px solid transparent;
+}
+.section.collapsed .section-sticky { border-radius: 14px; }
+
+/* ── SECTION HEADER (title row) ── */
+.section-header {
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+  cursor: pointer; user-select: none; transition: background 0.15s;
+  border-radius: 14px 14px 0 0;
 }
 .section-header:hover { background: var(--surface2); }
-.section.collapsed .section-header { border-radius: 14px; border-bottom-color: transparent; }
+.section.collapsed .section-header { border-radius: 14px; }
 
 .section-num   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 28px; }
 .section-title { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
@@ -24,5 +30,23 @@
 .chevron { color: var(--text-muted); transition: transform 0.25s ease; font-size: 12px; }
 .section.collapsed .chevron { transform: rotate(-90deg); }
 
-.section-body { overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 9000px; border-radius: 0 0 14px 14px; }
+/* ── COLUMN HEADER ROW ── */
+.section-col-headers {
+  display: flex; align-items: center;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted); font-weight: 500;
+}
+.section.collapsed .section-col-headers { display: none; }
+
+.th-check   { width: 40px; flex-shrink: 0; padding: 10px 14px; }
+.th-problem { flex: 1; padding: 10px 14px; }
+.th-diff    { width: 90px; flex-shrink: 0; padding: 10px 14px; }
+.th-col     { flex-shrink: 0; padding: 10px 14px; }
+
+/* ── SECTION BODY (collapsible) ── */
+.section-body { overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 9000px; }
 .section.collapsed .section-body { max-height: 0; }

@@ -18,24 +18,26 @@ export function render() {
     const pct   = total ? Math.round((done / total) * 100) : 0;
 
     el.innerHTML = `
-      <div class="section-header" onclick="toggleSection(${si})">
-        <span class="section-num">${String(si + 1).padStart(2, '0')}</span>
-        <span class="section-title">${sec.section}</span>
-        <div class="section-meta">
-          <span class="section-count" id="sc-${si}">${done}/${total}</span>
-          <div class="section-progress-mini"><div class="section-progress-mini-fill" id="sp-${si}" style="width:${pct}%"></div></div>
-          <span class="chevron">▾</span>
+      <div class="section-sticky">
+        <div class="section-header" onclick="toggleSection(${si})">
+          <span class="section-num">${String(si + 1).padStart(2, '0')}</span>
+          <span class="section-title">${sec.section}</span>
+          <div class="section-meta">
+            <span class="section-count" id="sc-${si}">${done}/${total}</span>
+            <div class="section-progress-mini"><div class="section-progress-mini-fill" id="sp-${si}" style="width:${pct}%"></div></div>
+            <span class="chevron">▾</span>
+          </div>
+        </div>
+        <div class="section-col-headers">
+          <span class="th-check">✓</span>
+          <span class="th-problem">Problem</span>
+          <span class="th-diff">Difficulty</span>
+          <span class="th-col sol-cell">Solution</span>
+          <span class="th-col notes-cell">Notes</span>
         </div>
       </div>
       <div class="section-body">
         <table class="q-table">
-          <thead><tr>
-            <th class="check-cell">✓</th>
-            <th>Problem</th>
-            <th style="width:90px">Difficulty</th>
-            <th class="sol-cell">Solution</th>
-            <th class="notes-cell">Notes</th>
-          </tr></thead>
           <tbody id="tbody-${si}"></tbody>
         </table>
       </div>`;
@@ -75,7 +77,7 @@ export function buildRow(q, si) {
       <span class="topic-tag">${q.topic}</span>
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
     </td>
-    <td><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
+    <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
     <td class="sol-cell">
       <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
         placeholder="// Java solution..."
