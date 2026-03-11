@@ -1,0 +1,20 @@
+/* ── COLLAPSIBLE SECTIONS ── */
+.section { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); transition: border-color 0.2s; }
+.section:hover { border-color: var(--border2); }
+
+.section-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; user-select: none; transition: background 0.15s; }
+.section-header:hover { background: var(--surface2); }
+
+.section-num   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 28px; }
+.section-title { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.section-meta  { display: flex; align-items: center; gap: 10px; }
+.section-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+.section-progress-mini      { width: 80px; height: 4px; background: var(--surface3); border-radius: 999px; overflow: hidden; }
+.section-progress-mini-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+
+.chevron { color: var(--text-muted); transition: transform 0.25s ease; font-size: 12px; }
+.section.collapsed .chevron { transform: rotate(-90deg); }
+
+.section-body { overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 9000px; }
+.section.collapsed .section-body { max-height: 0; }

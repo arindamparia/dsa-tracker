@@ -1,0 +1,22 @@
+/* ── STAT CARDS ── */
+.stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: border-color 0.2s; }
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.stat-value.total  { color: var(--accent); }
+.stat-value.easy   { color: var(--easy); }
+.stat-value.medium { color: var(--medium); }
+.stat-value.hard   { color: var(--hard); }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+/* ── OVERALL PROGRESS BAR ── */
+.global-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+.progress-track { height: 8px; background: var(--surface3); border-radius: 999px; overflow: hidden; display: flex; }
+.progress-fill { height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.easy-fill   { background: var(--easy); }
+.medium-fill { background: var(--medium); }
+.hard-fill   { background: var(--hard); }
