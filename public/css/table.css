@@ -18,9 +18,9 @@
 /* ── CELLS ── */
 .prob-name   { width: 35%; }   /* fixed share */
 .diff-cell   { width: 90px; }  /* fixed, never changes */
-/* Last visible column fills to the right edge */
-.notes-cell  { width: 100%; }  /* greedy — takes all remaining space */
-body.notes-hidden .sol-cell         { width: 100%; }
+/* Sol and notes each take equal share of remaining space */
+.sol-cell    { width: 100%; }
+.notes-cell  { width: 100%; }
 /* Both hidden: spacer fills, diff stays next to prob */
 .spacer-cell                        { display: none; }
 body.notes-hidden.solution-hidden .spacer-cell { display: table-cell; width: 100%; }

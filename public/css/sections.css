@@ -46,9 +46,9 @@
 .th-problem { flex-shrink: 0; width: 35%; padding: 10px 14px; }
 .th-diff    { width: 90px; flex-shrink: 0; padding: 10px 14px; }
 .th-col     { flex-shrink: 0; padding: 10px 14px; }
-/* Last visible column fills to the right edge */
+/* Sol and notes each take equal share of remaining space */
+.th-col.sol-cell                                 { flex: 1; min-width: 200px; }
 .th-col.notes-cell                               { flex: 1; min-width: 160px; }
-body.notes-hidden .th-col.sol-cell               { flex: 1; min-width: 200px; }
 /* Both hidden: spacer fills, diff stays next to prob */
 .th-spacer                                       { display: none; }
 body.notes-hidden.solution-hidden .th-spacer     { display: block; flex: 1; }
