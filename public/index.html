@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DSA Mastery Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #0a0a0f; --surface: #111118; --surface2: #18181f; --surface3: #1e1e28;
+  --border: #2a2a38; --border2: #363648;
+  --text: #e8e8f0; --text-muted: #6b6b85; --text-dim: #9898b0;
+  --accent: #7c6af7; --accent-glow: rgba(124,106,247,0.18);
+  --accent2: #06d6a0; --accent2-glow: rgba(6,214,160,0.15);
+  --easy: #06d6a0; --medium: #f8b500; --hard: #ff4757;
+  --easy-bg: rgba(6,214,160,0.08); --medium-bg: rgba(248,181,0,0.08); --hard-bg: rgba(255,71,87,0.08);
+  --done-bg: rgba(6,214,160,0.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px; opacity: 0.25; pointer-events: none; z-index: 0;
+}
+.wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── HEADER ── */
+header { padding: 52px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+.header-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-glow); border: 1px solid rgba(124,106,247,0.3); border-radius: 999px;
+  padding: 5px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px;
+}
+.header-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+h1 { font-size: clamp(28px,5vw,52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em;
+  background: linear-gradient(135deg,#fff 30%,var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; }
+.header-meta { display: flex; flex-wrap: wrap; gap: 20px; color: var(--text-muted); font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-top: 8px; }
+.header-meta span { display: flex; align-items: center; gap: 6px; }
+.header-meta b { color: var(--text-dim); }
+.header-actions { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; padding-top: 8px; }
+
+/* ── BUTTONS ── */
+.btn-add {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--accent); border: none; border-radius: 8px; padding: 11px 20px;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #fff;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.btn-add:hover { background: #9180ff; transform: translateY(-1px); }
+.btn-add .plus { font-size: 18px; line-height: 1; }
+.btn-secondary {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);
+  cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── STATS ── */
+.stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: border-color 0.2s; }
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.stat-value.total { color: var(--accent); } .stat-value.easy { color: var(--easy); }
+.stat-value.medium { color: var(--medium); } .stat-value.hard { color: var(--hard); }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+/* ── PROGRESS ── */
+.global-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+.progress-track { height: 8px; background: var(--surface3); border-radius: 999px; overflow: hidden; display: flex; }
+.progress-fill { height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.easy-fill { background: var(--easy); } .medium-fill { background: var(--medium); } .hard-fill { background: var(--hard); }
+
+/* ── CONTROLS ── */
+.controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
+.search-box {
+  flex: 1; min-width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s;
+}
+.search-box::placeholder { color: var(--text-muted); } .search-box:focus { border-color: var(--accent); }
+.filter-btn {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--border2); color: var(--text); }
+.filter-btn.active { background: var(--accent-glow); border-color: rgba(124,106,247,0.4); color: var(--accent); }
+.filter-btn.easy.active { background: var(--easy-bg); border-color: rgba(6,214,160,0.4); color: var(--easy); }
+.filter-btn.medium.active { background: var(--medium-bg); border-color: rgba(248,181,0,0.4); color: var(--medium); }
+.filter-btn.hard.active { background: var(--hard-bg); border-color: rgba(255,71,87,0.4); color: var(--hard); }
+.filter-btn.done-filter.active { background: var(--done-bg); border-color: rgba(6,214,160,0.3); color: var(--easy); }
+
+/* ── SECTIONS ── */
+.section { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); transition: border-color 0.2s; }
+.section:hover { border-color: var(--border2); }
+.section-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; user-select: none; transition: background 0.15s; }
+.section-header:hover { background: var(--surface2); }
+.section-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); min-width: 28px; }
+.section-title { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.section-meta { display: flex; align-items: center; gap: 10px; }
+.section-count { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.section-progress-mini { width: 80px; height: 4px; background: var(--surface3); border-radius: 999px; overflow: hidden; }
+.section-progress-mini-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+.chevron { color: var(--text-muted); transition: transform 0.25s ease; font-size: 12px; }
+.section.collapsed .chevron { transform: rotate(-90deg); }
+.section-body { overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 9000px; }
+.section.collapsed .section-body { max-height: 0; }
+
+/* ── TABLE ── */
+.q-table { width: 100%; border-collapse: collapse; }
+.q-table thead tr { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface2); }
+.q-table thead th { padding: 10px 14px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 500; }
+.q-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.q-table tbody tr:last-child { border-bottom: none; }
+.q-table tbody tr:hover { background: var(--surface2); }
+.q-table tbody tr.done-row { background: var(--done-bg); }
+.q-table tbody tr.done-row:hover { background: rgba(6,214,160,0.07); }
+.q-table td { padding: 12px 14px; vertical-align: top; }
+
+/* ── CHECKBOX ── */
+.check-cell { width: 40px; }
+.custom-check { width: 20px; height: 20px; border: 2px solid var(--border2); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.custom-check:hover { border-color: var(--easy); }
+.custom-check.checked { background: var(--easy); border-color: var(--easy); }
+.custom-check.checked::after { content: '✓'; color: #000; font-size: 12px; font-weight: 700; }
+.custom-check.saving { border-color: var(--accent); animation: pulse-border 0.6s ease; }
+@keyframes pulse-border { 0%,100%{border-color:var(--border2)} 50%{border-color:var(--accent)} }
+
+/* ── CELLS ── */
+.lc-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); min-width: 44px; }
+.prob-name a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; display: block; margin-bottom: 3px; }
+.prob-name a:hover { color: var(--accent); }
+.done-row .prob-name a { color: var(--text-muted); text-decoration: line-through; text-decoration-color: rgba(6,214,160,0.4); }
+.topic-tag { display: inline-block; background: var(--surface3); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.03em; }
+.tag-pill { display: inline-block; background: rgba(124,106,247,0.1); border: 1px solid rgba(124,106,247,0.2); border-radius: 4px; padding: 1px 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); margin: 2px 2px 0 0; }
+.diff-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.diff-badge.easy { background: var(--easy-bg); color: var(--easy); border: 1px solid rgba(6,214,160,0.2); }
+.diff-badge.medium { background: var(--medium-bg); color: var(--medium); border: 1px solid rgba(248,181,0,0.2); }
+.diff-badge.hard { background: var(--hard-bg); color: var(--hard); border: 1px solid rgba(255,71,87,0.2); }
+.sol-cell { min-width: 240px; width: 35%; }
+.sol-box { width: 100%; min-height: 70px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); resize: vertical; outline: none; line-height: 1.6; transition: border-color 0.2s, background 0.2s; }
+.sol-box::placeholder { color: var(--text-muted); font-size: 11px; }
+.sol-box:focus { border-color: var(--accent); background: #1a1a25; }
+.sol-box.has-content { border-color: rgba(6,214,160,0.3); background: rgba(6,214,160,0.03); }
+
+/* ── FILTER ── */
+tr.filtered-out { display: none; }
+
+/* ── LOADING SKELETON ── */
+.skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.loading-msg { text-align: center; padding: 64px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.loading-dots::after { content: '...'; animation: dots 1.2s steps(4,end) infinite; }
+@keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
+.error-msg { text-align: center; padding: 48px; color: var(--hard); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 32px; width: 100%; max-width: 540px; transform: translateY(20px); transition: transform 0.25s; max-height: 90vh; overflow-y: auto; }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
+.modal-sub { font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 28px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+.form-input, .form-select, .form-textarea {
+  background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); outline: none; transition: border-color 0.2s; width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-select option { background: var(--surface2); }
+.form-textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.form-hint { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+.modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+.btn-submit {
+  background: var(--accent); border: none; border-radius: 8px; padding: 11px 24px;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: all 0.2s;
+}
+.btn-submit:hover { background: #9180ff; }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-cancel { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 11px 20px; font-family: 'Syne', sans-serif; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+.btn-cancel:hover { border-color: var(--border2); color: var(--text); }
+.form-error { color: var(--hard); font-size: 12px; font-family: 'JetBrains Mono', monospace; margin-top: 4px; display: none; }
+.form-error.show { display: block; }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface3); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.error { border-color: rgba(255,71,87,0.4); color: var(--hard); }
+#toast.success { border-color: rgba(6,214,160,0.4); color: var(--easy); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .sol-cell { min-width: 160px; width: 28%; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .full { grid-column: 1; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="header-badge">2025–2026 Interview Prep</div>
+        <h1>DSA Mastery<br>Study Plan</h1>
+        <div class="header-meta">
+          <span>🎯 <b>Target:</b> Google · Apple · Microsoft · Goldman Sachs</span>
+          <span>☕ <b>Language:</b> Java</span>
+          <span>📦 <b>Total:</b> <span id="hdr-total">—</span> Questions</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-add" onclick="openModal()">
+          <span class="plus">+</span> Add Question
+        </button>
+        <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-board">
+    <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value done" id="stat-done">—</div><div class="stat-sub" id="stat-of">of —</div></div>
+    <div class="stat-card"><div class="stat-label">Easy Done</div><div class="stat-value easy" id="stat-easy">—</div><div class="stat-sub" id="stat-easy-of">of —</div></div>
+    <div class="stat-card"><div class="stat-label">Medium Done</div><div class="stat-value medium" id="stat-medium">—</div><div class="stat-sub" id="stat-med-of">of —</div></div>
+    <div class="stat-card"><div class="stat-label">Hard Done</div><div class="stat-value hard" id="stat-hard">—</div><div class="stat-sub" id="stat-hard-of">of —</div></div>
+    <div class="stat-card"><div class="stat-label">With Notes</div><div class="stat-value total" id="stat-notes">—</div><div class="stat-sub">solutions saved</div></div>
+    <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-value" id="stat-rem" style="color:var(--text-dim)">—</div><div class="stat-sub">to go</div></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="global-progress">
+    <div class="progress-header">
+      <span class="progress-title">Overall Progress</span>
+      <span class="progress-pct" id="prog-pct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill easy-fill" id="prog-easy" style="width:0%"></div>
+      <div class="progress-fill medium-fill" id="prog-medium" style="width:0%"></div>
+      <div class="progress-fill hard-fill" id="prog-hard" style="width:0%"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)">
+      <span style="color:var(--easy)">■ Easy</span>
+      <span style="color:var(--medium)">■ Medium</span>
+      <span style="color:var(--hard)">■ Hard</span>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <input type="text" class="search-box" id="search" placeholder="Search by name, LC#, topic..." oninput="applyFilters()" />
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn easy" data-filter="Easy" onclick="setFilter('Easy',this)">Easy</button>
+    <button class="filter-btn medium" data-filter="Medium" onclick="setFilter('Medium',this)">Medium</button>
+    <button class="filter-btn hard" data-filter="Hard" onclick="setFilter('Hard',this)">Hard</button>
+    <button class="filter-btn done-filter" data-filter="done" onclick="setFilter('done',this)">✓ Done</button>
+    <button class="filter-btn" data-filter="undone" onclick="setFilter('undone',this)">◻ Undone</button>
+  </div>
+
+  <!-- SECTIONS -->
+  <div id="sections">
+    <div class="loading-msg"><span class="loading-dots">Loading questions</span></div>
+  </div>
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">Add New Question</div>
+    <div class="modal-sub">LC# must be unique across all questions</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">LC Number *</label>
+        <input type="number" class="form-input" id="f-lc" placeholder="e.g. 2404" min="1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Difficulty *</label>
+        <select class="form-select" id="f-diff">
+          <option value="">Select...</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Problem Name *</label>
+        <input type="text" class="form-input" id="f-name" placeholder="e.g. Count Subarrays With Score Less Than K" />
+      </div>
+      <div class="form-group full">
+        <label class="form-label">LeetCode URL *</label>
+        <input type="url" class="form-input" id="f-url" placeholder="https://leetcode.com/problems/..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic / Pattern *</label>
+        <input type="text" class="form-input" id="f-topic" placeholder="e.g. Sliding Window" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Section *</label>
+        <select class="form-select" id="f-section">
+          <option value="">Select or type below...</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">New Section Name (if not in list)</label>
+        <input type="text" class="form-input" id="f-section-new" placeholder="Leave blank to use selection above" />
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Tags <span style="color:var(--text-muted)">(optional, comma-separated)</span></label>
+        <input type="text" class="form-input" id="f-tags" placeholder="e.g. prefix-sum, interview-favorite, goldman-sachs" />
+        <span class="form-hint">These appear as purple pills on the question row</span>
+      </div>
+    </div>
+    <div class="form-error" id="f-error"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" id="f-submit" onclick="submitQuestion()">Add Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────
+let ALL_QUESTIONS = [];   // flat array from DB
+let currentFilter = 'all';
+let saveTimers = {};      // debounce per lc_number
+
+// ── BOOT ─────────────────────────────────────────────────────────
+async function boot() {
+  try {
+    const res = await fetch('/.netlify/functions/get-questions');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    ALL_QUESTIONS = data.questions;
+    render();
+  } catch (err) {
+    document.getElementById('sections').innerHTML =
+      `<div class="error-msg">⚠ Failed to load: ${err.message}<br><br><button class="btn-secondary" onclick="boot()" style="margin:auto;display:block">Retry</button></div>`;
+  }
+}
+
+// ── SECTIONS GROUPING ────────────────────────────────────────────
+function groupBySections(questions) {
+  const map = new Map();
+  for (const q of questions) {
+    const key = `${q.section_order}|||${q.section}`;
+    if (!map.has(key)) map.set(key, { section: q.section, section_order: q.section_order, questions: [] });
+    map.get(key).questions.push(q);
+  }
+  return [...map.values()].sort((a, b) => a.section_order - b.section_order);
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────
+function render() {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  const sections = groupBySections(ALL_QUESTIONS);
+
+  sections.forEach((sec, si) => {
+    const el = document.createElement('div');
+    el.className = 'section';
+    el.id = `sec-${si}`;
+    const done = sec.questions.filter(q => q.is_done).length;
+    const total = sec.questions.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    el.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${si})">
+        <span class="section-num">${String(si + 1).padStart(2, '0')}</span>
+        <span class="section-title">${sec.section}</span>
+        <div class="section-meta">
+          <span class="section-count" id="sc-${si}">${done}/${total}</span>
+          <div class="section-progress-mini"><div class="section-progress-mini-fill" id="sp-${si}" style="width:${pct}%"></div></div>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="section-body">
+        <table class="q-table">
+          <thead><tr>
+            <th class="check-cell">✓</th>
+            <th style="width:52px">#</th>
+            <th>Problem</th>
+            <th style="width:90px">Difficulty</th>
+            <th class="sol-cell">Solution / Notes</th>
+          </tr></thead>
+          <tbody id="tbody-${si}"></tbody>
+        </table>
+      </div>`;
+    container.appendChild(el);
+
+    const tbody = document.getElementById(`tbody-${si}`);
+    sec.questions.forEach(q => {
+      tbody.appendChild(buildRow(q, si));
+    });
+  });
+
+  updateStats();
+  populateSectionDropdown();
+  applyFilters();
+}
+
+// ── BUILD A SINGLE ROW ────────────────────────────────────────────
+function buildRow(q, si) {
+  const tr = document.createElement('tr');
+  tr.id = `row-${q.lc_number}`;
+  tr.dataset.diff = q.difficulty;
+  tr.dataset.name = q.name.toLowerCase();
+  tr.dataset.topic = (q.topic || '').toLowerCase();
+  tr.dataset.lc = String(q.lc_number);
+  tr.dataset.si = si;
+  if (q.is_done) tr.classList.add('done-row');
+
+  const tags = Array.isArray(q.tags) ? q.tags : [];
+  const tagHtml = tags.map(t => `<span class="tag-pill">${t}</span>`).join('');
+  const solVal = (q.solution || q.notes || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const solRaw = q.solution || q.notes || '';
+
+  tr.innerHTML = `
+    <td class="check-cell">
+      <div class="custom-check ${q.is_done ? 'checked' : ''}" id="chk-${q.lc_number}"
+           onclick="toggleCheck(${q.lc_number}, ${si})" title="Mark complete"></div>
+    </td>
+    <td class="lc-num">${q.lc_number}</td>
+    <td class="prob-name">
+      <a href="${q.url}" target="_blank" rel="noopener">${q.name}</a>
+      <span class="topic-tag">${q.topic}</span>${tagHtml ? '<br>' + tagHtml : ''}
+    </td>
+    <td><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
+    <td class="sol-cell">
+      <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
+        placeholder="// Java solution or notes..."
+        data-lc="${q.lc_number}"
+        oninput="debounceSave(${q.lc_number}, this)"
+      >${solRaw}</textarea>
+    </td>`;
+  return tr;
+}
+
+// ── TOGGLE SECTION ────────────────────────────────────────────────
+function toggleSection(si) {
+  document.getElementById(`sec-${si}`).classList.toggle('collapsed');
+}
+
+// ── TOGGLE CHECK ──────────────────────────────────────────────────
+async function toggleCheck(lc, si) {
+  const q = ALL_QUESTIONS.find(x => x.lc_number === lc);
+  if (!q) return;
+  const newDone = !q.is_done;
+  q.is_done = newDone;
+
+  const chk = document.getElementById(`chk-${lc}`);
+  chk.classList.add('saving');
+  setTimeout(() => chk.classList.remove('saving'), 600);
+  chk.classList.toggle('checked', newDone);
+
+  const tr = document.getElementById(`row-${lc}`);
+  tr.classList.toggle('done-row', newDone);
+
+  updateSectionMeta(si);
+  updateStats();
+  applyFilters();
+
+  try {
+    const res = await fetch('/.netlify/functions/update-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lc_number: lc, is_done: newDone, solution: q.solution || '', notes: q.notes || '' }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+  } catch (err) {
+    showToast('⚠ Save failed: ' + err.message, 'error');
+    // rollback
+    q.is_done = !newDone;
+    chk.classList.toggle('checked', !newDone);
+    tr.classList.toggle('done-row', !newDone);
+    updateSectionMeta(si); updateStats(); applyFilters();
+  }
+}
+
+// ── DEBOUNCED SOLUTION SAVE ───────────────────────────────────────
+function debounceSave(lc, el) {
+  el.classList.toggle('has-content', el.value.length > 0);
+  const q = ALL_QUESTIONS.find(x => x.lc_number === lc);
+  if (q) q.solution = el.value;
+
+  clearTimeout(saveTimers[lc]);
+  saveTimers[lc] = setTimeout(() => persistSolution(lc, el.value), 800);
+  updateStats();
+}
+
+async function persistSolution(lc, value) {
+  const q = ALL_QUESTIONS.find(x => x.lc_number === lc);
+  if (!q) return;
+  try {
+    const res = await fetch('/.netlify/functions/update-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lc_number: lc, is_done: q.is_done || false, solution: value, notes: q.notes || '' }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast('Solution saved ✓', 'success');
+  } catch (err) {
+    showToast('⚠ Save failed: ' + err.message, 'error');
+  }
+}
+
+// ── UPDATE SECTION META ───────────────────────────────────────────
+function updateSectionMeta(si) {
+  const sections = groupBySections(ALL_QUESTIONS);
+  const sec = sections[si];
+  if (!sec) return;
+  const done = sec.questions.filter(q => q.is_done).length;
+  const total = sec.questions.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const sc = document.getElementById(`sc-${si}`);
+  const sp = document.getElementById(`sp-${si}`);
+  if (sc) sc.textContent = `${done}/${total}`;
+  if (sp) sp.style.width = pct + '%';
+}
+
+// ── UPDATE STATS ──────────────────────────────────────────────────
+function updateStats() {
+  const total = ALL_QUESTIONS.length;
+  let done = 0, easy = 0, easyTotal = 0, medium = 0, medTotal = 0, hard = 0, hardTotal = 0, notes = 0;
+  ALL_QUESTIONS.forEach(q => {
+    if (q.difficulty === 'Easy') easyTotal++;
+    if (q.difficulty === 'Medium') medTotal++;
+    if (q.difficulty === 'Hard') hardTotal++;
+    if (q.is_done) {
+      done++;
+      if (q.difficulty === 'Easy') easy++;
+      if (q.difficulty === 'Medium') medium++;
+      if (q.difficulty === 'Hard') hard++;
+    }
+    if ((q.solution || q.notes || '').trim()) notes++;
+  });
+
+  document.getElementById('hdr-total').textContent = total;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-of').textContent = `of ${total}`;
+  document.getElementById('stat-easy').textContent = easy;
+  document.getElementById('stat-easy-of').textContent = `of ${easyTotal}`;
+  document.getElementById('stat-medium').textContent = medium;
+  document.getElementById('stat-med-of').textContent = `of ${medTotal}`;
+  document.getElementById('stat-hard').textContent = hard;
+  document.getElementById('stat-hard-of').textContent = `of ${hardTotal}`;
+  document.getElementById('stat-notes').textContent = notes;
+  document.getElementById('stat-rem').textContent = total - done;
+
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-easy').style.width = total ? (easy / total * 100) + '%' : '0%';
+  document.getElementById('prog-medium').style.width = total ? (medium / total * 100) + '%' : '0%';
+  document.getElementById('prog-hard').style.width = total ? (hard / total * 100) + '%' : '0%';
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  const sections = groupBySections(ALL_QUESTIONS);
+
+  sections.forEach((sec, si) => {
+    let anyVisible = false;
+    sec.questions.forEach(q => {
+      const tr = document.getElementById(`row-${q.lc_number}`);
+      if (!tr) return;
+      let show = true;
+      if (currentFilter === 'Easy' && q.difficulty !== 'Easy') show = false;
+      if (currentFilter === 'Medium' && q.difficulty !== 'Medium') show = false;
+      if (currentFilter === 'Hard' && q.difficulty !== 'Hard') show = false;
+      if (currentFilter === 'done' && !q.is_done) show = false;
+      if (currentFilter === 'undone' && q.is_done) show = false;
+      if (search) {
+        const haystack = `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')}`.toLowerCase();
+        if (!haystack.includes(search)) show = false;
+      }
+      tr.classList.toggle('filtered-out', !show);
+      if (show) anyVisible = true;
+    });
+
+    const secEl = document.getElementById(`sec-${si}`);
+    if (secEl && (search || currentFilter !== 'all')) {
+      secEl.classList.toggle('collapsed', !anyVisible);
+    }
+  });
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────
+function populateSectionDropdown() {
+  const sel = document.getElementById('f-section');
+  const existing = new Set([...sel.options].map(o => o.value).filter(Boolean));
+  const sections = groupBySections(ALL_QUESTIONS);
+  sections.forEach(s => {
+    if (!existing.has(s.section)) {
+      const opt = document.createElement('option');
+      opt.value = s.section; opt.textContent = s.section;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('f-lc').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  // reset
+  ['f-lc','f-name','f-url','f-topic','f-tags','f-section-new'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-diff').value = '';
+  document.getElementById('f-section').value = '';
+  document.getElementById('f-error').textContent = ''; document.getElementById('f-error').classList.remove('show');
+  document.getElementById('f-submit').disabled = false;
+}
+
+function handleOverlayClick(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+async function submitQuestion() {
+  const errEl = document.getElementById('f-error');
+  const btn = document.getElementById('f-submit');
+  errEl.classList.remove('show');
+
+  const lc = parseInt(document.getElementById('f-lc').value);
+  const name = document.getElementById('f-name').value.trim();
+  const url = document.getElementById('f-url').value.trim();
+  const topic = document.getElementById('f-topic').value.trim();
+  const difficulty = document.getElementById('f-diff').value;
+  const sectionSel = document.getElementById('f-section').value;
+  const sectionNew = document.getElementById('f-section-new').value.trim();
+  const section = sectionNew || sectionSel;
+  const tags = document.getElementById('f-tags').value.trim();
+
+  if (!lc || !name || !url || !topic || !difficulty || !section) {
+    errEl.textContent = 'All required fields (*) must be filled.';
+    errEl.classList.add('show'); return;
+  }
+  if (!url.startsWith('http')) {
+    errEl.textContent = 'URL must start with http(s)://';
+    errEl.classList.add('show'); return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Adding...';
+
+  try {
+    // Get section_order for new section
+    const sections = groupBySections(ALL_QUESTIONS);
+    const existingSec = sections.find(s => s.section === section);
+    const section_order = existingSec ? existingSec.section_order : (Math.max(...sections.map(s => s.section_order), 0) + 1);
+
+    const res = await fetch('/.netlify/functions/add-question', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lc_number: lc, name, url, topic, difficulty, section, section_order, tags }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    // Add to local state
+    const newQ = { ...data.question, is_done: false, solution: '', notes: '' };
+    ALL_QUESTIONS.push(newQ);
+    ALL_QUESTIONS.sort((a, b) => a.section_order - b.section_order || a.lc_number - b.lc_number);
+
+    closeModal();
+    render();
+    showToast(`✓ LC #${lc} "${name}" added!`, 'success');
+
+    // Scroll to new row after render
+    setTimeout(() => {
+      const el = document.getElementById(`row-${lc}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Add Question';
+  }
+}
+
+// ── RESET PROGRESS ────────────────────────────────────────────────
+async function confirmClear() {
+  if (!confirm('Reset ALL progress (checkboxes + solutions)? Questions remain in DB.')) return;
+  // Optimistically clear UI
+  ALL_QUESTIONS.forEach(q => { q.is_done = false; q.solution = ''; q.notes = ''; });
+  render();
+  // Persist each reset (batch)
+  const promises = ALL_QUESTIONS.map(q =>
+    fetch('/.netlify/functions/update-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lc_number: q.lc_number, is_done: false, solution: '', notes: '' }),
+    })
+  );
+  await Promise.allSettled(promises);
+  showToast('Progress reset ✓', 'success');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2500);
+}
+
+// Keyboard shortcut: Escape closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── INIT ──────────────────────────────────────────────────────────
+boot();
+</script>
+</body>
+</html>
