@@ -6,11 +6,7 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-const CACHE_HEADERS = {
-  // private = only browser cache, not CDN (safe since site is password-protected)
-  // max-age=300 = reuse for 5 minutes without hitting Neon at all
-  "Cache-Control": "private, max-age=300",
-};
+
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -39,7 +35,7 @@ export const handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { ...CORS, ...CACHE_HEADERS },
+      headers: CORS,
       body: JSON.stringify({ ok: true, questions: rows }),
     };
   } catch (err) {

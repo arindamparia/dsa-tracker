@@ -238,6 +238,7 @@ tr.filtered-out { display: none; }
         <button class="btn-add" onclick="openModal()">
           <span class="plus">+</span> Add Question
         </button>
+        <button class="btn-secondary" onclick="hardRefresh()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
         <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
         <a href="/logout" class="btn-logout" onclick="return confirmLogout()">⎋ Logout</a>
       </div>
@@ -360,58 +361,82 @@ let diffFilter = 'all';   // 'all' | 'Easy' | 'Medium' | 'Hard'
 let statusFilter = 'all'; // 'all' | 'done' | 'undone'
 let saveTimers = {};      // debounce per lc_number
 
-// ── ETAG CLIENT-SIDE CACHE ───────────────────────────────────────
-// Store the ETag the server sends; on next load send it back as
-// If-None-Match. Server returns 304 (no body) if nothing changed.
-let _etag = sessionStorage.getItem('dsa_etag') || null;
+// ── LOCAL CACHE (30 days) ────────────────────────────────────────
+// localStorage persists across sessions. We store questions + timestamp.
+// Hard Refresh forces a full re-fetch bypassing this cache entirely.
+const CACHE_KEY   = 'dsa_questions';
+const CACHE_TS_KEY = 'dsa_cache_ts';
+const CACHE_TTL   = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+
+function getCached() {
+  try {
+    const ts = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0', 10);
+    if (Date.now() - ts > CACHE_TTL) return null; // expired
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function setCache(questions) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(questions));
+    localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+  } catch {} // storage full — silently skip
+}
+
+function updateCacheEntry(lc_number, patch) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return;
+    const questions = JSON.parse(raw);
+    const idx = questions.findIndex(q => q.lc_number === lc_number);
+    if (idx !== -1) {
+      questions[idx] = { ...questions[idx], ...patch };
+      localStorage.setItem(CACHE_KEY, JSON.stringify(questions));
+    }
+  } catch {}
+}
+
+function clearCache() {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_TS_KEY);
+}
+
+let _etag = null; // unused now but kept to avoid reference errors
 
 // ── BOOT ─────────────────────────────────────────────────────────
 async function boot() {
-  try {
-    const reqHeaders = {};
-    if (_etag) reqHeaders['If-None-Match'] = _etag;
-
-    const res = await fetch('/.netlify/functions/get-questions', { headers: reqHeaders });
-
-    if (res.status === 304) {
-      // Server says "nothing changed" — use sessionStorage snapshot
-      const cached = sessionStorage.getItem('dsa_questions');
-      if (cached) {
-        ALL_QUESTIONS = JSON.parse(cached);
-        render();
-        return;
-      }
-      // Snapshot missing (cleared?), fall through to fresh fetch
-      return boot_fresh();
-    }
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error);
-
-    ALL_QUESTIONS = data.questions;
-
-    // Persist ETag + snapshot for this session
-    const newEtag = res.headers.get('ETag');
-    if (newEtag) {
-      _etag = newEtag;
-      sessionStorage.setItem('dsa_etag', newEtag);
-    }
-    sessionStorage.setItem('dsa_questions', JSON.stringify(ALL_QUESTIONS));
-
+  // Try localStorage cache first (valid for 30 days)
+  const cached = getCached();
+  if (cached) {
+    ALL_QUESTIONS = cached;
     render();
-  } catch (err) {
-    document.getElementById('sections').innerHTML =
-      `<div class="error-msg">⚠ Failed to load: ${err.message}<br><br><button class="btn-secondary" onclick="boot()" style="margin:auto;display:block">Retry</button></div>`;
+    return;
   }
+  return boot_fresh();
 }
 
 async function boot_fresh() {
-  // Force a fresh fetch ignoring any ETag
-  _etag = null;
-  sessionStorage.removeItem('dsa_etag');
-  sessionStorage.removeItem('dsa_questions');
-  return boot();
+  try {
+    const res = await fetch('/.netlify/functions/get-questions', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    ALL_QUESTIONS = data.questions;
+    setCache(ALL_QUESTIONS);
+    render();
+  } catch (err) {
+    document.getElementById('sections').innerHTML =
+      `<div class="error-msg">⚠ Failed to load: ${err.message}<br><br><button class="btn-secondary" onclick="boot_fresh()" style="margin:auto;display:block">Retry</button></div>`;
+  }
+}
+
+async function hardRefresh() {
+  if (!confirm('Re-fetch all questions from the database?\nThis will override your local cache.')) return;
+  clearCache();
+  document.getElementById('sections').innerHTML = '<div class="loading">Loading questions...</div>';
+  await boot_fresh();
+  showToast('Questions refreshed from database ✓', 'success');
 }
 
 // ── SECTIONS GROUPING ────────────────────────────────────────────
@@ -543,6 +568,7 @@ async function toggleCheck(lc, si) {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
+    updateCacheEntry(lc, { is_done: newDone });
   } catch (err) {
     showToast('⚠ Save failed: ' + err.message, 'error');
     // rollback
@@ -575,6 +601,7 @@ async function persistSolution(lc, value) {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
+    updateCacheEntry(lc, { solution: value });
     showToast('Solution saved ✓', 'success');
   } catch (err) {
     showToast('⚠ Save failed: ' + err.message, 'error');
@@ -803,7 +830,9 @@ function showToast(msg, type = '') {
 }
 
 function confirmLogout() {
-  return confirm("Log out? You will need to enter the password again.");
+  const ok = confirm("Log out?\nYou will need to enter the password again to access the tracker.");
+  if (ok) clearCache(); // clear cache so fresh load happens after login
+  return ok;
 }
 
 // Keyboard shortcut: Escape closes modal
