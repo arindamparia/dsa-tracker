@@ -93,7 +93,8 @@ export function buildRow(q, si) {
         oninput="debounceNotesSave(${q.lc_number}, this)"
       >${notesRaw}</textarea>
     </td>
-    <td class="spacer-cell"></td>`;
+    <td class="spacer-cell"></td>
+`;
   return tr;
 }
 

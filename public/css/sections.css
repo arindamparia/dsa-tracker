@@ -46,7 +46,12 @@
 .th-problem { flex-shrink: 0; width: 35%; padding: 10px 14px; }
 .th-diff    { width: 90px; flex-shrink: 0; padding: 10px 14px; }
 .th-col     { flex-shrink: 0; padding: 10px 14px; }
-.th-spacer  { flex: 1; }
+/* Last visible column fills to the right edge */
+.th-col.notes-cell                               { flex: 1; min-width: 160px; }
+body.notes-hidden .th-col.sol-cell               { flex: 1; min-width: 200px; }
+/* Both hidden: spacer fills, diff stays next to prob */
+.th-spacer                                       { display: none; }
+body.notes-hidden.solution-hidden .th-spacer     { display: block; flex: 1; }
 
 /* ── SECTION BODY (collapsible) ── */
 .section-body { overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1); max-height: 9000px; }

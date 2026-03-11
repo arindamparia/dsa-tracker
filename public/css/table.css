@@ -16,9 +16,14 @@
 .custom-check.saving        { border-color: var(--accent); animation: pulse-border 0.6s ease; }
 
 /* ── CELLS ── */
-.prob-name   { width: 35%; }          /* fixed share — diff always stays right next to it */
-.diff-cell   { width: 90px; }         /* fixed, never changes */
-.spacer-cell { width: auto; }         /* absorbs freed space when columns are hidden */
+.prob-name   { width: 35%; }   /* fixed share */
+.diff-cell   { width: 90px; }  /* fixed, never changes */
+/* Last visible column fills to the right edge */
+.notes-cell  { width: 100%; }  /* greedy — takes all remaining space */
+body.notes-hidden .sol-cell         { width: 100%; }
+/* Both hidden: spacer fills, diff stays next to prob */
+.spacer-cell                        { display: none; }
+body.notes-hidden.solution-hidden .spacer-cell { display: table-cell; width: 100%; }
 .prob-name a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; display: block; margin-bottom: 3px; }
 .prob-name a:hover { color: var(--accent); }
 .done-row .prob-name a { color: var(--text-muted); text-decoration: line-through; text-decoration-color: rgba(6,214,160,0.4); }
@@ -32,14 +37,14 @@
 .diff-badge.hard   { background: var(--hard-bg);   color: var(--hard);   border: 1px solid rgba(255,71,87,0.2); }
 
 /* ── SOLUTION BOX ── */
-.sol-cell { min-width: 200px; width: 25%; }
+.sol-cell { min-width: 200px; }
 .sol-box  { width: 100%; min-height: 70px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); resize: vertical; outline: none; line-height: 1.6; transition: border-color 0.2s, background 0.2s; }
 .sol-box::placeholder { color: var(--text-muted); font-size: 11px; }
 .sol-box:focus       { border-color: var(--accent); background: #1a1a25; }
 .sol-box.has-content { border-color: rgba(6,214,160,0.3); background: rgba(6,214,160,0.03); }
 
 /* ── NOTES BOX ── */
-.notes-cell { min-width: 160px; width: 20%; }
+.notes-cell { min-width: 160px; }
 .notes-box  { width: 100%; min-height: 70px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); resize: vertical; outline: none; line-height: 1.6; transition: border-color 0.2s, background 0.2s; }
 .notes-box::placeholder { color: var(--text-muted); font-size: 11px; }
 .notes-box:focus       { border-color: rgba(124,106,247,0.5); background: #1a1a25; }
