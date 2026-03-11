@@ -240,7 +240,7 @@ tr.filtered-out { display: none; }
         </button>
         <button class="btn-secondary" onclick="hardRefresh()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
         <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
-        <a href="/logout" class="btn-logout" onclick="return confirmLogout()">⎋ Logout</a>
+        <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
   </header>
@@ -830,9 +830,9 @@ function showToast(msg, type = '') {
 }
 
 function confirmLogout() {
-  const ok = confirm("Log out?\nYou will need to enter the password again to access the tracker.");
-  if (ok) clearCache(); // clear cache so fresh load happens after login
-  return ok;
+  if (!confirm("Log out?\nYou will need to enter the password again to access the tracker.")) return;
+  clearCache();
+  window.location.href = "/logout";
 }
 
 // Keyboard shortcut: Escape closes modal
