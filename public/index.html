@@ -239,7 +239,7 @@ tr.filtered-out { display: none; }
           <span class="plus">+</span> Add Question
         </button>
         <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
-        <button class="btn-logout" onclick="doLogout()">⎋ Logout</button>
+        <a href="/logout" class="btn-logout" onclick="return confirmLogout()">⎋ Logout</a>
       </div>
     </div>
   </header>
@@ -802,12 +802,8 @@ function showToast(msg, type = '') {
   toastTimer = setTimeout(() => { t.className = ''; }, 2500);
 }
 
-async function doLogout() {
-  if (!confirm("Log out? You will need to enter the password again.")) return;
-  // Hit /logout on the server to expire the cookie
-  await fetch("/logout", { method: "GET", credentials: "same-origin", cache: "no-store" });
-  // Hard replace — bypasses bfcache and in-memory page cache entirely
-  window.location.replace("/?logged_out=" + Date.now());
+function confirmLogout() {
+  return confirm("Log out? You will need to enter the password again.");
 }
 
 // Keyboard shortcut: Escape closes modal

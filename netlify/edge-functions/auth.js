@@ -124,28 +124,11 @@ export default async function auth(request, context) {
 
   // ── LOGOUT ────────────────────────────────────────────────────────
   if (url.pathname === LOGOUT_PATH) {
-    const expireCookie = `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-    // If called via fetch() from JS, return 200 with cookie-clear headers
-    // The JS then does window.location.replace() itself
-    const isFetch = request.headers.get("sec-fetch-mode") === "cors" ||
-                    request.headers.get("x-requested-with") === "fetch";
-    if (isFetch || request.headers.get("accept")?.includes("application/json")) {
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Set-Cookie": expireCookie,
-          "Cache-Control": "no-store, no-cache, must-revalidate, private",
-          "Clear-Site-Data": '"cache", "cookies", "storage"',
-        },
-      });
-    }
-    // Fallback for direct navigation
     return new Response(null, {
       status: 302,
       headers: {
         Location: "/",
-        "Set-Cookie": expireCookie,
+        "Set-Cookie": `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
         "Cache-Control": "no-store, no-cache, must-revalidate, private",
         "Pragma": "no-cache",
         "Clear-Site-Data": '"cache", "cookies", "storage"',
@@ -192,12 +175,11 @@ export default async function auth(request, context) {
   );
   const authCookie = cookies[COOKIE_NAME];
 
-  // Valid token → let through, but strip any cached response
+  // Valid token → let through
   if (authCookie === validToken) {
     const response = await context.next();
-    // Force no-store on every authenticated response so logout truly clears
-    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-    response.headers.set("Pragma", "no-cache");
+    // Vary: Cookie ensures the cached response is only served to authenticated requests.
+    // Don't override Cache-Control — let each resource (HTML, API, assets) cache naturally.
     response.headers.set("Vary", "Cookie");
     return response;
   }
