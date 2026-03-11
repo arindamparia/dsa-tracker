@@ -124,13 +124,28 @@ export default async function auth(request, context) {
 
   // ── LOGOUT ────────────────────────────────────────────────────────
   if (url.pathname === LOGOUT_PATH) {
+    const expireCookie = `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    // If called via fetch() from JS, return 200 with cookie-clear headers
+    // The JS then does window.location.replace() itself
+    const isFetch = request.headers.get("sec-fetch-mode") === "cors" ||
+                    request.headers.get("x-requested-with") === "fetch";
+    if (isFetch || request.headers.get("accept")?.includes("application/json")) {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Set-Cookie": expireCookie,
+          "Cache-Control": "no-store, no-cache, must-revalidate, private",
+          "Clear-Site-Data": '"cache", "cookies", "storage"',
+        },
+      });
+    }
+    // Fallback for direct navigation
     return new Response(null, {
       status: 302,
       headers: {
         Location: "/",
-        // Expire the auth cookie immediately
-        "Set-Cookie": `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
-        // Nuke all caches
+        "Set-Cookie": expireCookie,
         "Cache-Control": "no-store, no-cache, must-revalidate, private",
         "Pragma": "no-cache",
         "Clear-Site-Data": '"cache", "cookies", "storage"',
