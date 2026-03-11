@@ -21,5 +21,12 @@
 .filter-btn.hard.active        { background: var(--hard-bg);      border-color: rgba(255,71,87,0.4);   color: var(--hard); }
 .filter-btn.done-filter.active { background: var(--done-bg);      border-color: rgba(6,214,160,0.3);   color: var(--easy); }
 
+.filter-btn.view-toggle.active { background: rgba(6,214,160,0.08); border-color: rgba(6,214,160,0.4); color: var(--easy); }
+
+@media (max-width: 768px) {
+  #toggle-sol { display: none !important; }
+}
+
 .filter-divider { width: 1px; height: 28px; background: var(--border2); align-self: center; flex-shrink: 0; }
 .filter-group   { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+

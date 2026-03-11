@@ -34,7 +34,8 @@ export function render() {
             <th style="width:52px">#</th>
             <th>Problem</th>
             <th style="width:90px">Difficulty</th>
-            <th class="sol-cell">Solution / Notes</th>
+            <th class="sol-cell">Solution</th>
+            <th class="notes-cell">Notes</th>
           </tr></thead>
           <tbody id="tbody-${si}"></tbody>
         </table>
@@ -60,9 +61,10 @@ export function buildRow(q, si) {
   tr.dataset.si    = si;
   if (q.is_done) tr.classList.add('done-row');
 
-  const tags    = Array.isArray(q.tags) ? q.tags : [];
-  const tagHtml = tags.map(t => `<span class="tag-pill">${t}</span>`).join('');
-  const solRaw  = q.solution || q.notes || '';
+  const tags     = Array.isArray(q.tags) ? q.tags : [];
+  const tagHtml  = tags.map(t => `<span class="tag-pill">${t}</span>`).join('');
+  const solRaw   = q.solution || '';
+  const notesRaw = q.notes    || '';
 
   tr.innerHTML = `
     <td class="check-cell">
@@ -72,15 +74,23 @@ export function buildRow(q, si) {
     <td class="lc-num">${q.lc_number}</td>
     <td class="prob-name">
       <a href="${q.url}" target="_blank" rel="noopener">${q.name}</a>
-      <span class="topic-tag">${q.topic}</span>${tagHtml ? '<br>' + tagHtml : ''}
+      <span class="topic-tag">${q.topic}</span>
+      ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
     </td>
     <td><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
     <td class="sol-cell">
       <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
-        placeholder="// Java solution or notes..."
+        placeholder="// Java solution..."
         data-lc="${q.lc_number}"
         oninput="debounceSave(${q.lc_number}, this)"
       >${solRaw}</textarea>
+    </td>
+    <td class="notes-cell">
+      <textarea class="notes-box ${notesRaw ? 'has-content' : ''}"
+        placeholder="Approach, complexity, edge cases..."
+        data-lc="${q.lc_number}"
+        oninput="debounceNotesSave(${q.lc_number}, this)"
+      >${notesRaw}</textarea>
     </td>`;
   return tr;
 }

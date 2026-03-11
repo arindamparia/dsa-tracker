@@ -40,6 +40,8 @@ export async function toggleCheck(lc, si) {
   }
 }
 
+// ── Solution ──────────────────────────────────────────────────────
+
 export function debounceSave(lc, el) {
   el.classList.toggle('has-content', el.value.length > 0);
   const q = state.questions.find(x => x.lc_number === lc);
@@ -62,6 +64,34 @@ export async function persistSolution(lc, value) {
     if (!data.ok) throw new Error(data.error);
     Cache.updateEntry(lc, { solution: value });
     showToast('Solution saved ✓', 'success');
+  } catch (err) {
+    showToast('⚠ Save failed: ' + err.message, 'error');
+  }
+}
+
+// ── Notes ─────────────────────────────────────────────────────────
+
+export function debounceNotesSave(lc, el) {
+  el.classList.toggle('has-content', el.value.length > 0);
+  const q = state.questions.find(x => x.lc_number === lc);
+  if (q) q.notes = el.value;
+  clearTimeout(state.notesTimers[lc]);
+  state.notesTimers[lc] = setTimeout(() => persistNotes(lc, el.value), 800);
+}
+
+export async function persistNotes(lc, value) {
+  const q = state.questions.find(x => x.lc_number === lc);
+  if (!q) return;
+  try {
+    const res = await fetch('/.netlify/functions/update-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lc_number: lc, is_done: q.is_done || false, solution: q.solution || '', notes: value }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    Cache.updateEntry(lc, { notes: value });
+    showToast('Notes saved ✓', 'success');
   } catch (err) {
     showToast('⚠ Save failed: ' + err.message, 'error');
   }

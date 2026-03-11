@@ -11,7 +11,8 @@
 import { boot, bootFresh, hardRefresh } from './data.js';
 import { toggleSection } from './render.js';
 import { setDiffFilter, setStatusFilter, applyFilters } from './filters.js';
-import { toggleCheck, debounceSave } from './progress.js';
+import { toggleCheck, debounceSave, debounceNotesSave } from './progress.js';
+import { toggleTags, toggleSolution } from './toggles.js';
 import { AddQuestionModal } from './modal-add.js';
 import { Logout } from './modal-logout.js';
 import { confirmClear } from './reset.js';
@@ -32,8 +33,13 @@ window.setStatusFilter = setStatusFilter;
 window.applyFilters    = applyFilters;
 
 // Progress
-window.toggleCheck  = toggleCheck;
-window.debounceSave = debounceSave;
+window.toggleCheck       = toggleCheck;
+window.debounceSave      = debounceSave;
+window.debounceNotesSave = debounceNotesSave;
+
+// View toggles
+window.toggleTags     = toggleTags;
+window.toggleSolution = toggleSolution;
 
 // Misc
 window.confirmClear = confirmClear;

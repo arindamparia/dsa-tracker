@@ -85,6 +85,11 @@
       <button class="filter-btn done-filter" data-group="status" data-filter="done" onclick="setStatusFilter('done',this)">✓ Done</button>
       <button class="filter-btn" data-group="status" data-filter="undone" onclick="setStatusFilter('undone',this)">◻ Undone</button>
     </div>
+    <div class="filter-divider view-toggles"></div>
+    <div class="filter-group view-toggles">
+      <button class="filter-btn view-toggle active" id="toggle-tags" onclick="toggleTags(this)">⊞ Tags</button>
+      <button class="filter-btn view-toggle active" id="toggle-sol" onclick="toggleSolution(this)">⊞ Solution</button>
+    </div>
   </div>
 
   <!-- SECTIONS -->

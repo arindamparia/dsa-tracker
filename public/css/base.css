@@ -22,7 +22,6 @@ body::before {
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
-  .sol-cell { min-width: 160px; width: 28%; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: 1; }
 }

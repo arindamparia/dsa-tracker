@@ -10,5 +10,8 @@ export const state = {
   questions:    [],    // flat array from DB / cache
   diffFilter:   'all', // 'all' | 'Easy' | 'Medium' | 'Hard'
   statusFilter: 'all', // 'all' | 'done' | 'undone'
-  saveTimers:   {},    // debounce handles keyed by lc_number
+  saveTimers:   {},    // debounce handles for solution, keyed by lc_number
+  notesTimers:  {},    // debounce handles for notes, keyed by lc_number
+  hideTags:     false, // toggled by toggleTags()
+  hideSolution: false, // toggled by toggleSolution()
 };
