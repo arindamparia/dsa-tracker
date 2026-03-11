@@ -124,14 +124,16 @@ export default async function auth(request, context) {
 
   // ── LOGOUT ────────────────────────────────────────────────────────
   if (url.pathname === LOGOUT_PATH) {
+    // The auth cookie is cleared via Set-Cookie (Max-Age=0).
+    // localStorage is already cleared client-side before this redirect fires.
+    // Do NOT use Clear-Site-Data: it nukes the entire HTTP cache and causes
+    // 30-60s delays. Cookie invalidation via Set-Cookie is sufficient.
     return new Response(null, {
       status: 302,
       headers: {
         Location: "/",
         "Set-Cookie": `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT`,
-        "Cache-Control": "no-store, no-cache, must-revalidate, private",
-        "Pragma": "no-cache",
-        "Clear-Site-Data": '"cache", "cookies", "storage"',
+        "Cache-Control": "no-store",
       },
     });
   }
