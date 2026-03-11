@@ -1,4 +1,4 @@
-import { getDb, initSchema } from "./db.js";
+import { getDb, ensureSchema, cacheGet, cacheSet, cacheBust } from "./db.js";
 
 const SEED_DATA = [
   // ── Arrays & Hashing ──────────────────────────────────────────────
@@ -359,33 +359,77 @@ const SEED_DATA = [
   { lc:716,  name:"Max Stack",                                     url:"https://leetcode.com/problems/max-stack/",                                                   topic:"Design",                   difficulty:"Hard",   section:"Design / OOD",              section_order:17 },
 ];
 
+
 export const handler = async (event) => {
-  const headers = {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
+  const corsHeaders = {
+    "Access-Control-Allow-Origin":  "*",
+    "Access-Control-Allow-Headers": "Content-Type, If-None-Match",
   };
 
   if (event.httpMethod === "OPTIONS") {
-    return { statusCode: 200, headers, body: "" };
+    return { statusCode: 200, headers: corsHeaders, body: "" };
   }
 
   try {
     const sql = getDb();
-    await initSchema(sql);
 
-    // Seed: insert all questions, skip duplicates (idempotent)
-    if (SEED_DATA.length > 0) {
-      for (const q of SEED_DATA) {
-        await sql`
-          INSERT INTO questions (lc_number, name, url, topic, difficulty, section, section_order, tags)
-          VALUES (${q.lc}, ${q.name}, ${q.url}, ${q.topic}, ${q.difficulty}, ${q.section}, ${q.section_order}, ${q.tags || []})
-          ON CONFLICT (lc_number) DO NOTHING
-        `;
+    // ── 1. Check in-process cache first (ETag shortcut for browser) ──
+    const cached = cacheGet();
+    if (cached) {
+      const clientEtag = event.headers?.["if-none-match"];
+      if (clientEtag && clientEtag === cached.etag) {
+        // Browser already has this exact version → 304, zero body
+        return {
+          statusCode: 304,
+          headers: { ...corsHeaders, "ETag": cached.etag, "Cache-Control": "no-cache" },
+          body: "",
+        };
       }
+      // Warm cache hit — respond instantly, no DB query at all
+      return {
+        statusCode: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "ETag": cached.etag,
+          "Cache-Control": "no-cache",           // revalidate, but use ETag
+          "X-Cache": "HIT",
+        },
+        body: JSON.stringify({ ok: true, questions: cached.data }),
+      };
     }
 
-    // Fetch all questions with their progress joined
+    // ── 2. Cache miss → hit Neon ─────────────────────────────────────
+    await ensureSchema(sql);   // no-op after first warm invocation
+
+    // ── 3. Smart seed ────────────────────────────────────────────────
+    // Only check which seeds are missing; insert only those.
+    // After first deploy → zero writes, just one cheap SELECT.
+    const seedLcNumbers = SEED_DATA.map(q => q.lc);
+    const existing = await sql`
+      SELECT lc_number FROM questions
+      WHERE lc_number = ANY(${seedLcNumbers})
+    `;
+    const existingSet = new Set(existing.map(r => r.lc_number));
+    const toInsert = SEED_DATA.filter(q => !existingSet.has(q.lc));
+
+    if (toInsert.length > 0) {
+      const values = toInsert.map(q => ({
+        lc_number:     q.lc,
+        name:          q.name,
+        url:           q.url,
+        topic:         q.topic,
+        difficulty:    q.difficulty,
+        section:       q.section,
+        section_order: q.section_order,
+        tags:          q.tags || [],
+      }));
+      await sql`INSERT INTO questions ${sql(values)} ON CONFLICT (lc_number) DO NOTHING`;
+      console.log(`[seed] inserted ${toInsert.length} new question(s)`);
+      cacheBust(); // ensure fresh fetch below picks up new rows
+    }
+
+    // ── 4. Fetch questions + progress ────────────────────────────────
     const rows = await sql`
       SELECT
         q.lc_number,
@@ -397,25 +441,36 @@ export const handler = async (event) => {
         q.section_order,
         q.tags,
         q.created_at,
-        COALESCE(p.is_done, false)  AS is_done,
-        COALESCE(p.solution, '')    AS solution,
-        COALESCE(p.notes, '')       AS notes,
-        p.updated_at                AS progress_updated_at
+        COALESCE(p.is_done, false) AS is_done,
+        COALESCE(p.solution, '')   AS solution,
+        COALESCE(p.notes, '')      AS notes,
+        p.updated_at               AS progress_updated_at
       FROM questions q
       LEFT JOIN progress p ON p.lc_number = q.lc_number
       ORDER BY q.section_order ASC, q.lc_number ASC
     `;
 
+    // ── 5. Populate cache ─────────────────────────────────────────────
+    cacheSet(rows);
+    const fresh = cacheGet();
+
     return {
       statusCode: 200,
-      headers,
+      headers: {
+        ...corsHeaders,
+        "Content-Type":  "application/json",
+        "ETag":          fresh.etag,
+        "Cache-Control": "no-cache",
+        "X-Cache":       "MISS",
+      },
       body: JSON.stringify({ ok: true, questions: rows }),
     };
+
   } catch (err) {
     console.error("get-questions error:", err);
     return {
       statusCode: 500,
-      headers,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       body: JSON.stringify({ ok: false, error: err.message }),
     };
   }

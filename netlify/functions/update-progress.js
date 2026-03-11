@@ -1,4 +1,4 @@
-import { getDb } from "./db.js";
+import { getDb, cacheBust } from "./db.js";
 
 export const handler = async (event) => {
   const headers = {
@@ -8,15 +8,13 @@ export const handler = async (event) => {
   };
 
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
-  if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
+  if (event.httpMethod !== "POST")    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
 
   try {
     const { lc_number, is_done, solution, notes } = JSON.parse(event.body);
-
     if (!lc_number) return { statusCode: 400, headers, body: JSON.stringify({ error: "lc_number required" }) };
 
     const sql = getDb();
-
     await sql`
       INSERT INTO progress (lc_number, is_done, solution, notes, updated_at)
       VALUES (${lc_number}, ${is_done ?? false}, ${solution ?? ''}, ${notes ?? ''}, NOW())
@@ -26,6 +24,9 @@ export const handler = async (event) => {
         notes      = EXCLUDED.notes,
         updated_at = NOW()
     `;
+
+    // Bust cache so next GET fetches fresh progress from Neon
+    cacheBust();
 
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
   } catch (err) {

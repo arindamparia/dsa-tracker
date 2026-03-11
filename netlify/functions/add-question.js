@@ -1,4 +1,4 @@
-import { getDb } from "./db.js";
+import { getDb, cacheBust } from "./db.js";
 
 export const handler = async (event) => {
   const headers = {
@@ -8,12 +8,11 @@ export const handler = async (event) => {
   };
 
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
-  if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
+  if (event.httpMethod !== "POST")    return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
 
   try {
     const { lc_number, name, url, topic, difficulty, section, section_order, tags } = JSON.parse(event.body);
 
-    // Validate required
     if (!lc_number || !name || !url || !topic || !difficulty || !section) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: "lc_number, name, url, topic, difficulty, section are required" }) };
     }
@@ -23,20 +22,24 @@ export const handler = async (event) => {
 
     const sql = getDb();
 
-    // Get max section_order for this section if not provided
     let secOrder = section_order;
     if (!secOrder) {
       const rows = await sql`SELECT MAX(section_order) AS mo FROM questions WHERE section = ${section}`;
       secOrder = rows[0]?.mo ?? 99;
     }
 
-    const tagsArr = Array.isArray(tags) ? tags : (tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : []);
+    const tagsArr = Array.isArray(tags)
+      ? tags
+      : (tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : []);
 
     const result = await sql`
       INSERT INTO questions (lc_number, name, url, topic, difficulty, section, section_order, tags)
       VALUES (${lc_number}, ${name}, ${url}, ${topic}, ${difficulty}, ${section}, ${secOrder}, ${tagsArr})
       RETURNING *
     `;
+
+    // Bust cache so next GET picks up the new question
+    cacheBust();
 
     return { statusCode: 201, headers, body: JSON.stringify({ ok: true, question: result[0] }) };
   } catch (err) {
