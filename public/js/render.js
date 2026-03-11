@@ -34,6 +34,7 @@ export function render() {
           <span class="th-diff">Difficulty</span>
           <span class="th-col sol-cell">Solution</span>
           <span class="th-col notes-cell">Notes</span>
+          <span class="th-spacer"></span>
         </div>
       </div>
       <div class="section-body">
@@ -91,7 +92,8 @@ export function buildRow(q, si) {
         data-lc="${q.lc_number}"
         oninput="debounceNotesSave(${q.lc_number}, this)"
       >${notesRaw}</textarea>
-    </td>`;
+    </td>
+    <td class="spacer-cell"></td>`;
   return tr;
 }
 

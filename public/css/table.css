@@ -16,8 +16,9 @@
 .custom-check.saving        { border-color: var(--accent); animation: pulse-border 0.6s ease; }
 
 /* ── CELLS ── */
-.prob-name { width: auto; }           /* flex column — expands into hidden columns' space */
-.diff-cell { width: 90px; }           /* fixed, never changes */
+.prob-name   { width: 35%; }          /* fixed share — diff always stays right next to it */
+.diff-cell   { width: 90px; }         /* fixed, never changes */
+.spacer-cell { width: auto; }         /* absorbs freed space when columns are hidden */
 .prob-name a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; display: block; margin-bottom: 3px; }
 .prob-name a:hover { color: var(--accent); }
 .done-row .prob-name a { color: var(--text-muted); text-decoration: line-through; text-decoration-color: rgba(6,214,160,0.4); }
