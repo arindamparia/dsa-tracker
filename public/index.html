@@ -58,6 +58,13 @@ h1 { font-size: clamp(28px,5vw,52px); font-weight: 800; line-height: 1.05; lette
   cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.06em;
 }
 .btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+.btn-logout {
+  background: transparent; border: 1px solid rgba(255,71,87,0.3); border-radius: 8px; padding: 10px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #ff4757;
+  cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.06em;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.btn-logout:hover { background: rgba(255,71,87,0.08); border-color: rgba(255,71,87,0.6); }
 
 /* ── STATS ── */
 .stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
@@ -96,6 +103,8 @@ h1 { font-size: clamp(28px,5vw,52px); font-weight: 800; line-height: 1.05; lette
 .filter-btn.medium.active { background: var(--medium-bg); border-color: rgba(248,181,0,0.4); color: var(--medium); }
 .filter-btn.hard.active { background: var(--hard-bg); border-color: rgba(255,71,87,0.4); color: var(--hard); }
 .filter-btn.done-filter.active { background: var(--done-bg); border-color: rgba(6,214,160,0.3); color: var(--easy); }
+.filter-divider { width: 1px; height: 28px; background: var(--border2); align-self: center; flex-shrink: 0; }
+.filter-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 /* ── SECTIONS ── */
 .section { margin-bottom: 8px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); transition: border-color 0.2s; }
@@ -230,6 +239,7 @@ tr.filtered-out { display: none; }
           <span class="plus">+</span> Add Question
         </button>
         <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
+        <a href="/logout" class="btn-logout" onclick="return confirmLogout()">⎋ Logout</a>
       </div>
     </div>
   </header>
@@ -265,12 +275,18 @@ tr.filtered-out { display: none; }
   <!-- CONTROLS -->
   <div class="controls">
     <input type="text" class="search-box" id="search" placeholder="Search by name, LC#, topic..." oninput="applyFilters()" />
-    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-btn easy" data-filter="Easy" onclick="setFilter('Easy',this)">Easy</button>
-    <button class="filter-btn medium" data-filter="Medium" onclick="setFilter('Medium',this)">Medium</button>
-    <button class="filter-btn hard" data-filter="Hard" onclick="setFilter('Hard',this)">Hard</button>
-    <button class="filter-btn done-filter" data-filter="done" onclick="setFilter('done',this)">✓ Done</button>
-    <button class="filter-btn" data-filter="undone" onclick="setFilter('undone',this)">◻ Undone</button>
+    <div class="filter-group">
+      <button class="filter-btn active" data-group="diff" data-filter="all" onclick="setDiffFilter('all',this)">All</button>
+      <button class="filter-btn easy" data-group="diff" data-filter="Easy" onclick="setDiffFilter('Easy',this)">Easy</button>
+      <button class="filter-btn medium" data-group="diff" data-filter="Medium" onclick="setDiffFilter('Medium',this)">Medium</button>
+      <button class="filter-btn hard" data-group="diff" data-filter="Hard" onclick="setDiffFilter('Hard',this)">Hard</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <button class="filter-btn active" data-group="status" data-filter="all" onclick="setStatusFilter('all',this)">All</button>
+      <button class="filter-btn done-filter" data-group="status" data-filter="done" onclick="setStatusFilter('done',this)">✓ Done</button>
+      <button class="filter-btn" data-group="status" data-filter="undone" onclick="setStatusFilter('undone',this)">◻ Undone</button>
+    </div>
   </div>
 
   <!-- SECTIONS -->
@@ -340,7 +356,8 @@ tr.filtered-out { display: none; }
 <script>
 // ── STATE ─────────────────────────────────────────────────────────
 let ALL_QUESTIONS = [];   // flat array from DB
-let currentFilter = 'all';
+let diffFilter = 'all';   // 'all' | 'Easy' | 'Medium' | 'Hard'
+let statusFilter = 'all'; // 'all' | 'done' | 'undone'
 let saveTimers = {};      // debounce per lc_number
 
 // ── ETAG CLIENT-SIDE CACHE ───────────────────────────────────────
@@ -615,9 +632,16 @@ function updateStats() {
 }
 
 // ── FILTERS ───────────────────────────────────────────────────────
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+function setDiffFilter(f, btn) {
+  diffFilter = f;
+  document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function setStatusFilter(f, btn) {
+  statusFilter = f;
+  document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   applyFilters();
 }
@@ -625,6 +649,7 @@ function setFilter(f, btn) {
 function applyFilters() {
   const search = document.getElementById('search').value.toLowerCase().trim();
   const sections = groupBySections(ALL_QUESTIONS);
+  const isFiltered = search || diffFilter !== 'all' || statusFilter !== 'all';
 
   sections.forEach((sec, si) => {
     let anyVisible = false;
@@ -632,21 +657,26 @@ function applyFilters() {
       const tr = document.getElementById(`row-${q.lc_number}`);
       if (!tr) return;
       let show = true;
-      if (currentFilter === 'Easy' && q.difficulty !== 'Easy') show = false;
-      if (currentFilter === 'Medium' && q.difficulty !== 'Medium') show = false;
-      if (currentFilter === 'Hard' && q.difficulty !== 'Hard') show = false;
-      if (currentFilter === 'done' && !q.is_done) show = false;
-      if (currentFilter === 'undone' && q.is_done) show = false;
+
+      // Difficulty filter
+      if (diffFilter !== 'all' && q.difficulty !== diffFilter) show = false;
+
+      // Status filter
+      if (statusFilter === 'done' && !q.is_done) show = false;
+      if (statusFilter === 'undone' && q.is_done) show = false;
+
+      // Search filter
       if (search) {
         const haystack = `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')}`.toLowerCase();
         if (!haystack.includes(search)) show = false;
       }
+
       tr.classList.toggle('filtered-out', !show);
       if (show) anyVisible = true;
     });
 
     const secEl = document.getElementById(`sec-${si}`);
-    if (secEl && (search || currentFilter !== 'all')) {
+    if (secEl && isFiltered) {
       secEl.classList.toggle('collapsed', !anyVisible);
     }
   });
@@ -770,6 +800,10 @@ function showToast(msg, type = '') {
   t.className = type ? `show ${type}` : 'show';
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { t.className = ''; }, 2500);
+}
+
+function confirmLogout() {
+  return confirm("Log out? You will need to enter the password again.");
 }
 
 // Keyboard shortcut: Escape closes modal

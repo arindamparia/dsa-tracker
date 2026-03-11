@@ -1,12 +1,19 @@
 [build]
   publish = "public"
   functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
 
 [functions]
   node_bundler = "esbuild"
+
+[[edge_functions]]
+  path = "/*"
+  function = "auth"
 
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    Pragma = "no-cache"
