@@ -14,4 +14,5 @@ export const state = {
   notesTimers:  {},    // debounce handles for notes, keyed by lc_number
   hideTags:     false, // toggled by toggleTags()
   hideSolution: false, // toggled by toggleSolution()
+  hideNotes:    false, // toggled by toggleNotes()
 };

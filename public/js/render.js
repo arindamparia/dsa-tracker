@@ -31,7 +31,6 @@ export function render() {
         <table class="q-table">
           <thead><tr>
             <th class="check-cell">✓</th>
-            <th style="width:52px">#</th>
             <th>Problem</th>
             <th style="width:90px">Difficulty</th>
             <th class="sol-cell">Solution</th>
@@ -71,7 +70,6 @@ export function buildRow(q, si) {
       <div class="custom-check ${q.is_done ? 'checked' : ''}" id="chk-${q.lc_number}"
            onclick="toggleCheck(${q.lc_number}, ${si})" title="Mark complete"></div>
     </td>
-    <td class="lc-num">${q.lc_number}</td>
     <td class="prob-name">
       <a href="${q.url}" target="_blank" rel="noopener">${q.name}</a>
       <span class="topic-tag">${q.topic}</span>

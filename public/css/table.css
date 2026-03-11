@@ -9,6 +9,10 @@
 .q-table tbody tr.done-row:hover { background: rgba(6,214,160,0.07); }
 .q-table td { padding: 12px 14px; vertical-align: top; }
 
+/* ── STICKY THEAD ── */
+.q-table thead { position: sticky; top: var(--sticky-thead-top, 120px); z-index: 9; }
+.q-table thead tr { background: var(--surface2); }
+
 /* ── CHECKBOX ── */
 .check-cell  { width: 40px; }
 .custom-check { width: 20px; height: 20px; border: 2px solid var(--border2); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
@@ -18,8 +22,6 @@
 .custom-check.saving        { border-color: var(--accent); animation: pulse-border 0.6s ease; }
 
 /* ── CELLS ── */
-.lc-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); min-width: 44px; }
-
 .prob-name a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; display: block; margin-bottom: 3px; }
 .prob-name a:hover { color: var(--accent); }
 .done-row .prob-name a { color: var(--text-muted); text-decoration: line-through; text-decoration-color: rgba(6,214,160,0.4); }
@@ -47,8 +49,9 @@
 .notes-box.has-content { border-color: rgba(124,106,247,0.3); background: rgba(124,106,247,0.03); }
 
 /* ── VIEW TOGGLES ── */
-body.tags-hidden     .tag-pills-wrap { display: none; }
+body.tags-hidden     .tag-pills-wrap { display: none !important; }
 body.solution-hidden .sol-cell       { display: none !important; }
+body.notes-hidden    .notes-cell     { display: none !important; }
 
 tr.filtered-out { display: none; }
 

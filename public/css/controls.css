@@ -1,5 +1,16 @@
 /* ── SEARCH & FILTER CONTROLS ── */
-.controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
+.controls {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(10,10,15,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px 0 14px;
+  margin: 0 -24px;
+  padding-left: 24px; padding-right: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
 
 .search-box {
   flex: 1; min-width: 220px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
@@ -23,10 +34,11 @@
 
 .filter-btn.view-toggle.active { background: rgba(6,214,160,0.08); border-color: rgba(6,214,160,0.4); color: var(--easy); }
 
-@media (max-width: 768px) {
-  #toggle-sol { display: none !important; }
-}
-
 .filter-divider { width: 1px; height: 28px; background: var(--border2); align-self: center; flex-shrink: 0; }
+.filter-divider.view-toggles { display: none; }
 .filter-group   { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.filter-group.view-toggles  { flex-basis: 100%; padding-top: 4px; border-top: 1px solid var(--border); margin-top: 2px; }
 
+@media (max-width: 768px) {
+  #toggle-sol, #toggle-notes { display: none !important; }
+}

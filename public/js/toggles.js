@@ -16,3 +16,9 @@ export function toggleSolution(btn) {
   document.body.classList.toggle('solution-hidden', state.hideSolution);
   btn.classList.toggle('active', !state.hideSolution);
 }
+
+export function toggleNotes(btn) {
+  state.hideNotes = !state.hideNotes;
+  document.body.classList.toggle('notes-hidden', state.hideNotes);
+  btn.classList.toggle('active', !state.hideNotes);
+}
