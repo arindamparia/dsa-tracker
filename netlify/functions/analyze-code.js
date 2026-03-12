@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
       messages = [
         {
           role: 'system',
-          content: `You are a strict, concise coding interviewer. The user needs a hint for the data structure/algorithm problem: "${title}". Provide a single nudge or concept to think about. DO NOT write code. DO NOT give the direct answer. Maximum 3 sentences.`
+          content: `You are a strict, concise coding interviewer. The user needs a hint for the data structure/algorithm problem: "${title}". Provide a single nudge or concept or direction to think about. DO NOT write code. DO NOT give the direct answer. Maximum 3 sentences.`
         },
         { role: 'user', content: `Can I get a hint for ${title}?` }
       ];
@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
           content: `You are an expert algorithm analyzer. Analyze the provided code for the problem: "${title}". Respond strictly in JSON format with exactly these three keys:
 1. "time_complexity": The Big O time complexity (e.g. "O(N)", "O(N log N)", "O(1)").
 2. "space_complexity": The Big O space complexity (e.g. "O(N)", "O(1)").
-3. "feedback": A very concise 1-2 sentence review of the approach, or any edge cases missed.`
+3. "feedback": A very concise 1-3 sentence review of the approach, or any edge cases missed.`
         },
         { role: 'user', content: code }
       ];
