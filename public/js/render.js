@@ -74,19 +74,33 @@ export function buildRow(q, si) {
            onclick="toggleCheck(${q.lc_number}, ${si})" title="Mark complete"></div>
     </td>
     <td class="prob-name">
-      <a href="${q.url}" target="_blank" rel="noopener">${q.name}</a>
+      <span class="review-star ${q.needs_review ? 'active' : ''}" onclick="toggleReview(${q.lc_number}, this)" title="Needs Review">★</span>
+      <a href="${q.url}" target="_blank" rel="noopener" style="display:inline-block">${q.name}</a>
       <span class="topic-tag">${q.topic}</span>
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
     </td>
     <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
     <td class="sol-cell">
-      <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
-        placeholder="// Java solution..."
-        data-lc="${q.lc_number}"
-        oninput="debounceSave(${q.lc_number}, this)"
-      >${solRaw}</textarea>
+      <div class="sol-cell-wrap">
+        <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
+        <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
+          placeholder="Paste or write solution code..."
+          data-lc="${q.lc_number}"
+          oninput="debounceSave(${q.lc_number}, this)"
+        >${solRaw}</textarea>
+      </div>
     </td>
     <td class="notes-cell">
+      <div class="complexity-row">
+        <select class="complexity-select" data-lc="${q.lc_number}" data-type="time" onchange="saveComplexity(${q.lc_number})">
+          <option value="">Time O(?)</option>
+          ${buildComplexityOptions(q.time_complexity)}
+        </select>
+        <select class="complexity-select" data-lc="${q.lc_number}" data-type="space" onchange="saveComplexity(${q.lc_number})">
+          <option value="">Space O(?)</option>
+          ${buildComplexityOptions(q.space_complexity)}
+        </select>
+      </div>
       <textarea class="notes-box ${notesRaw ? 'has-content' : ''}"
         placeholder="Approach, complexity, edge cases..."
         data-lc="${q.lc_number}"
@@ -116,4 +130,12 @@ export function populateSectionDropdown() {
       sel.appendChild(opt);
     }
   });
+}
+
+function buildComplexityOptions(selected) {
+  const opts = [
+    'O(1)', 'O(log n)', 'O(log(m+n))', 'O(n)', 'O(n log n)', 
+    'O(n+m)', 'O(V+E)', 'O(n²)', 'O(n³)', 'O(2^n)', 'O(n!)'
+  ];
+  return opts.map(o => `<option value="${o}" ${selected === o ? 'selected' : ''}>${o}</option>`).join('');
 }

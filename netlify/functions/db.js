@@ -32,4 +32,9 @@ export async function initSchema(sql) {
       updated_at  TIMESTAMPTZ DEFAULT NOW()
     )
   `;
+  
+  // Safe migrations for newly added columns
+  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS needs_review BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS time_complexity TEXT DEFAULT ''`;
+  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS space_complexity TEXT DEFAULT ''`;
 }

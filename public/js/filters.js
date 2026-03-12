@@ -44,3 +44,29 @@ export function applyFilters() {
     if (secEl && isFiltered) secEl.classList.toggle('collapsed', !anyVisible);
   });
 }
+
+export function pickRandom() {
+  const unsolved = state.questions.filter(q => !q.is_done);
+  if (unsolved.length === 0) {
+    if (window.showToast) window.showToast('You have solved everything! 🎉', 'success');
+    return;
+  }
+  const choice = unsolved[Math.floor(Math.random() * unsolved.length)];
+  
+  // Clear search and show all to ensure row is visible
+  document.getElementById('search').value = '';
+  setDiffFilter('all', document.querySelector('.filter-btn[data-group="diff"]'));
+  setStatusFilter('all', document.querySelector('.filter-btn[data-group="status"]'));
+  
+  // Expand section
+  const secEl = document.getElementById(`sec-${choice.sectionIndex}`);
+  if (secEl) secEl.classList.remove('collapsed');
+  
+  // Scroll to row and highlight slightly
+  const tr = document.getElementById(`row-${choice.lc_number}`);
+  if (tr) {
+    tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    tr.style.backgroundColor = 'rgba(124,106,247,0.2)';
+    setTimeout(() => tr.style.backgroundColor = '', 1500);
+  }
+}

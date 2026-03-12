@@ -24,3 +24,18 @@ h1 {
 .header-meta span { display: flex; align-items: center; gap: 6px; }
 .header-meta b { color: var(--text-dim); }
 .header-actions { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; padding-top: 8px; }
+
+/* ── MOTIVATION BOX ── */
+.motivation-box {
+  margin: -16px 0 32px 0;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(124,106,247,0.05) 100%);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-size: 14px;
+  font-family: 'Syne', sans-serif;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+#motivation-text { font-style: italic; }

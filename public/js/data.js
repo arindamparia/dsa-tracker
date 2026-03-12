@@ -26,11 +26,22 @@ export async function bootFresh() {
   }
 }
 
-export async function hardRefresh() {
-  if (!confirm('Re-fetch all questions from the database?\nThis will override your local cache.')) return;
-  Cache.clear();
-  document.getElementById('sections').innerHTML =
-    '<div class="loading-msg"><span class="loading-dots">Loading questions</span></div>';
-  await bootFresh();
-  showToast('Questions refreshed from database ✓', 'success');
-}
+export const RefreshModal = {
+  open() {
+    document.getElementById('refresh-modal').classList.add('open');
+  },
+  close() {
+    document.getElementById('refresh-modal').classList.remove('open');
+  },
+  handleOverlayClick(e) {
+    if (e.target === document.getElementById('refresh-modal')) this.close();
+  },
+  async confirm() {
+    this.close();
+    Cache.clear();
+    document.getElementById('sections').innerHTML =
+      '<div class="loading-msg"><span class="loading-dots">Loading questions</span></div>';
+    await bootFresh();
+    showToast('Questions refreshed from database ✓', 'success');
+  }
+};

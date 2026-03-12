@@ -42,3 +42,19 @@
 @media (max-width: 768px) {
   #toggle-sol, #toggle-notes { display: none !important; }
 }
+
+/* ── STOPWATCH ── */
+.stopwatch {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px;
+}
+#sw-display {
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent); min-width: 48px; text-align: center;
+}
+.sw-btn {
+  background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; transition: background 0.2s;
+}
+.sw-btn:hover { background: var(--surface3); color: var(--text); }
+.mode-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-left: 4px; border-left: 1px solid var(--border); padding-left: 8px;
+}

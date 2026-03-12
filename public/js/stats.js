@@ -18,6 +18,8 @@ export function updateSectionMeta(si) {
 export function updateStats() {
   const total = state.questions.length;
   let done = 0, easy = 0, easyTotal = 0, medium = 0, medTotal = 0, hard = 0, hardTotal = 0, notes = 0;
+  
+  const doneDates = new Set();
 
   state.questions.forEach(q => {
     if (q.difficulty === 'Easy')   easyTotal++;
@@ -28,6 +30,10 @@ export function updateStats() {
       if (q.difficulty === 'Easy')   easy++;
       if (q.difficulty === 'Medium') medium++;
       if (q.difficulty === 'Hard')   hard++;
+      
+      if (q.updated_at) {
+        doneDates.add(new Date(q.updated_at).toLocaleDateString());
+      }
     }
     if ((q.solution || q.notes || '').trim()) notes++;
   });
@@ -43,6 +49,43 @@ export function updateStats() {
   document.getElementById('stat-hard-of').textContent = `of ${hardTotal}`;
   document.getElementById('stat-notes').textContent   = notes;
   document.getElementById('stat-rem').textContent     = total - done;
+
+  // Streak Calculation
+  const streakEl = document.getElementById('hdr-streak');
+  if (streakEl) {
+    let currentStreak = 0;
+    const now = new Date();
+    const todayStr = now.toLocaleDateString();
+    
+    // check yesterday
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString();
+
+    let checkDate = new Date(now);
+    
+    if (doneDates.has(todayStr)) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else if (doneDates.has(yesterdayStr)) {
+      // didn't do it today yet, but streak is kept alive by yesterday
+      currentStreak++;
+      checkDate = yesterday;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    if (currentStreak > 0) {
+      while (true) {
+        if (doneDates.has(checkDate.toLocaleDateString())) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+    streakEl.textContent = `${currentStreak} Day Streak`;
+  }
 
   const pct = total ? Math.round((done / total) * 100) : 0;
   document.getElementById('prog-pct').textContent            = pct + '%';

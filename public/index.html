@@ -28,6 +28,7 @@
         <div class="header-meta">
           <span>🎯 <b>Target:</b> Google · Apple · Microsoft · Goldman Sachs</span>
           <span>☕ <b>Language:</b> Java</span>
+          <span>🔥 <b id="hdr-streak">0 Day Streak</b></span>
           <span>📦 <b>Total:</b> <span id="hdr-total">—</span> Questions</span>
         </div>
       </div>
@@ -35,12 +36,17 @@
         <button class="btn-add" onclick="openModal()">
           <span class="plus">+</span> Add Question
         </button>
-        <button class="btn-secondary" onclick="hardRefresh()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
+        <button class="btn-secondary" onclick="RefreshModal.open()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
         <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
         <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
   </header>
+
+  <!-- MOTIVATION BOX -->
+  <div class="motivation-box">
+    <div id="motivation-text"></div>
+  </div>
 
   <!-- STATS -->
   <div class="stats-board">
@@ -73,6 +79,16 @@
   <!-- CONTROLS -->
   <div class="controls">
     <input type="text" class="search-box" id="search" placeholder="Search by name, LC#, topic..." oninput="applyFilters()" />
+    <button class="btn-secondary" onclick="pickRandom()" style="margin-right: 12px;" title="Jump to a random unsolved problem">🎲 Random</button>
+
+    <div class="stopwatch">
+      <div id="sw-display">00:00</div>
+      <button class="sw-btn" id="sw-start" title="Start/Pause">▶️</button>
+      <button class="sw-btn" id="sw-reset" title="Reset">🔄</button>
+      <button class="sw-btn mode-btn" id="sw-mode" title="Toggle Mode">⏱️ Timer</button>
+    </div>
+    
+    <div class="filter-divider"></div>
     <div class="filter-group">
       <button class="filter-btn active" data-group="diff" data-filter="all" onclick="setDiffFilter('all',this)">All</button>
       <button class="filter-btn easy" data-group="diff" data-filter="Easy" onclick="setDiffFilter('Easy',this)">Easy</button>
@@ -168,6 +184,56 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="Logout.close()">Cancel</button>
       <button class="btn-danger" onclick="Logout.confirm()">Log Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- REFRESH CONFIRMATION MODAL -->
+<div class="modal-overlay" id="refresh-modal" onclick="RefreshModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon">↺</div>
+      <div class="modal-title">Hard Refresh?</div>
+    </div>
+    <div class="confirm-modal-body">
+      Re-fetch all questions from the database?<br>
+      This will override your local cache.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="RefreshModal.close()">Cancel</button>
+      <button class="btn-submit" onclick="RefreshModal.confirm()" style="background:var(--accent)">Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- POMODORO EDIT MODAL -->
+<div class="modal-overlay" id="pomodoro-modal" onclick="PomodoroModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:320px">
+    <div class="confirm-modal-header" style="justify-content:center; margin-bottom: 20px;">
+      <div class="modal-title">Edit Pomodoro</div>
+    </div>
+    <div class="form-group full">
+      <label class="form-label" style="text-align:center">Duration (Minutes)</label>
+      <input type="number" class="form-input" id="f-pomodoro-mins" style="text-align:center; font-size: 20px;" min="1" max="120" />
+    </div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-cancel" onclick="PomodoroModal.close()">Cancel</button>
+      <button class="btn-submit" onclick="PomodoroModal.confirm()" style="background:var(--accent)">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOLUTION EDIT MODAL -->
+<div class="modal-overlay" id="solution-modal" onclick="SolutionModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:800px; width: 90%; height: 80vh; display: flex; flex-direction: column;">
+    <div class="modal-title" style="margin-bottom: 8px;" id="sol-modal-title">Edit Solution</div>
+    <div class="modal-sub" style="margin-bottom: 20px;" id="sol-modal-sub"></div>
+    <div class="form-group full" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+      <textarea class="form-input" id="f-sol-text" style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; resize: none; padding: 16px;"></textarea>
+    </div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-cancel" onclick="SolutionModal.close()">Cancel</button>
+      <button class="btn-submit" onclick="SolutionModal.save()" style="background:var(--accent)">Save Solution</button>
     </div>
   </div>
 </div>
