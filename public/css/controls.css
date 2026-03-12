@@ -81,7 +81,7 @@
 .timer-hang {
   position: fixed;
   top: 0;
-  right: 80px;
+  right: 20px;
   z-index: 1000;
   pointer-events: none;
 }
@@ -94,7 +94,7 @@
 .timer-body {
   pointer-events: all;
   position: relative;
-  margin-top: 40px;
+  margin-top: 60px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -118,9 +118,9 @@
 .timer-body::after {
   content: '';
   position: absolute;
-  top: -40px;
+  top: -60px;
   width: 5px;
-  height: 40px;
+  height: 60px;
   background:
     repeating-linear-gradient(
       135deg,

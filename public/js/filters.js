@@ -3,6 +3,11 @@ import { state } from './state.js';
 import { groupBySections } from './utils.js';
 
 export function setDiffFilter(f, btn) {
+  // Clicking an active filter again resets to 'all'
+  if (btn.classList.contains('active') && f !== 'all') {
+    f = 'all';
+    btn = document.querySelector('[data-group="diff"][data-filter="all"]');
+  }
   state.diffFilter = f;
   document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -10,6 +15,11 @@ export function setDiffFilter(f, btn) {
 }
 
 export function setStatusFilter(f, btn) {
+  // Clicking an active filter again resets to 'all'
+  if (btn.classList.contains('active') && f !== 'all') {
+    f = 'all';
+    btn = document.querySelector('[data-group="status"][data-filter="all"]');
+  }
   state.statusFilter = f;
   document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -20,6 +30,11 @@ export function applyFilters() {
   const search     = document.getElementById('search').value.toLowerCase().trim();
   const sections   = groupBySections(state.questions);
   const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all';
+
+  // Collapse all sections first (accordion rule)
+  document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
+
+  let firstVisibleSec = null;
 
   sections.forEach((sec, si) => {
     let anyVisible = false;
@@ -41,10 +56,15 @@ export function applyFilters() {
       if (show) anyVisible = true;
     });
 
-    const secEl = document.getElementById(`sec-${si}`);
-    if (secEl && isFiltered) secEl.classList.toggle('collapsed', !anyVisible);
+    // When filtered, auto-expand only the first section with results
+    if (isFiltered && anyVisible && firstVisibleSec === null) {
+      const secEl = document.getElementById(`sec-${si}`);
+      if (secEl) secEl.classList.remove('collapsed');
+      firstVisibleSec = si;
+    }
   });
 }
+
 
 export function pickRandom() {
   const unsolved = state.questions.filter(q => !q.is_done);
@@ -59,7 +79,8 @@ export function pickRandom() {
   setDiffFilter('all', document.querySelector('.filter-btn[data-group="diff"]'));
   setStatusFilter('all', document.querySelector('.filter-btn[data-group="status"]'));
   
-  // Expand section
+  // Collapse all sections first (accordion), then expand target
+  document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
   const secEl = document.getElementById(`sec-${choice.sectionIndex}`);
   if (secEl) secEl.classList.remove('collapsed');
   

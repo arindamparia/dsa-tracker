@@ -11,7 +11,7 @@ export function render() {
 
   sections.forEach((sec, si) => {
     const el = document.createElement('div');
-    el.className = 'section';
+    el.className = 'section collapsed';
     el.id = `sec-${si}`;
     const done  = sec.questions.filter(q => q.is_done).length;
     const total = sec.questions.length;
@@ -38,9 +38,11 @@ export function render() {
         </div>
       </div>
       <div class="section-body">
-        <table class="q-table">
-          <tbody id="tbody-${si}"></tbody>
-        </table>
+        <div class="section-body-inner">
+          <table class="q-table">
+            <tbody id="tbody-${si}"></tbody>
+          </table>
+        </div>
       </div>`;
     container.appendChild(el);
 
@@ -113,7 +115,14 @@ export function buildRow(q, si) {
 }
 
 export function toggleSection(si) {
-  document.getElementById(`sec-${si}`).classList.toggle('collapsed');
+  const clicked = document.getElementById(`sec-${si}`);
+  const isNowCollapsed = clicked.classList.contains('collapsed');
+
+  // Close all sections first (accordion behaviour)
+  document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
+
+  // If it was collapsed, open it; if it was already open, leave it closed
+  if (isNowCollapsed) clicked.classList.remove('collapsed');
 }
 
 /**
