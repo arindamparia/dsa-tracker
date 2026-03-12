@@ -31,6 +31,7 @@ export function applyFilters() {
       if (state.diffFilter !== 'all' && q.difficulty !== state.diffFilter) show = false;
       if (state.statusFilter === 'done'   && !q.is_done) show = false;
       if (state.statusFilter === 'undone' &&  q.is_done) show = false;
+      if (state.statusFilter === 'review' && !q.needs_review) show = false;
       if (search) {
         const haystack = `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')}`.toLowerCase();
         if (!haystack.includes(search)) show = false;

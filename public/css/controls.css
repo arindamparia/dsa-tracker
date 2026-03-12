@@ -31,6 +31,7 @@
 .filter-btn.medium.active      { background: var(--medium-bg);    border-color: rgba(248,181,0,0.4);   color: var(--medium); }
 .filter-btn.hard.active        { background: var(--hard-bg);      border-color: rgba(255,71,87,0.4);   color: var(--hard); }
 .filter-btn.done-filter.active { background: var(--done-bg);      border-color: rgba(6,214,160,0.3);   color: var(--easy); }
+.filter-btn.review-filter.active { background: rgba(248,181,0,0.1); border-color: rgba(248,181,0,0.5); color: var(--medium); text-shadow: 0 0 8px rgba(248,181,0,0.4); }
 
 .filter-btn.view-toggle.active { background: rgba(6,214,160,0.08); border-color: rgba(6,214,160,0.4); color: var(--easy); }
 

@@ -16,7 +16,56 @@
 .progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
 .progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
 .progress-track { height: 8px; background: var(--surface3); border-radius: 999px; overflow: hidden; display: flex; }
-.progress-fill { height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
 .easy-fill   { background: var(--easy); }
 .medium-fill { background: var(--medium); }
 .hard-fill   { background: var(--hard); }
+
+/* ── TOP STATS (Today & Streak) ── */
+.top-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.top-stats .stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.top-stats .stat-value {
+  font-size: 44px;
+  margin: 8px 0;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+/* Base states: dim unless active */
+.streak-val { color: var(--text-dim); }
+.today-val  { color: var(--text-dim); }
+
+/* Actioned states (applied by JS) */
+.streak-active {
+  color: #ff9f43; /* Fire orange */
+  text-shadow: 0 0 20px rgba(255,159,67,0.4);
+}
+
+.today-active {
+  color: var(--easy);
+  text-shadow: 0 0 20px rgba(6,214,160,0.4);
+}
+
+.today-track {
+  width: 100%;
+  max-width: 120px;
+  height: 6px;
+  margin-top: 12px;
+  background: var(--surface3);
+}

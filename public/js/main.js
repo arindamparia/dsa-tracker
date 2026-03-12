@@ -15,6 +15,7 @@ import { toggleCheck, debounceSave, debounceNotesSave, toggleReview, saveComplex
 import { toggleTags, toggleSolution, toggleNotes } from './toggles.js';
 import { AddQuestionModal } from './modal-add.js';
 import { SolutionModal } from './modal-solution.js';
+import { ReportModal } from './modal-report.js';
 import { Logout } from './modal-logout.js';
 import { confirmClear } from './reset.js';
 import { showToast } from './toast.js';
@@ -61,6 +62,9 @@ window.submitQuestion     = () => AddQuestionModal.submit();
 
 // Solution modal
 window.SolutionModal      = SolutionModal;
+
+// Report modal
+window.ReportModal        = ReportModal;
 
 // Logout modal (called via onclick="confirmLogout()" and onclick="Logout.close()" etc.)
 window.confirmLogout = () => Logout.open();

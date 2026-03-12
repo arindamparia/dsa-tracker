@@ -20,6 +20,9 @@ export function updateStats() {
   let done = 0, easy = 0, easyTotal = 0, medium = 0, medTotal = 0, hard = 0, hardTotal = 0, notes = 0;
   
   const doneDates = new Set();
+  const now = new Date();
+  const todayStr = now.toLocaleDateString();
+  let todayDone = 0;
 
   state.questions.forEach(q => {
     if (q.difficulty === 'Easy')   easyTotal++;
@@ -32,7 +35,11 @@ export function updateStats() {
       if (q.difficulty === 'Hard')   hard++;
       
       if (q.updated_at) {
-        doneDates.add(new Date(q.updated_at).toLocaleDateString());
+        const dateStr = new Date(q.updated_at).toLocaleDateString();
+        doneDates.add(dateStr);
+        if (dateStr === todayStr) {
+          todayDone++;
+        }
       }
     }
     if ((q.solution || q.notes || '').trim()) notes++;
@@ -52,10 +59,25 @@ export function updateStats() {
 
   // Streak Calculation
   const streakEl = document.getElementById('hdr-streak');
+  const todayEl = document.getElementById('hdr-today');
+  
+  if (todayEl) {
+    todayEl.textContent = todayDone;
+    // target the subtext and progress fill as well
+    const todayFill = document.getElementById('today-fill');
+    
+    if (todayDone === 0) {
+      todayEl.classList.remove('today-active');
+      if(todayFill) todayFill.style.width = '0%';
+    } else {
+      todayEl.classList.add('today-active');
+      // just a fun visual mapping for the progress bar (maxes visually at 5 problems)
+      if(todayFill) todayFill.style.width = Math.min((todayDone / 5) * 100, 100) + '%';
+    }
+  }
+
   if (streakEl) {
     let currentStreak = 0;
-    const now = new Date();
-    const todayStr = now.toLocaleDateString();
     
     // check yesterday
     const yesterday = new Date(now);
@@ -84,7 +106,14 @@ export function updateStats() {
         }
       }
     }
-    streakEl.textContent = `${currentStreak} Day Streak`;
+    
+    // Update text formatting
+    streakEl.textContent = currentStreak;
+    if (currentStreak > 0) {
+      streakEl.classList.add('streak-active');
+    } else {
+      streakEl.classList.remove('streak-active');
+    }
   }
 
   const pct = total ? Math.round((done / total) * 100) : 0;
