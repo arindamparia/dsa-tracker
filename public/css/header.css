@@ -28,14 +28,70 @@ h1 {
 /* ── MOTIVATION BOX ── */
 .motivation-box {
   margin: -16px 0 32px 0;
-  padding: 16px 20px;
+  padding: 18px 20px;
   background: linear-gradient(135deg, var(--surface) 0%, rgba(124,106,247,0.05) 100%);
   border-left: 3px solid var(--accent);
   border-radius: 8px;
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: 16px;
   font-family: 'Syne', sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-#motivation-text { font-style: italic; }
+
+.motivation-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+#motivation-text {
+  font-style: italic;
+  flex: 1;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.quote-author {
+  font-size: 0.82em;
+  opacity: 0.65;
+  margin-top: 6px;
+  display: inline-block;
+  font-style: normal;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.03em;
+}
+
+#quote-shuffle-btn {
+  background: none;
+  border: 1px solid rgba(124,106,247,0.3);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  margin-top: 2px;
+}
+#quote-shuffle-btn:hover {
+  background: rgba(124,106,247,0.12);
+  border-color: var(--accent);
+  transform: rotate(30deg);
+}
+#quote-shuffle-btn:active { transform: rotate(180deg) scale(0.9); }
+
+@keyframes spinOnce {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+#quote-shuffle-btn.spin { animation: spinOnce 0.45s cubic-bezier(0.4,0,0.2,1); }
+
+/* ── HIDE TIMER ON MOBILE ── */
+@media (max-width: 768px) {
+  .timer-hang { display: none !important; }
+}
+
