@@ -23,9 +23,12 @@
 .filter-btn {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-muted); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  color: var(--text-muted); cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
-.filter-btn:hover { border-color: var(--border2); color: var(--text); }
+.filter-btn:hover { border-color: var(--border2); color: var(--text); transform: translateY(-1px); }
+.filter-btn:active { transform: scale(0.95) translateY(0); }
 .filter-btn.active             { background: var(--accent-glow);  border-color: rgba(124,106,247,0.4); color: var(--accent); }
 .filter-btn.easy.active        { background: var(--easy-bg);      border-color: rgba(6,214,160,0.4);   color: var(--easy); }
 .filter-btn.medium.active      { background: var(--medium-bg);    border-color: rgba(248,181,0,0.4);   color: var(--medium); }
@@ -44,18 +47,144 @@
   #toggle-sol, #toggle-notes { display: none !important; }
 }
 
-/* ── STOPWATCH ── */
-.stopwatch {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px;
+/* ── HANGING TIMER WIDGET ── */
+
+@keyframes timerSwing {
+  0%   { transform: rotate(-1deg); }
+  50%  { transform: rotate(1deg); }
+  100% { transform: rotate(-1deg); }
 }
+/* pushed from the right → swings left then settles */
+@keyframes timerNudgeRight {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(-1.8deg); }
+  55%  { transform: rotate(0.6deg); }
+  80%  { transform: rotate(-0.3deg); }
+  100% { transform: rotate(0deg); }
+}
+/* pushed from the left → swings right then settles */
+@keyframes timerNudgeLeft {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(1.8deg); }
+  55%  { transform: rotate(-0.6deg); }
+  80%  { transform: rotate(0.3deg); }
+  100% { transform: rotate(0deg); }
+}
+/* pushed from below → tiny lift bob */
+@keyframes timerNudgeBottom {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  30%  { transform: translateY(-4px) rotate(0.4deg); }
+  60%  { transform: translateY(1px) rotate(-0.2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.timer-hang {
+  position: fixed;
+  top: 0;
+  right: 80px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Ropes are hidden - they'll be rendered as ::before/::after on timer-body */
+.timer-hang > .timer-rope { display: none; }
+.timer-rope-left  { display: none; }
+.timer-rope-right { display: none; }
+
+.timer-body {
+  pointer-events: all;
+  position: relative;
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(12, 12, 22, 0.90);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(124,106,247,0.4);
+  border-radius: 18px;
+  padding: 14px 22px;
+  box-shadow:
+    0 12px 48px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(124,106,247,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  animation: timerSwing 6s ease-in-out infinite;
+  transform-origin: top center;
+  white-space: nowrap;
+}
+
+/* Rope pseudo-elements: always 28px from each edge of the body */
+.timer-body::before,
+.timer-body::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  width: 5px;
+  height: 40px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(200,180,255,0.95) 0px,
+      rgba(200,180,255,0.95) 2px,
+      rgba(90,65,190,0.6) 2px,
+      rgba(90,65,190,0.6) 6px
+    );
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 0 8px rgba(124,106,247,0.5);
+}
+.timer-body::before { left: 28px; }
+.timer-body::after  { right: 28px; }
+
+/* direction-aware nudge classes applied via JS */
+.timer-body.nudge-right  { animation: timerNudgeRight  0.55s ease-out forwards; }
+.timer-body.nudge-left   { animation: timerNudgeLeft   0.55s ease-out forwards; }
+.timer-body.nudge-bottom { animation: timerNudgeBottom 0.45s ease-out forwards; }
+
 #sw-display {
-  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent); min-width: 48px; text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 14px rgba(124,106,247,0.6);
+  line-height: 1;
 }
+
+.timer-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-left: 1px solid rgba(124,106,247,0.25);
+  padding-left: 14px;
+}
+
 .sw-btn {
-  background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; transition: background 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(190,175,255,0.65);
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 20px;
+  line-height: 1;
+  transition: color 0.15s, transform 0.2s;
 }
-.sw-btn:hover { background: var(--surface3); color: var(--text); }
+.sw-btn:hover {
+  color: var(--accent);
+  transform: scale(1.35);
+  background: none;
+}
+.sw-btn:active {
+  transform: scale(0.92);
+}
 .mode-btn {
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-left: 4px; border-left: 1px solid var(--border); padding-left: 8px;
+  font-size: 20px;
+  padding: 6px 8px;
+  color: rgba(190,175,255,0.45);
+}
+.mode-btn:hover {
+  color: var(--accent);
+  transform: scale(1.35);
 }

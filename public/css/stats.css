@@ -1,7 +1,17 @@
 /* ── STAT CARDS ── */
 .stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: border-color 0.2s; }
-.stat-card:hover { border-color: var(--border2); }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.stat-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
 .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px; }
 .stat-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 .stat-value.total  { color: var(--accent); }
@@ -16,9 +26,9 @@
 .progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
 .progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
 .progress-track { height: 8px; background: var(--surface3); border-radius: 999px; overflow: hidden; display: flex; }
-.easy-fill   { background: var(--easy); }
-.medium-fill { background: var(--medium); }
-.hard-fill   { background: var(--hard); }
+.easy-fill   { background: var(--easy);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+.medium-fill { background: var(--medium); transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.1s; }
+.hard-fill   { background: var(--hard);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.2s; }
 
 /* ── TOP STATS (Today & Streak) ── */
 .top-stats {
@@ -47,14 +57,41 @@
   transition: color 0.3s, text-shadow 0.3s;
 }
 
+/* Scroll-reveal: cards start invisible, JS adds .revealed */
+.stat-card.reveal-ready {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.25s, box-shadow 0.25s;
+}
+.stat-card.reveal-ready.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Hover still works after reveal */
+.stat-card.reveal-ready.revealed:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  border-color: var(--border2);
+}
+
 /* Base states: dim unless active */
 .streak-val { color: var(--text-dim); }
 .today-val  { color: var(--text-dim); }
 
-/* Actioned states (applied by JS) */
+/* Streak heartbeat when active */
+@keyframes heartbeat {
+  0%   { transform: scale(1); }
+  14%  { transform: scale(1.06); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.04); }
+  70%  { transform: scale(1); }
+  100% { transform: scale(1); }
+}
 .streak-active {
-  color: #ff9f43; /* Fire orange */
+  color: #ff9f43;
   text-shadow: 0 0 20px rgba(255,159,67,0.4);
+  animation: heartbeat 2.4s ease-in-out infinite;
+  display: inline-block;
 }
 
 .today-active {

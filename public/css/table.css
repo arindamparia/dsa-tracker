@@ -1,19 +1,39 @@
 /* ── QUESTION TABLE ── */
 .q-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.q-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.q-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s, box-shadow 0.15s;
+  position: relative;
+}
 .q-table tbody tr:last-child { border-bottom: none; }
-.q-table tbody tr:hover { background: var(--surface2); }
+.q-table tbody tr:hover {
+  background: var(--surface2);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
 .q-table tbody tr.done-row { background: var(--done-bg); }
-.q-table tbody tr.done-row:hover { background: rgba(6,214,160,0.07); }
+.q-table tbody tr.done-row:hover { background: rgba(6,214,160,0.07); box-shadow: inset 3px 0 0 var(--easy); }
 .q-table td { padding: 12px 14px; vertical-align: top; }
 
 /* ── CHECKBOX ── */
 .check-cell  { width: 40px; }
-.custom-check { width: 20px; height: 20px; border: 2px solid var(--border2); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
-.custom-check:hover         { border-color: var(--easy); }
-.custom-check.checked       { background: var(--easy); border-color: var(--easy); }
-.custom-check.checked::after{ content: '✓'; color: #000; font-size: 12px; font-weight: 700; }
-.custom-check.saving        { border-color: var(--accent); animation: pulse-border 0.6s ease; }
+.custom-check {
+  width: 20px; height: 20px; border: 2px solid var(--border2); border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.custom-check:hover { border-color: var(--easy); transform: scale(1.1); }
+.custom-check.checked {
+  background: var(--easy); border-color: var(--easy);
+  animation: checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.custom-check.checked::after { content: '✓'; color: #000; font-size: 12px; font-weight: 700; }
+.custom-check.saving { border-color: var(--accent); animation: pulse-border 0.6s ease; }
+
+@keyframes checkPop {
+  0%   { transform: scale(0.8); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
 
 /* ── CELLS ── */
 .prob-name   { width: 35%; }   /* fixed share */
@@ -29,7 +49,8 @@ body.notes-hidden.solution-hidden .spacer-cell { display: table-cell; width: aut
 .topic-tag { display: inline-block; background: var(--surface3); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.03em; }
 .tag-pill  { display: inline-block; background: rgba(124,106,247,0.1); border: 1px solid rgba(124,106,247,0.2); border-radius: 4px; padding: 1px 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); margin: 2px 2px 0 0; }
 
-.diff-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.diff-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; transition: transform 0.15s; }
+.diff-badge:hover { transform: scale(1.05); }
 .diff-badge.easy   { background: var(--easy-bg);   color: var(--easy);   border: 1px solid rgba(6,214,160,0.2); }
 .diff-badge.medium { background: var(--medium-bg); color: var(--medium); border: 1px solid rgba(248,181,0,0.2); }
 .diff-badge.hard   { background: var(--hard-bg);   color: var(--hard);   border: 1px solid rgba(255,71,87,0.2); }

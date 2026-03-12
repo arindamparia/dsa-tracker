@@ -5,7 +5,12 @@
   font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #fff;
   cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
-.btn-add:hover { background: #9180ff; transform: translateY(-1px); }
+.btn-add:hover {
+  background: #9180ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124,106,247,0.45);
+}
+.btn-add:active { transform: translateY(0) scale(0.97); box-shadow: none; }
 .btn-add .plus { font-size: 18px; line-height: 1; }
 
 .btn-secondary {
@@ -13,7 +18,13 @@
   font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);
   cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.06em;
 }
-.btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+.btn-secondary:hover {
+  border-color: var(--border2);
+  color: var(--text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.btn-secondary:active { transform: translateY(0) scale(0.97); box-shadow: none; }
 
 .btn-logout {
   background: transparent; border: 1px solid rgba(255,71,87,0.3); border-radius: 8px; padding: 10px 16px;
@@ -21,7 +32,8 @@
   cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.06em;
   text-decoration: none; display: inline-flex; align-items: center;
 }
-.btn-logout:hover { background: rgba(255,71,87,0.08); border-color: rgba(255,71,87,0.6); }
+.btn-logout:hover { background: rgba(255,71,87,0.08); border-color: rgba(255,71,87,0.6); transform: translateY(-1px); }
+.btn-logout:active { transform: scale(0.97); }
 
 /* Used in modal footers */
 .btn-submit {
@@ -29,7 +41,8 @@
   font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #fff;
   cursor: pointer; transition: all 0.2s;
 }
-.btn-submit:hover { background: #9180ff; }
+.btn-submit:hover { background: #9180ff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(124,106,247,0.4); }
+.btn-submit:active { transform: scale(0.97); box-shadow: none; }
 .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-cancel {
@@ -45,4 +58,5 @@
   font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #fff;
   cursor: pointer; transition: all 0.2s;
 }
-.btn-danger:hover { background: #ff6b77; transform: translateY(-1px); }
+.btn-danger:hover { background: #ff6b77; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,71,87,0.35); }
+.btn-danger:active { transform: scale(0.97); box-shadow: none; }

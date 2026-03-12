@@ -21,10 +21,51 @@ export function initStopwatch() {
 
 export const PomodoroModal = {
   open() {
-    const currentMins = Math.floor(pomodoroDuration / 60000);
-    document.getElementById('f-pomodoro-mins').value = currentMins;
+    const totalMins = Math.round(pomodoroDuration / 60000);
+    const hrs  = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    const hrsEl  = document.getElementById('f-pomodoro-hrs');
+    const minsEl = document.getElementById('f-pomodoro-mins');
+    const errEl  = document.getElementById('f-pomodoro-error');
+    if (hrsEl)  hrsEl.value  = hrs  > 0 ? hrs  : '';
+    if (minsEl) minsEl.value = mins > 0 ? mins : (hrs === 0 ? '25' : '');
+    if (errEl)  errEl.textContent = '';
     document.getElementById('pomodoro-modal').classList.add('open');
-    document.getElementById('f-pomodoro-mins').focus();
+
+    // Enforce integer-only clamping live as user types
+    [hrsEl, minsEl].forEach(el => {
+      if (!el) return;
+      el.oninput = () => {
+        // Strip decimals immediately
+        let raw = el.value.replace(/[^0-9]/g, '');
+        const num = parseInt(raw, 10);
+        const max = parseInt(el.max, 10);
+        if (!isNaN(num) && num > max) raw = String(max);
+        if (raw !== el.value) el.value = raw;
+        if (errEl) errEl.textContent = '';
+      };
+      el.onkeydown = (e) => {
+        // Block dot, comma, minus, e (scientific notation)
+        if (['.', ',', '-', 'e', 'E', '+'].includes(e.key)) e.preventDefault();
+      };
+    });
+
+    // Wire +/- step buttons
+    document.querySelectorAll('.pomo-step-btn').forEach(btn => {
+      btn.onclick = () => {
+        const target = document.getElementById(btn.dataset.target);
+        if (!target) return;
+        const dir = parseInt(btn.dataset.dir, 10);
+        const min = parseInt(target.min, 10);
+        const max = parseInt(target.max, 10);
+        const cur = parseInt(target.value, 10) || 0;
+        const next = Math.max(min, Math.min(max, cur + dir));
+        target.value = next;
+        if (errEl) errEl.textContent = '';
+      };
+    });
+
+    if (minsEl) minsEl.focus();
   },
   close() {
     document.getElementById('pomodoro-modal').classList.remove('open');
@@ -33,13 +74,27 @@ export const PomodoroModal = {
     if (e.target === document.getElementById('pomodoro-modal')) this.close();
   },
   confirm() {
-    const minInput = document.getElementById('f-pomodoro-mins').value;
-    if (minInput && !isNaN(minInput) && parseInt(minInput) > 0) {
-      pomodoroDuration = parseInt(minInput) * 60 * 1000;
-      elapsedTime = pomodoroDuration;
-      updateDisplay(elapsedTime);
-      this.close();
+    const hrsRaw  = document.getElementById('f-pomodoro-hrs')?.value  ?? '0';
+    const minsRaw = document.getElementById('f-pomodoro-mins')?.value ?? '0';
+    const errEl   = document.getElementById('f-pomodoro-error');
+
+    const hrs  = Math.floor(Math.max(0, Math.min(5,  parseInt(hrsRaw,  10) || 0)));
+    const mins = Math.floor(Math.max(0, Math.min(59, parseInt(minsRaw, 10) || 0)));
+    const totalMins = hrs * 60 + mins;
+
+    if (totalMins < 1) {
+      if (errEl) errEl.textContent = 'Set at least 1 minute.';
+      return;
     }
+    if (hrs > 5 || (hrs === 5 && mins > 0)) {
+      if (errEl) errEl.textContent = 'Maximum is 5 hours 0 minutes.';
+      return;
+    }
+
+    pomodoroDuration = totalMins * 60 * 1000;
+    elapsedTime = pomodoroDuration;
+    updateDisplay(elapsedTime);
+    this.close();
   }
 };
 
@@ -68,7 +123,7 @@ function toggleMode() {
   if (timerInterval) return; // don't switch while running
   isPomodoro = !isPomodoro;
   const btnMode = document.getElementById('sw-mode');
-  btnMode.textContent = isPomodoro ? '🍅 Pomodoro' : '⏱️ Timer';
+  btnMode.textContent = isPomodoro ? '🍅' : '⏱';
   
   if (isPomodoro) {
     elapsedTime = pomodoroDuration; // effectively counting down from this
@@ -84,7 +139,7 @@ function toggleStopwatch() {
     // Pause
     clearInterval(timerInterval);
     timerInterval = null;
-    btnStart.textContent = '▶️';
+    btnStart.textContent = '▶';
   } else {
     // Start
     startTime = Date.now();
@@ -99,7 +154,7 @@ function toggleStopwatch() {
           elapsedTime = 0;
           clearInterval(timerInterval);
           timerInterval = null;
-          btnStart.textContent = '▶️';
+          btnStart.textContent = '▶';
           window.showToast("Pomodoro finished! Take a break. 🍵", "success");
         }
       } else {
@@ -107,14 +162,14 @@ function toggleStopwatch() {
       }
       updateDisplay(elapsedTime);
     }, 100); // 100ms intervals to accurately show tenths of a second
-    btnStart.textContent = '⏸️';
+    btnStart.textContent = '⏸';
   }
 }
 
 function resetStopwatch() {
   clearInterval(timerInterval);
   timerInterval = null;
-  document.getElementById('sw-start').textContent = '▶️';
+  document.getElementById('sw-start').textContent = '▶';
   if (isPomodoro) {
     elapsedTime = pomodoroDuration;
   } else {

@@ -20,6 +20,20 @@
 <body class="tags-hidden solution-hidden">
 <div class="wrapper">
 
+  <!-- HANGING TIMER WIDGET -->
+  <div class="timer-hang" id="timer-hang">
+    <div class="timer-rope timer-rope-left"></div>
+    <div class="timer-rope timer-rope-right"></div>
+    <div class="timer-body">
+      <div id="sw-display">00:00</div>
+      <div class="timer-controls">
+        <button class="sw-btn" id="sw-start" title="Start/Pause">▶</button>
+        <button class="sw-btn" id="sw-reset" title="Reset">↺</button>
+        <button class="sw-btn mode-btn" id="sw-mode" title="Toggle Mode">⏱</button>
+      </div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header>
     <div class="header-top">
@@ -95,12 +109,7 @@
     <input type="text" class="search-box" id="search" placeholder="Search by name, LC#, topic..." oninput="applyFilters()" />
     <button class="btn-secondary" onclick="pickRandom()" style="margin-right: 12px;" title="Jump to a random unsolved problem">🎲 Random</button>
 
-    <div class="stopwatch">
-      <div id="sw-display">00:00</div>
-      <button class="sw-btn" id="sw-start" title="Start/Pause">▶️</button>
-      <button class="sw-btn" id="sw-reset" title="Reset">🔄</button>
-      <button class="sw-btn mode-btn" id="sw-mode" title="Toggle Mode">⏱️ Timer</button>
-    </div>
+
     
     <div class="filter-divider"></div>
     <div class="filter-group">
@@ -223,13 +232,44 @@
 
 <!-- POMODORO EDIT MODAL -->
 <div class="modal-overlay" id="pomodoro-modal" onclick="PomodoroModal.handleOverlayClick(event)">
-  <div class="modal" style="max-width:320px">
+  <div class="modal" style="max-width:340px">
     <div class="confirm-modal-header" style="justify-content:center; margin-bottom: 20px;">
       <div class="modal-title">Edit Pomodoro</div>
     </div>
-    <div class="form-group full">
-      <label class="form-label" style="text-align:center">Duration (Minutes)</label>
-      <input type="number" class="form-input" id="f-pomodoro-mins" style="text-align:center; font-size: 20px;" min="1" max="120" />
+    <div class="form-group full" style="text-align:center">
+      <label class="form-label" style="text-align:center; margin-bottom:18px; display:block;">Duration</label>
+      <div style="display:flex; align-items:center; justify-content:center; gap:14px;">
+
+        <!-- HOURS -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div class="pomo-stepper">
+            <input type="number" class="form-input pomo-input" id="f-pomodoro-hrs"
+              min="0" max="5" step="1" placeholder="0" />
+            <div class="pomo-step-col">
+              <button class="pomo-step-btn" data-target="f-pomodoro-hrs" data-dir="1">▲</button>
+              <button class="pomo-step-btn" data-target="f-pomodoro-hrs" data-dir="-1">▼</button>
+            </div>
+          </div>
+          <span class="pomo-unit-label">Hours</span>
+        </div>
+
+        <span class="pomo-colon">:</span>
+
+        <!-- MINUTES -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div class="pomo-stepper">
+            <input type="number" class="form-input pomo-input" id="f-pomodoro-mins"
+              min="0" max="59" step="1" placeholder="25" />
+            <div class="pomo-step-col">
+              <button class="pomo-step-btn" data-target="f-pomodoro-mins" data-dir="1">▲</button>
+              <button class="pomo-step-btn" data-target="f-pomodoro-mins" data-dir="-1">▼</button>
+            </div>
+          </div>
+          <span class="pomo-unit-label">Minutes</span>
+        </div>
+
+      </div>
+      <div id="f-pomodoro-error" style="color:var(--hard); font-size:12px; font-family:'JetBrains Mono',monospace; margin-top:12px; min-height:18px;"></div>
     </div>
     <div class="modal-actions" style="margin-top: 24px;">
       <button class="btn-cancel" onclick="PomodoroModal.close()">Cancel</button>
@@ -237,6 +277,7 @@
     </div>
   </div>
 </div>
+
 
 <!-- SOLUTION EDIT MODAL -->
 <div class="modal-overlay" id="solution-modal" onclick="SolutionModal.handleOverlayClick(event)">

@@ -20,6 +20,8 @@ import { Logout } from './modal-logout.js';
 import { confirmClear } from './reset.js';
 import { showToast } from './toast.js';
 import { initStopwatch, PomodoroModal } from './stopwatch.js';
+import { initTimerNudge } from './timer-nudge.js';
+import { initReveal } from './reveal.js';
 import { initMotivation } from './quotes.js';
 
 // ── Window bindings for inline HTML handlers ──────────────────────
@@ -77,5 +79,7 @@ document.addEventListener('keydown', e => {
 
 // ── Boot ──────────────────────────────────────────────────────────
 initStopwatch();
+initTimerNudge();
+initReveal();
 initMotivation();
 boot();

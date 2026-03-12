@@ -45,3 +45,91 @@
 }
 .confirm-modal-header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
 .confirm-modal-body   { font-size: 13px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; line-height: 1.65; margin-bottom: 28px; }
+
+/* ── POMODORO STEPPER ── */
+.pomo-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.pomo-stepper:focus-within { border-color: var(--accent); }
+
+/* Hide native browser spin arrows */
+.pomo-input::-webkit-outer-spin-button,
+.pomo-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pomo-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+.pomo-input {
+  width: 72px;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 4px;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+.pomo-input::placeholder { color: var(--text-muted); font-size: 20px; font-weight: 400; }
+.pomo-input:focus { border-color: transparent; }
+
+.pomo-step-col {
+  display: flex;
+  flex-direction: column;
+  height: 52px;
+}
+
+.pomo-step-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 11px;
+  width: 30px;
+  height: 26px;         /* exactly half of stepper height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
+  border-bottom: 1px solid var(--border);  /* divider between ▲ and ▼ */
+}
+.pomo-step-btn:last-child { border-bottom: none; }
+.pomo-step-btn:hover {
+  background: rgba(124,106,247,0.12);
+  color: var(--accent);
+}
+.pomo-step-btn:active {
+  transform: scale(0.85);
+  background: rgba(124,106,247,0.22);
+}
+
+.pomo-unit-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.pomo-colon {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  padding-bottom: 24px;
+  opacity: 0.7;
+  font-family: 'JetBrains Mono', monospace;
+}
+
