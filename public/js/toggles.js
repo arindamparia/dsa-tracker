@@ -7,7 +7,8 @@ import { state } from './state.js';
 
 export function toggleTags(btn) {
   state.hideTags = !state.hideTags;
-  document.body.classList.toggle('tags-hidden', state.hideTags);
+  document.body.classList.toggle('tags-hidden',   state.hideTags);
+  document.body.classList.toggle('topic-hidden',  state.hideTags);
   btn.classList.toggle('active', !state.hideTags);
 }
 

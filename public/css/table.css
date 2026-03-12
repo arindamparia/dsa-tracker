@@ -79,6 +79,7 @@ body.notes-hidden.solution-hidden .spacer-cell { display: table-cell; width: aut
 
 /* ── VIEW TOGGLES ── */
 body.tags-hidden     .tag-pills-wrap { display: none !important; }
+body.topic-hidden    .topic-tag      { display: none !important; }
 body.solution-hidden .sol-cell       { display: none !important; }
 body.notes-hidden    .notes-cell     { display: none !important; }
 
