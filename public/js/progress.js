@@ -10,6 +10,12 @@ export async function toggleCheck(lc, si) {
   if (!q) return;
   const newDone = !q.is_done;
   q.is_done = newDone;
+  
+  if (newDone) {
+    q.solved_at = new Date().toISOString();
+  } else {
+    q.solved_at = null; // Removed from today metrics
+  }
 
   const chk = document.getElementById(`chk-${lc}`);
   chk.classList.add('saving');
@@ -32,12 +38,13 @@ export async function toggleCheck(lc, si) {
         notes: q.notes || '',
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
-        space_complexity: q.space_complexity || ''
+        space_complexity: q.space_complexity || '',
+        solved_at: q.solved_at || null
       }),
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    Cache.updateEntry(lc, { is_done: newDone });
+    Cache.updateEntry(lc, { is_done: newDone, solved_at: q.solved_at });
   } catch (err) {
     showToast('⚠ Save failed: ' + err.message, 'error');
     // rollback
@@ -73,7 +80,8 @@ export async function persistSolution(lc, value) {
         notes: q.notes || '',
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
-        space_complexity: q.space_complexity || ''
+        space_complexity: q.space_complexity || '',
+        solved_at: q.solved_at || null
       }),
     });
     const data = await res.json();
@@ -109,7 +117,8 @@ export async function persistNotes(lc, value) {
         notes: value,
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
-        space_complexity: q.space_complexity || ''
+        space_complexity: q.space_complexity || '',
+        solved_at: q.solved_at || null
       }),
     });
     const data = await res.json();
@@ -141,7 +150,8 @@ export async function toggleReview(lc, el) {
         notes: q.notes || '',
         needs_review: newReview,
         time_complexity: q.time_complexity || '',
-        space_complexity: q.space_complexity || ''
+        space_complexity: q.space_complexity || '',
+        solved_at: q.solved_at || null
       }),
     });
     const data = await res.json();
@@ -179,7 +189,8 @@ export async function saveComplexity(lc) {
         notes: q.notes || '',
         needs_review: q.needs_review || false,
         time_complexity: tVal,
-        space_complexity: sVal
+        space_complexity: sVal,
+        solved_at: q.solved_at || null
       }),
     });
     const data = await res.json();

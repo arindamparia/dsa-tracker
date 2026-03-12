@@ -34,8 +34,8 @@ export function updateStats() {
       if (q.difficulty === 'Medium') medium++;
       if (q.difficulty === 'Hard')   hard++;
       
-      if (q.updated_at) {
-        const dateStr = new Date(q.updated_at).toLocaleDateString();
+      if (q.solved_at) {
+        const dateStr = new Date(q.solved_at).toLocaleDateString();
         doneDates.add(dateStr);
         if (dateStr === todayStr) {
           todayDone++;

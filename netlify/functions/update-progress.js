@@ -11,13 +11,13 @@ export const handler = async (event) => {
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method not allowed" }) };
 
   try {
-    const { lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity } = JSON.parse(event.body || "{}");
+    const { lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, solved_at } = JSON.parse(event.body || "{}");
     if (!lc_number) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "lc_number required" }) };
 
     const sql = getDb();
     await sql`
-      INSERT INTO progress (lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, updated_at)
-      VALUES (${lc_number}, ${is_done ?? false}, ${solution ?? ""}, ${notes ?? ""}, ${needs_review ?? false}, ${time_complexity ?? ""}, ${space_complexity ?? ""}, NOW())
+      INSERT INTO progress (lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, updated_at, solved_at)
+      VALUES (${lc_number}, ${is_done ?? false}, ${solution ?? ""}, ${notes ?? ""}, ${needs_review ?? false}, ${time_complexity ?? ""}, ${space_complexity ?? ""}, NOW(), ${solved_at || null})
       ON CONFLICT (lc_number) DO UPDATE SET
         is_done          = EXCLUDED.is_done,
         solution         = EXCLUDED.solution,
@@ -25,6 +25,7 @@ export const handler = async (event) => {
         needs_review     = EXCLUDED.needs_review,
         time_complexity  = EXCLUDED.time_complexity,
         space_complexity = EXCLUDED.space_complexity,
+        solved_at        = EXCLUDED.solved_at,
         updated_at       = NOW()
     `;
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true }) };

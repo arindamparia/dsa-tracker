@@ -38,9 +38,9 @@ export const ReportModal = {
     // 1. Build counts map: { 'YYYY-MM-DD': count }
     const counts = {};
     state.questions.forEach(q => {
-      if (q.is_done && q.updated_at) {
+      if (q.is_done && q.solved_at) {
         // extract local date string format YYYY-MM-DD reliably
-        const d = new Date(q.updated_at);
+        const d = new Date(q.solved_at);
         const pad = n => n.toString().padStart(2, '0');
         const key = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
         counts[key] = (counts[key] || 0) + 1;
