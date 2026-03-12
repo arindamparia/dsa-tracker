@@ -12,7 +12,7 @@ export const state = {
   statusFilter: 'all', // 'all' | 'done' | 'undone'
   saveTimers:   {},    // debounce handles for solution, keyed by lc_number
   notesTimers:  {},    // debounce handles for notes, keyed by lc_number
-  hideTags:     false, // toggled by toggleTags()
-  hideSolution: false, // toggled by toggleSolution()
+  hideTags:     true, // toggled by toggleTags()
+  hideSolution: true, // toggled by toggleSolution()
   hideNotes:    false, // toggled by toggleNotes()
 };
