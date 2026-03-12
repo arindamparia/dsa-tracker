@@ -31,6 +31,8 @@ export const handler = async (event) => {
         COALESCE(p.needs_review, false) AS needs_review,
         COALESCE(p.time_complexity, '') AS time_complexity,
         COALESCE(p.space_complexity, '') AS space_complexity,
+        COALESCE(p.srs_interval_index, 0) AS srs_interval_index,
+        p.srs_last_reviewed_at           AS srs_last_reviewed_at,
         p.updated_at               AS updated_at,
         p.solved_at                AS solved_at
       FROM questions q

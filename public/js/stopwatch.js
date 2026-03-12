@@ -2,14 +2,15 @@ let startTime = 0;
 let elapsedTime = 0;
 let timerInterval = null;
 let isPomodoro = false;
+let isLocked = false; // Used to lock controls when managed externally (Focus Mode)
 
 // 25 minutes in ms default
 let pomodoroDuration = 25 * 60 * 1000;
 
 export function initStopwatch() {
-  document.getElementById('sw-start').addEventListener('click', toggleStopwatch);
-  document.getElementById('sw-reset').addEventListener('click', resetStopwatch);
-  document.getElementById('sw-mode').addEventListener('click', toggleMode);
+  document.getElementById('sw-start').addEventListener('click', () => { if (!isLocked) toggleStopwatch() });
+  document.getElementById('sw-reset').addEventListener('click', () => { if (!isLocked) resetStopwatch() });
+  document.getElementById('sw-mode').addEventListener('click', () => { if (!isLocked) toggleMode() });
   
   const display = document.getElementById('sw-display');
   display.addEventListener('click', () => {
@@ -133,8 +134,12 @@ function toggleMode() {
   updateDisplay(elapsedTime);
 }
 
-function toggleStopwatch() {
+export function toggleStopwatch(forceState = null) {
   const btnStart = document.getElementById('sw-start');
+  
+  if (forceState === 'start' && timerInterval) return;
+  if (forceState === 'stop' && !timerInterval) return;
+
   if (timerInterval) {
     // Pause
     clearInterval(timerInterval);
@@ -143,6 +148,8 @@ function toggleStopwatch() {
   } else {
     // Start
     startTime = Date.now();
+    btnStart.textContent = '⏸'; // Moved up so UI immediately reflects it
+    
     timerInterval = setInterval(() => {
       const now = Date.now();
       const diff = now - startTime;
@@ -155,18 +162,17 @@ function toggleStopwatch() {
           clearInterval(timerInterval);
           timerInterval = null;
           btnStart.textContent = '▶';
-          window.showToast("Pomodoro finished! Take a break. 🍵", "success");
+          if (window.showToast) window.showToast("Pomodoro finished! Take a break. 🍵", "success");
         }
       } else {
         elapsedTime += diff;
       }
       updateDisplay(elapsedTime);
     }, 100); // 100ms intervals to accurately show tenths of a second
-    btnStart.textContent = '⏸';
   }
 }
 
-function resetStopwatch() {
+export function resetStopwatch() {
   clearInterval(timerInterval);
   timerInterval = null;
   document.getElementById('sw-start').textContent = '▶';
@@ -176,4 +182,13 @@ function resetStopwatch() {
     elapsedTime = 0;
   }
   updateDisplay(elapsedTime);
+}
+
+export function setStopwatchLock(locked) {
+  isLocked = locked;
+  const ctrls = document.querySelectorAll('.sw-btn');
+  ctrls.forEach(c => {
+    c.style.opacity = locked ? '0.3' : '1';
+    c.style.cursor = locked ? 'not-allowed' : 'pointer';
+  });
 }

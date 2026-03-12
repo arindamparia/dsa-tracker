@@ -79,17 +79,32 @@ export function buildRow(q, si) {
       <span class="review-star ${q.needs_review ? 'active' : ''}" onclick="toggleReview(${q.lc_number}, this)" title="Needs Review">★</span>
       <a href="${q.url}" target="_blank" rel="noopener" style="display:inline-block">${q.name}</a>
       <span class="topic-tag">${q.topic}</span>
+      <button class="similar-btn" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
+      <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
     </td>
     <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
     <td class="sol-cell">
       <div class="sol-cell-wrap">
-        <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
+        <div class="sol-actions-row">
+          <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
+          <button class="ai-btn ai-analyze-btn" id="ai-analyze-btn-${q.lc_number}" onclick="AI.analyze(${q.lc_number})" title="Analyze Complexity & Quality">🤖 Analyze Code</button>
+        </div>
         <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
           placeholder="Paste or write solution code..."
           data-lc="${q.lc_number}"
           oninput="debounceSave(${q.lc_number}, this)"
         >${solRaw}</textarea>
+        ${q.ai_analysis ? `
+        <div class="ai-fb-container" id="ai-fb-container-${q.lc_number}">
+          <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${q.lc_number})">
+            <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
+          </button>
+          <div class="ai-fb-content" id="ai-fb-content-${q.lc_number}" style="display: none;">
+            <div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${q.ai_analysis}</div>
+          </div>
+        </div>
+        ` : ''}
       </div>
     </td>
     <td class="notes-cell">

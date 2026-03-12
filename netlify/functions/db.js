@@ -37,4 +37,6 @@ export async function initSchema(sql) {
   await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS needs_review BOOLEAN DEFAULT FALSE`;
   await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS time_complexity TEXT DEFAULT ''`;
   await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS space_complexity TEXT DEFAULT ''`;
+  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS srs_interval_index INTEGER DEFAULT 0`;
+  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS srs_last_reviewed_at TIMESTAMPTZ DEFAULT NULL`;
 }

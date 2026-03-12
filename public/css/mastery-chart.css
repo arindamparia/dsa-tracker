@@ -1,0 +1,39 @@
+/* ── MASTERY CHART MODAL ── */
+
+.mastery-modal { max-width: 600px; width: 92%; }
+
+.mastery-canvas-wrap {
+  display: flex; justify-content: center; align-items: center;
+  padding: 10px 0;
+}
+#mastery-canvas { max-width: 100%; }
+
+/* Legend below the chart */
+.mastery-legend {
+  max-height: 180px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 0;
+}
+.mastery-legend::-webkit-scrollbar { width: 4px; }
+.mastery-legend::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+.mastery-legend-item {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-dim);
+}
+.mastery-legend-name {
+  flex: 0 0 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--text-muted);
+}
+.mastery-legend-bar {
+  flex: 1; height: 5px; background: var(--surface3); border-radius: 3px;
+  overflow: hidden;
+}
+.mastery-legend-bar > div {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.mastery-legend-pct {
+  flex: 0 0 40px; text-align: right; color: var(--text-muted); font-size: 10px;
+}

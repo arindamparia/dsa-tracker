@@ -26,6 +26,25 @@
 }
 .btn-secondary:active { transform: translateY(0) scale(0.97); box-shadow: none; }
 
+.btn-action {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px;
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; color: var(--text);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.btn-action:hover {
+  background: var(--surface3);
+  border-color: var(--border2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.btn-action:active { transform: translateY(0) scale(0.97); box-shadow: none; }
+
+.btn-action-danger {
+  color: #ff4757; border-color: rgba(255,71,87,0.3);
+}
+.btn-action-danger:hover {
+  background: rgba(255,71,87,0.08); border-color: rgba(255,71,87,0.6);
+}
 .btn-logout {
   background: transparent; border: 1px solid rgba(255,71,87,0.3); border-radius: 8px; padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #ff4757;
@@ -60,3 +79,26 @@
 }
 .btn-danger:hover { background: #ff6b77; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,71,87,0.35); }
 .btn-danger:active { transform: scale(0.97); box-shadow: none; }
+
+/* ── HIGHLIGHTED FEATURE BUTTONS ── */
+.btn-feature {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(124,106,247,0.12), rgba(6,214,160,0.08));
+  border: 1px solid rgba(124,106,247,0.3); border-radius: 12px;
+  padding: 16px 24px;
+  cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1; min-width: 240px;
+}
+.btn-feature:hover {
+  background: linear-gradient(135deg, rgba(124,106,247,0.22), rgba(6,214,160,0.18));
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3)
+}
+.btn-feature:active { transform: scale(0.98) translateY(0); box-shadow: none; }
+.btn-feature .feature-icon { font-size: 26px; line-height: 1; }
+.btn-feature .feature-text { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.04em; }
+
+.study-tools-bar {
+  display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; margin-top: -16px;
+}

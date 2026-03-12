@@ -107,3 +107,173 @@ tr.filtered-out { display: none; }
 @media (max-width: 768px) {
   .sol-cell, .notes-cell { display: none !important; }
 }
+
+/* ── SIMILAR PROBLEMS ── */
+.similar-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  background: var(--surface2); color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 6px; margin-left: 6px; cursor: pointer;
+  transition: all 0.2s;
+}
+.similar-btn:hover {
+  background: var(--accent-glow); color: var(--accent); border-color: rgba(124,106,247,0.4);
+}
+
+.similar-tray {
+  background: var(--surface2);
+}
+.similar-tray-inner {
+  padding: 0 !important; border-bottom: 1px solid var(--border);
+  overflow: hidden; max-height: 0; transition: max-height 0.3s ease;
+}
+.similar-tray.open .similar-tray-inner {
+  max-height: 300px; padding: 12px 14px !important;
+}
+
+.similar-empty {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-muted); padding: 12px 14px; font-style: italic;
+}
+
+.similar-tray-header {
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600;
+  color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.similar-items {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+.similar-item {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 12px; text-decoration: none;
+  transition: all 0.2s; min-width: 140px;
+}
+.similar-item:hover {
+  border-color: rgba(124,106,247,0.4); background: rgba(124,106,247,0.05);
+  transform: translateY(-1px);
+}
+
+.similar-item-name {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+}
+.similar-item-topic {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-muted);
+}
+.similar-item-meta {
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── AI STYLES ── */
+.sol-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.ai-btn {
+  background: rgba(124, 106, 247, 0.1);
+  border: 1px solid rgba(124, 106, 247, 0.4);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ai-btn:hover:not(:disabled) {
+  background: rgba(124, 106, 247, 0.2);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.ai-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-hint-btn {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.ai-hint-box, .ai-fb-box {
+  background: rgba(124, 106, 247, 0.05);
+  border-left: 3px solid var(--accent);
+  padding: 10px 14px;
+  margin-top: 10px;
+  border-radius: 4px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  animation: fadeInDown 0.3s ease;
+}
+
+.ai-hint-box strong, .ai-fb-box strong {
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+@keyframes pulseLoadingText {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.9; box-shadow: 0 0 8px rgba(124, 106, 247, 0.4); }
+  100% { opacity: 0.5; }
+}
+
+.ai-btn.loading {
+  animation: pulseLoadingText 1.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.ai-fb-container {
+  margin-top: 8px;
+}
+
+.ai-fb-toggle {
+  background: transparent;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+
+.ai-fb-toggle:hover {
+  color: var(--accent);
+}
+
+.ai-fb-toggle .fb-icon {
+  font-size: 12px;
+}
+
+.ai-fb-toggle .fb-arrow {
+  font-size: 9px;
+  transition: transform 0.2s;
+}
+
+.ai-fb-toggle.open .fb-arrow {
+  transform: rotate(180deg);
+}
+
+.ai-fb-content {
+  margin-top: 6px;
+}

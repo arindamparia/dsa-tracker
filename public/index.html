@@ -16,6 +16,10 @@
 <link rel="stylesheet" href="css/modal.css" />
 <link rel="stylesheet" href="css/report.css" />
 <link rel="stylesheet" href="css/toast.css" />
+<link rel="stylesheet" href="css/review-queue.css" />
+<link rel="stylesheet" href="css/mastery-chart.css" />
+<link rel="stylesheet" href="css/daily-goal.css" />
+<link rel="stylesheet" href="css/focus-mode.css" />
 </head>
 <body class="tags-hidden topic-hidden solution-hidden">
 <div class="wrapper">
@@ -39,10 +43,8 @@
     <div class="header-top">
       <div>
         <div class="header-badge">2025–2026 Interview Prep</div>
-        <h1>DSA Mastery<br>Study Plan</h1>
+        <h1>DSA Mastery</h1>
         <div class="header-meta">
-          <span>🎯 <b>Target:</b> Google · Apple · Microsoft · Goldman Sachs</span>
-          <span>☕ <b>Language:</b> Java</span>
           <span>📦 <b>Total:</b> <span id="hdr-total">—</span> Questions</span>
         </div>
       </div>
@@ -50,13 +52,24 @@
         <button class="btn-add" onclick="openModal()">
           <span class="plus">+</span> Add Question
         </button>
-        <button class="btn-secondary" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
-        <button class="btn-secondary" onclick="RefreshModal.open()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
-        <button class="btn-secondary" onclick="confirmClear()">Reset Progress</button>
+        <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
+        <button class="btn-action" onclick="RefreshModal.open()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
+        <button class="btn-action btn-action-danger" onclick="confirmClear()">⚠️ Reset Progress</button>
         <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
   </header>
+
+  <div class="study-tools-bar">
+    <button class="btn-feature" onclick="FocusMode.openPicker()" title="Start a focused study session">
+      <span class="feature-icon">🎯</span>
+      <span class="feature-text">Start Focus Session</span>
+    </button>
+    <button class="btn-feature" onclick="MasteryChart.open()" title="View Section Mastery Map">
+      <span class="feature-icon">🧠</span>
+      <span class="feature-text">Section Mastery Map</span>
+    </button>
+  </div>
 
   <!-- MOTIVATION BOX -->
   <div class="motivation-box">
@@ -73,9 +86,11 @@
       <div class="stat-value streak-val" id="hdr-streak">0 Days</div>
       <div class="stat-sub">keep it burning 🔥</div>
     </div>
-    <div class="stat-card today-card">
+    <div class="stat-card today-card" onclick="DailyGoal.openEditor()" style="cursor:pointer" title="Click to set daily goal">
       <div class="stat-label">Solved Today</div>
+      <div class="daily-goal-ring-wrap" id="daily-goal-ring"></div>
       <div class="stat-value today-val" id="hdr-today">0</div>
+      <div class="stat-sub" id="daily-goal-label">click to set goal</div>
       <div class="stat-sub progress-track today-track"><div class="progress-fill easy-fill" id="today-fill" style="width: 0%"></div></div>
     </div>
   </div>
@@ -104,6 +119,18 @@
       <span style="color:var(--easy)">■ Easy</span>
       <span style="color:var(--medium)">■ Medium</span>
       <span style="color:var(--hard)">■ Hard</span>
+    </div>
+  </div>
+
+  <!-- REVIEW QUEUE -->
+  <div id="review-queue"></div>
+
+  <!-- FOCUS SESSION BAR -->
+  <div id="focus-bar" class="focus-bar hidden">
+    <div class="focus-bar-inner">
+      <span class="focus-bar-label">🎯 <strong>Focus Session:</strong> <span id="focus-topic-label"></span></span>
+      <span class="focus-bar-count" id="focus-solved-count">0 solved</span>
+      <button class="focus-end-btn" onclick="FocusMode.end()">End Session</button>
     </div>
   </div>
 
@@ -321,9 +348,73 @@
   </div>
 </div>
 
+<!-- MASTERY CHART MODAL -->
+<div class="modal-overlay" id="mastery-modal" onclick="MasteryChart.handleOverlayClick(event)">
+  <div class="modal mastery-modal">
+    <div class="modal-title" style="margin-bottom: 8px;">Section Mastery Map</div>
+    <div class="modal-sub" style="margin-bottom: 20px;">Radar chart showing your proficiency across all DSA sections</div>
+    <div class="mastery-canvas-wrap">
+      <canvas id="mastery-canvas" width="500" height="500"></canvas>
+    </div>
+    <div id="mastery-legend" class="mastery-legend"></div>
+    <div class="modal-actions" style="margin-top: 20px; justify-content: flex-end;">
+      <button class="btn-cancel" onclick="MasteryChart.close()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS TOPIC PICKER -->
+<div class="modal-overlay" id="focus-picker-modal" onclick="FocusMode.handlePickerOverlay(event)">
+  <div class="modal auth-modal" style="max-width:380px;">
+    <div class="modal-title" style="margin-bottom: 8px;">Pick a Section</div>
+    <div class="modal-sub" style="margin-bottom: 20px;">Choose a section to focus on. We'll filter to show only unsolved problems.</div>
+    <div class="focus-topic-list" id="focus-topic-list">
+      <!-- Injected by focus-mode.js -->
+    </div>
+    <div class="modal-actions" style="margin-top: 20px;">
+      <button class="btn-cancel" onclick="FocusMode.closePicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS SESSION SUMMARY -->
+<div class="modal-overlay" id="focus-summary-modal" onclick="FocusMode.handleSummaryOverlay(event)">
+  <div class="modal" style="max-width:420px;">
+    <div class="confirm-modal-header" style="justify-content:center; margin-bottom: 16px;">
+      <div class="confirm-modal-icon">🎯</div>
+      <div class="modal-title">Session Complete</div>
+    </div>
+    <div id="focus-summary-body" class="focus-summary-body"></div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-submit" onclick="FocusMode.closeSummary()" style="background:var(--accent)">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY GOAL EDITOR -->
+<div class="modal-overlay" id="goal-editor-modal" onclick="DailyGoal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-title" style="margin-bottom: 6px;">Daily Goal</div>
+    <div class="modal-sub" style="margin-bottom: 20px;">How many problems per day?</div>
+    <div class="goal-editor-body">
+      <div class="goal-stepper">
+        <button class="goal-step-btn" onclick="DailyGoal.adjust(-1)">−</button>
+        <input type="number" class="goal-input" id="goal-input" min="1" max="20" value="3" />
+        <button class="goal-step-btn" onclick="DailyGoal.adjust(1)">+</button>
+      </div>
+      <div class="goal-hint">problems / day</div>
+    </div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-cancel" onclick="DailyGoal.closeEditor()">Cancel</button>
+      <button class="btn-submit" onclick="DailyGoal.saveFromEditor()" style="background:var(--accent)">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
+<script type="module" src="js/ai.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -23,6 +23,12 @@ import { initStopwatch, PomodoroModal } from './stopwatch.js';
 import { initTimerNudge } from './timer-nudge.js';
 import { initReveal } from './reveal.js';
 import { initMotivation } from './quotes.js';
+import { SRS } from './spaced-repetition.js';
+import { MasteryChart } from './mastery-chart.js';
+import { DailyGoal } from './daily-goal.js';
+import { FocusMode } from './focus-mode.js';
+import { SimilarProblems } from './similar-problems.js';
+import { AI } from './ai.js';
 
 // ── Window bindings for inline HTML handlers ──────────────────────
 // Data
@@ -72,9 +78,30 @@ window.ReportModal        = ReportModal;
 window.confirmLogout = () => Logout.open();
 window.Logout        = Logout; // exposes Logout.close() / Logout.confirm() used in HTML
 
+// ── New feature bindings ──────────────────────────────────────────
+window.SRS              = SRS;
+window.MasteryChart     = MasteryChart;
+window.DailyGoal        = DailyGoal;
+window.FocusMode        = FocusMode;
+window.SimilarProblems  = SimilarProblems;
+window.AI               = AI;
+
 // ── Keyboard shortcuts ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { AddQuestionModal.close(); Logout.close(); }
+  if (e.key === 'Escape') {
+    AddQuestionModal.close();
+    Logout.close();
+    MasteryChart.close();
+    DailyGoal.closeEditor();
+    FocusMode.closePicker();
+    FocusMode.closeSummary();
+  }
+});
+
+// ── Goal-changed event (avoids circular import with stats.js) ────
+document.addEventListener('goal-changed', () => {
+  // Re-run updateStats to refresh the ring
+  import('./stats.js').then(m => m.updateStats());
 });
 
 // ── Boot ──────────────────────────────────────────────────────────
@@ -82,4 +109,8 @@ initStopwatch();
 initTimerNudge();
 initReveal();
 initMotivation();
-boot();
+DailyGoal.init();
+boot().then(() => {
+  // SRS needs questions to be loaded first
+  SRS.init();
+});

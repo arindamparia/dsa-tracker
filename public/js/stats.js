@@ -1,6 +1,7 @@
 /** Updates stat cards, progress bar, and section mini-progress. */
 import { state } from './state.js';
 import { groupBySections } from './utils.js';
+import { DailyGoal } from './daily-goal.js';
 
 export function updateSectionMeta(si) {
   const sections = groupBySections(state.questions);
@@ -74,6 +75,8 @@ export function updateStats() {
       // just a fun visual mapping for the progress bar (maxes visually at 5 problems)
       if(todayFill) todayFill.style.width = Math.min((todayDone / 5) * 100, 100) + '%';
     }
+    // Update daily goal ring
+    DailyGoal.update(todayDone);
   }
 
   if (streakEl) {

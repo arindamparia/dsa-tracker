@@ -1,12 +1,12 @@
 /* ── HEADER ── */
-header { padding: 52px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 36px; }
-.header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+header { padding: 16px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 
 .header-badge {
   display: inline-flex; align-items: center; gap: 8px;
   background: var(--accent-glow); border: 1px solid rgba(124,106,247,0.3); border-radius: 999px;
   padding: 5px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
-  color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px;
+  color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
 }
 .header-badge::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%;
@@ -17,13 +17,13 @@ h1 {
   font-size: clamp(28px,5vw,52px); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em;
   background: linear-gradient(135deg,#fff 30%,var(--accent) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 }
 
 .header-meta { display: flex; flex-wrap: wrap; gap: 20px; color: var(--text-muted); font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-top: 8px; }
 .header-meta span { display: flex; align-items: center; gap: 6px; }
 .header-meta b { color: var(--text-dim); }
-.header-actions { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; padding-top: 8px; }
+.header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding-top: 0; margin-right: 200px; }
 
 /* ── MOTIVATION BOX ── */
 .motivation-box {

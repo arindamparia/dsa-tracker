@@ -4,6 +4,8 @@ import { Cache } from './cache.js';
 import { showToast } from './toast.js';
 import { updateSectionMeta, updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
+import { FocusMode } from './focus-mode.js';
+import { SRS } from './spaced-repetition.js';
 
 export async function toggleCheck(lc, si) {
   const q = state.questions.find(x => x.lc_number === lc);
@@ -26,6 +28,8 @@ export async function toggleCheck(lc, si) {
   updateSectionMeta(si);
   updateStats();
   applyFilters();
+  FocusMode._updateCount();
+  SRS.render();
 
   try {
     const res = await fetch('/.netlify/functions/update-progress', {
@@ -39,7 +43,9 @@ export async function toggleCheck(lc, si) {
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
-        solved_at: q.solved_at || null
+        solved_at: q.solved_at || null,
+        srs_interval_index: q.srs_interval_index || 0,
+        srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
     const data = await res.json();
@@ -81,7 +87,9 @@ export async function persistSolution(lc, value) {
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
-        solved_at: q.solved_at || null
+        solved_at: q.solved_at || null,
+        srs_interval_index: q.srs_interval_index || 0,
+        srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
     const data = await res.json();
@@ -118,7 +126,9 @@ export async function persistNotes(lc, value) {
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
-        solved_at: q.solved_at || null
+        solved_at: q.solved_at || null,
+        srs_interval_index: q.srs_interval_index || 0,
+        srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
     const data = await res.json();
@@ -151,7 +161,9 @@ export async function toggleReview(lc, el) {
         needs_review: newReview,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
-        solved_at: q.solved_at || null
+        solved_at: q.solved_at || null,
+        srs_interval_index: q.srs_interval_index || 0,
+        srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
     const data = await res.json();
@@ -190,7 +202,9 @@ export async function saveComplexity(lc) {
         needs_review: q.needs_review || false,
         time_complexity: tVal,
         space_complexity: sVal,
-        solved_at: q.solved_at || null
+        solved_at: q.solved_at || null,
+        srs_interval_index: q.srs_interval_index || 0,
+        srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
     const data = await res.json();
