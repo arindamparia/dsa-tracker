@@ -1,46 +1,51 @@
 /** Difficulty / status / search filters. */
 import { state } from './state.js';
-import { groupBySections } from './utils.js';
+import { groupBySections, smoothTransition } from './utils.js';
 
 export function setDiffFilter(f, btn) {
-  // Clicking an active filter again resets to 'all'
-  if (btn.classList.contains('active') && f !== 'all') {
-    f = 'all';
-    btn = document.querySelector('[data-group="diff"][data-filter="all"]');
-  }
-  state.diffFilter = f;
-  document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  applyFilters();
+  smoothTransition(() => {
+    // Clicking an active filter again resets to 'all'
+    if (btn.classList.contains('active') && f !== 'all') {
+      f = 'all';
+      btn = document.querySelector('[data-group="diff"][data-filter="all"]');
+    }
+    state.diffFilter = f;
+    document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  });
 }
 
 export function setStatusFilter(f, btn) {
-  // Clicking an active filter again resets to 'all'
-  if (btn.classList.contains('active') && f !== 'all') {
-    f = 'all';
-    btn = document.querySelector('[data-group="status"][data-filter="all"]');
-  }
-  state.statusFilter = f;
-  document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  applyFilters();
+  smoothTransition(() => {
+    // Clicking an active filter again resets to 'all'
+    if (btn.classList.contains('active') && f !== 'all') {
+      f = 'all';
+      btn = document.querySelector('[data-group="status"][data-filter="all"]');
+    }
+    state.statusFilter = f;
+    document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  });
 }
 
-export function applyFilters() {
+export function applyFilters(options = {}) {
+  const preserveOpen = options.preserveOpen || false;
   const search     = document.getElementById('search').value.toLowerCase().trim();
   const sections   = groupBySections(state.questions);
   const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all';
 
-  // Collapse all sections first (accordion rule)
-  document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
+  // Collapse all sections first (accordion rule) unless told to preserve open ones
+  if (!preserveOpen) {
+    document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
+  }
 
   let firstVisibleSec = null;
 
   sections.forEach((sec, si) => {
     let anyVisible = false;
     sec.questions.forEach(q => {
-      const tr = document.getElementById(`row-${q.lc_number}`);
-      if (!tr) return;
       let show = true;
 
       if (state.diffFilter !== 'all' && q.difficulty !== state.diffFilter) show = false;
@@ -52,12 +57,24 @@ export function applyFilters() {
         if (!haystack.includes(search)) show = false;
       }
 
-      tr.classList.toggle('filtered-out', !show);
       if (show) anyVisible = true;
+
+      const tr = document.getElementById(`row-${q.lc_number}`);
+      if (tr) {
+        tr.classList.toggle('filtered-out', !show);
+      }
     });
 
+    // If section needs to be visible but isn't loaded yet, force it to render synchronously
+    if (isFiltered && anyVisible) {
+      const tbody = document.getElementById(`tbody-${si}`);
+      if (tbody && tbody.dataset.loaded === 'false') {
+         document.dispatchEvent(new CustomEvent('force-render-section', { detail: si }));
+      }
+    }
+
     // When filtered, auto-expand only the first section with results
-    if (isFiltered && anyVisible && firstVisibleSec === null) {
+    if (!preserveOpen && isFiltered && anyVisible && firstVisibleSec === null) {
       const secEl = document.getElementById(`sec-${si}`);
       if (secEl) secEl.classList.remove('collapsed');
       firstVisibleSec = si;
@@ -91,11 +108,13 @@ export function pickRandom() {
   document.querySelector('[data-group="status"][data-filter="all"]')?.classList.add('active');
 
   // applyFilters collapses all (no filter active) — then immediately open target section
-  applyFilters();
-  if (si !== -1) {
-    const secEl = document.getElementById(`sec-${si}`);
-    if (secEl) secEl.classList.remove('collapsed');
-  }
+  smoothTransition(() => {
+    applyFilters();
+    if (si !== -1) {
+      const secEl = document.getElementById(`sec-${si}`);
+      if (secEl) secEl.classList.remove('collapsed');
+    }
+  });
 
   // Wait for section open animation (380ms), then scroll + show pointer
   const tr = document.getElementById(`row-${choice.lc_number}`);

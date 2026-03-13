@@ -2,7 +2,7 @@
 import { state } from './state.js';
 import { Cache } from './cache.js';
 import { showToast } from './toast.js';
-import { updateSectionMeta, updateStats } from './stats.js';
+import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
 import { FocusMode } from './focus-mode.js';
 import { SRS } from './spaced-repetition.js';
@@ -25,9 +25,8 @@ export async function toggleCheck(lc, si) {
   chk.classList.toggle('checked', newDone);
   document.getElementById(`row-${lc}`).classList.toggle('done-row', newDone);
 
-  updateSectionMeta(si);
   updateStats();
-  applyFilters();
+  applyFilters({ preserveOpen: true });
   FocusMode._updateCount();
   SRS.render();
 
@@ -43,6 +42,7 @@ export async function toggleCheck(lc, si) {
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
+        ai_analysis: q.ai_analysis || '',
         solved_at: q.solved_at || null,
         srs_interval_index: q.srs_interval_index || 0,
         srs_last_reviewed_at: q.srs_last_reviewed_at || null
@@ -57,7 +57,7 @@ export async function toggleCheck(lc, si) {
     q.is_done = !newDone;
     chk.classList.toggle('checked', !newDone);
     document.getElementById(`row-${lc}`).classList.toggle('done-row', !newDone);
-    updateSectionMeta(si); updateStats(); applyFilters();
+    updateStats(); applyFilters({ preserveOpen: true });
   }
 }
 
@@ -87,6 +87,7 @@ export async function persistSolution(lc, value) {
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
+        ai_analysis: q.ai_analysis || '',
         solved_at: q.solved_at || null,
         srs_interval_index: q.srs_interval_index || 0,
         srs_last_reviewed_at: q.srs_last_reviewed_at || null
@@ -126,6 +127,7 @@ export async function persistNotes(lc, value) {
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
+        ai_analysis: q.ai_analysis || '',
         solved_at: q.solved_at || null,
         srs_interval_index: q.srs_interval_index || 0,
         srs_last_reviewed_at: q.srs_last_reviewed_at || null
@@ -161,6 +163,7 @@ export async function toggleReview(lc, el) {
         needs_review: newReview,
         time_complexity: q.time_complexity || '',
         space_complexity: q.space_complexity || '',
+        ai_analysis: q.ai_analysis || '',
         solved_at: q.solved_at || null,
         srs_interval_index: q.srs_interval_index || 0,
         srs_last_reviewed_at: q.srs_last_reviewed_at || null
@@ -202,6 +205,7 @@ export async function saveComplexity(lc) {
         needs_review: q.needs_review || false,
         time_complexity: tVal,
         space_complexity: sVal,
+        ai_analysis: q.ai_analysis || '',
         solved_at: q.solved_at || null,
         srs_interval_index: q.srs_interval_index || 0,
         srs_last_reviewed_at: q.srs_last_reviewed_at || null

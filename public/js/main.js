@@ -12,7 +12,7 @@ import { boot, bootFresh, RefreshModal } from './data.js';
 import { toggleSection } from './render.js';
 import { setDiffFilter, setStatusFilter, applyFilters, pickRandom } from './filters.js';
 import { toggleCheck, debounceSave, debounceNotesSave, toggleReview, saveComplexity } from './progress.js';
-import { toggleTags, toggleSolution, toggleNotes } from './toggles.js';
+import { initToggles, toggleTags, toggleSolution, toggleNotes } from './toggles.js';
 import { AddQuestionModal } from './modal-add.js';
 import { SolutionModal } from './modal-solution.js';
 import { ReportModal } from './modal-report.js';
@@ -109,6 +109,7 @@ initStopwatch();
 initTimerNudge();
 initReveal();
 initMotivation();
+initToggles();
 DailyGoal.init();
 boot().then(() => {
   // SRS needs questions to be loaded first

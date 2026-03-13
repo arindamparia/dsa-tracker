@@ -4,6 +4,17 @@
  */
 
 /**
+ * Executes a callback with a smooth view transition if supported.
+ */
+export function smoothTransition(cb) {
+  if (document.startViewTransition) {
+    document.startViewTransition(cb);
+  } else {
+    cb();
+  }
+}
+
+/**
  * Groups a flat question array into sections sorted by section_order.
  * @param {Array} questions
  * @returns {Array<{section, section_order, questions}>}

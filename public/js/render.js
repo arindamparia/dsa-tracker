@@ -1,6 +1,6 @@
 /** DOM construction — sections, rows, section dropdown. */
 import { state } from './state.js';
-import { groupBySections } from './utils.js';
+import { groupBySections, smoothTransition } from './utils.js';
 import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
 
@@ -46,8 +46,10 @@ export function render() {
       </div>`;
     container.appendChild(el);
 
+    container.appendChild(el);
+
     const tbody = document.getElementById(`tbody-${si}`);
-    sec.questions.forEach(q => tbody.appendChild(buildRow(q, si)));
+    tbody.dataset.loaded = 'false';
   });
 
   updateStats();
@@ -95,7 +97,7 @@ export function buildRow(q, si) {
           data-lc="${q.lc_number}"
           oninput="debounceSave(${q.lc_number}, this)"
         >${solRaw}</textarea>
-        ${q.ai_analysis ? `
+        ${(q.ai_analysis && q.ai_analysis.trim() !== '') ? `
         <div class="ai-fb-container" id="ai-fb-container-${q.lc_number}">
           <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${q.lc_number})">
             <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
@@ -130,15 +132,70 @@ export function buildRow(q, si) {
 }
 
 export function toggleSection(si) {
-  const clicked = document.getElementById(`sec-${si}`);
-  const isNowCollapsed = clicked.classList.contains('collapsed');
+  smoothTransition(() => {
+    const clicked = document.getElementById(`sec-${si}`);
+    const isNowCollapsed = clicked.classList.contains('collapsed');
 
-  // Close all sections first (accordion behaviour)
-  document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
+    // Close all sections first (accordion behaviour)
+    document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
 
-  // If it was collapsed, open it; if it was already open, leave it closed
-  if (isNowCollapsed) clicked.classList.remove('collapsed');
+    // If it was collapsed, open it; if it was already open, leave it closed
+    if (isNowCollapsed) {
+      clicked.classList.remove('collapsed');
+      renderSection(si);
+    }
+  });
 }
+
+export function renderSection(si, sync = false) {
+  const tbody = document.getElementById(`tbody-${si}`);
+  if (!tbody || tbody.dataset.loaded !== 'false') return;
+  
+  tbody.dataset.loaded = 'loading';
+
+  if (sync) {
+     doRender(si, tbody);
+     return;
+  }
+
+  // Show skeleton
+  tbody.innerHTML = Array(3).fill(`
+    <tr class="skeleton-row">
+      <td class="check-cell"><div class="skeleton-box skeleton-check"></div></td>
+      <td class="prob-name">
+        <div class="skeleton-box skeleton-text"></div>
+        <div class="skeleton-box skeleton-text-sub"></div>
+      </td>
+      <td class="diff-cell"><div class="skeleton-box skeleton-badge"></div></td>
+      <td class="sol-cell"><div class="skeleton-box skeleton-textarea"></div></td>
+      <td class="notes-cell"><div class="skeleton-box skeleton-textarea"></div></td>
+      <td class="spacer-cell"></td>
+    </tr>
+  `).join('');
+
+  // Let browser paint skeleton, then render actual rows
+  setTimeout(() => {
+    doRender(si, tbody);
+  }, 40);
+}
+
+function doRender(si, tbody) {
+  const sections = groupBySections(state.questions);
+  const sec = sections[si];
+  if (!sec) return;
+  
+  const frag = document.createDocumentFragment();
+  sec.questions.forEach(q => frag.appendChild(buildRow(q, si)));
+  
+  tbody.innerHTML = '';
+  tbody.appendChild(frag);
+  tbody.dataset.loaded = 'true';
+  applyFilters({ preserveOpen: true });
+}
+
+document.addEventListener('force-render-section', (e) => {
+  renderSection(e.detail, true);
+});
 
 /**
  * Populates the "Section" dropdown in the Add Question modal.

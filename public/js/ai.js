@@ -141,15 +141,24 @@ export const AI = {
     if (tVal || sVal || analysis.feedback) {
       const q = state.questions.find(x => x.lc_number === lc);
       if (q) {
-        q.time_complexity = tVal;
-        q.space_complexity = sVal;
-        q.ai_analysis = analysis.feedback;
-        saveComplexity(lc);
-      }
-    }
+        let changed = false;
+        if ((q.time_complexity || '') !== tVal) changed = true;
+        if ((q.space_complexity || '') !== sVal) changed = true;
+        
+        const oldReview = (q.ai_analysis || '').trim();
+        const newReview = (analysis.feedback || '').trim();
+        if (oldReview !== newReview) changed = true;
 
-    if (window.showToast) {
-       window.showToast(`🤖 Analysis complete! Time: ${tVal}, Space: ${sVal}`, 'success');
+        if (changed) {
+          q.time_complexity = tVal;
+          q.space_complexity = sVal;
+          q.ai_analysis = analysis.feedback;
+          saveComplexity(lc);
+        } else if (window.showToast) {
+          // If nothing changed in DB but we still want to confirm it finished thinking:
+          window.showToast(`🤖 Analysis complete! No new changes to save.`, 'info');
+        }
+      }
     }
 
     // Display feedback in an expandable section below the code box

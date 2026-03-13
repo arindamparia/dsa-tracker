@@ -31,8 +31,8 @@ exports.handler = async (event, context) => {
         {
           role: 'system',
           content: `You are an expert algorithm analyzer. Analyze the provided code for the problem: "${title}". Respond strictly in JSON format with exactly these three keys:
-1. "time_complexity": The Big O time complexity (e.g. "O(N)", "O(N log N)", "O(1)").
-2. "space_complexity": The Big O space complexity (e.g. "O(N)", "O(1)").
+1. "time_complexity": The Big O time complexity. MUST be exactly one of: ["O(1)", "O(log n)", "O(log(m+n))", "O(n)", "O(n log n)", "O(n+m)", "O(V+E)", "O(n²)", "O(n³)", "O(2^n)", "O(n!)"].
+2. "space_complexity": The Big O space complexity. MUST be exactly one of: ["O(1)", "O(log n)", "O(log(m+n))", "O(n)", "O(n log n)", "O(n+m)", "O(V+E)", "O(n²)", "O(n³)", "O(2^n)", "O(n!)"].
 3. "feedback": A very concise 1-3 sentence review of the approach, or any edge cases missed.`
         },
         { role: 'user', content: code }
