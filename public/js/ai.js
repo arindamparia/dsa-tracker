@@ -1,6 +1,66 @@
 import { state } from './state.js';
 import { saveComplexity } from './progress.js';
 
+/**
+ * Normalizes AI-returned complexity strings to exactly match our accepted option values:
+ * 'O(1)', 'O(log n)', 'O(log(m+n))', 'O(n)', 'O(n log n)',
+ * 'O(n+m)', 'O(V+E)', 'O(n²)', 'O(n³)', 'O(2^n)', 'O(n!)'
+ */
+export function normalizeComplexity(raw) {
+  if (!raw) return '';
+  let s = raw.trim();
+
+  // Strip markdown bold/italic and backticks, lowercase for matching
+  s = s.replace(/[*_`]/g, '').trim();
+
+  // Map common textual variants to canonical form
+  const aliases = [
+    // O(1)
+    [/^O\s*\(\s*1\s*\)$/i, 'O(1)'],
+    // O(log n)
+    [/^O\s*\(\s*log\s*2?\s*n\s*\)$/i, 'O(log n)'],
+    [/^O\s*\(\s*log\s*n\s*\)$/i, 'O(log n)'],
+    // O(log(m+n))
+    [/^O\s*\(\s*log\s*\(?\s*m\s*\+\s*n\s*\)?\s*\)$/i, 'O(log(m+n))'],
+    // O(n)
+    [/^O\s*\(\s*n\s*\)$/i, 'O(n)'],
+    // O(n log n)
+    [/^O\s*\(\s*n\s*log\s*2?\s*n\s*\)$/i, 'O(n log n)'],
+    [/^O\s*\(\s*n\s*\*\s*log\s*n\s*\)$/i, 'O(n log n)'],
+    [/^O\s*\(\s*nlogn\s*\)$/i, 'O(n log n)'],
+    // O(n+m)
+    [/^O\s*\(\s*n\s*\+\s*m\s*\)$/i, 'O(n+m)'],
+    [/^O\s*\(\s*m\s*\+\s*n\s*\)$/i, 'O(n+m)'],
+    // O(V+E)
+    [/^O\s*\(\s*V\s*\+\s*E\s*\)$/i, 'O(V+E)'],
+    // O(n²)  ← accepts n^2, n**2, n*n, n2, n²
+    [/^O\s*\(\s*n\s*[\^\*]{1,2}\s*2\s*\)$/i, 'O(n²)'],
+    [/^O\s*\(\s*n\s*\*\s*n\s*\)$/i, 'O(n²)'],
+    [/^O\s*\(\s*n\s*2\s*\)$/i, 'O(n²)'],
+    [/^O\s*\(\s*n²\s*\)$/i, 'O(n²)'],
+    // O(n³)
+    [/^O\s*\(\s*n\s*[\^\*]{1,2}\s*3\s*\)$/i, 'O(n³)'],
+    [/^O\s*\(\s*n³\s*\)$/i, 'O(n³)'],
+    // O(2^n)
+    [/^O\s*\(\s*2\s*\^\s*n\s*\)$/i, 'O(2^n)'],
+    [/^O\s*\(\s*2\s*\*\*\s*n\s*\)$/i, 'O(2^n)'],
+    // O(n!)
+    [/^O\s*\(\s*n\s*!\s*\)$/i, 'O(n!)'],
+  ];
+
+  for (const [pattern, canonical] of aliases) {
+    if (pattern.test(s)) return canonical;
+  }
+
+  // If it already exactly matches one of our options, return as-is
+  const accepted = ['O(1)', 'O(log n)', 'O(log(m+n))', 'O(n)', 'O(n log n)',
+                    'O(n+m)', 'O(V+E)', 'O(n²)', 'O(n³)', 'O(2^n)', 'O(n!)'];
+  if (accepted.includes(s)) return s;
+
+  // Unknown — return empty so select falls back to O(?)
+  return '';
+}
+
 export const AI = {
   async fetchAI(action, lc_number, code = '') {
     const q = state.questions.find(x => String(x.lc_number) === String(lc_number));
@@ -105,6 +165,10 @@ export const AI = {
 
     if (!analysis) return;
 
+    // Normalize AI complexity output to our accepted option values before applying
+    const timeNorm  = normalizeComplexity(analysis.time_complexity);
+    const spaceNorm = normalizeComplexity(analysis.space_complexity);
+
     // Update UI selects safely by dispatching change logic or directly updating DOM + DB
     const timeSelect = document.querySelector(`select.complexity-select[data-lc="${lc}"][data-type="time"]`);
     const spaceSelect = document.querySelector(`select.complexity-select[data-lc="${lc}"][data-type="space"]`);
@@ -112,28 +176,12 @@ export const AI = {
     let tVal = '', sVal = '';
 
     if (timeSelect) {
-      timeSelect.value = analysis.time_complexity;
-      // If the model gave a wildly different string not in our exact options, it'll fallback to "", but 4o-mini is smart enough.
-      // E.g. we can force fallback by injecting it if missing
-      if (!timeSelect.value && analysis.time_complexity) {
-         const opt = document.createElement('option');
-         opt.value = analysis.time_complexity;
-         opt.textContent = analysis.time_complexity;
-         timeSelect.appendChild(opt);
-         timeSelect.value = analysis.time_complexity;
-      }
+      timeSelect.value = timeNorm;
       tVal = timeSelect.value;
     }
 
     if (spaceSelect) {
-      spaceSelect.value = analysis.space_complexity;
-      if (!spaceSelect.value && analysis.space_complexity) {
-         const opt = document.createElement('option');
-         opt.value = analysis.space_complexity;
-         opt.textContent = analysis.space_complexity;
-         spaceSelect.appendChild(opt);
-         spaceSelect.value = analysis.space_complexity;
-      }
+      spaceSelect.value = spaceNorm;
       sVal = spaceSelect.value;
     }
 
@@ -211,3 +259,7 @@ export const AI = {
 };
 
 window.AI = AI;
+
+
+
+

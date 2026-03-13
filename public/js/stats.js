@@ -33,6 +33,29 @@ export function updateStats() {
     if ((q.solution || q.notes || '').trim()) notes++;
   });
 
+  // Compute streak from doneDates
+  let currentStreak = 0;
+  const msPerDay = 86400000;
+  let checkDate = new Date(now);
+  checkDate.setHours(0, 0, 0, 0);
+  // If nothing done today, still check from yesterday so streak isn't broken mid-day
+  while (true) {
+    const ds = checkDate.toLocaleDateString();
+    if (doneDates.has(ds)) {
+      currentStreak++;
+      checkDate = new Date(checkDate.getTime() - msPerDay);
+    } else if (ds === todayStr) {
+      // today not done yet — still keep existing streak from yesterday
+      checkDate = new Date(checkDate.getTime() - msPerDay);
+    } else {
+      break;
+    }
+  }
+
+  // Resolve DOM elements
+  const todayEl  = document.getElementById('hdr-today');
+  const streakEl = document.getElementById('hdr-streak');
+
   smoothTransition(() => {
     document.getElementById('hdr-total').textContent    = total;
     document.getElementById('stat-done').textContent    = done;
@@ -48,20 +71,16 @@ export function updateStats() {
 
     if (todayEl) {
       todayEl.textContent = todayDone;
-      const todayFill = document.getElementById('today-fill');
-      
       if (todayDone === 0) {
         todayEl.classList.remove('today-active');
-        if(todayFill) todayFill.style.width = '0%';
       } else {
         todayEl.classList.add('today-active');
-        if(todayFill) todayFill.style.width = Math.min((todayDone / 5) * 100, 100) + '%';
       }
       DailyGoal.update(todayDone);
     }
 
     if (streakEl) {
-      streakEl.textContent = currentStreak;
+      streakEl.textContent = currentStreak > 0 ? `${currentStreak} Days` : '0 Days';
       if (currentStreak > 0) {
         streakEl.classList.add('streak-active');
       } else {
