@@ -9,7 +9,7 @@
  *  4. Kick off the boot sequence
  */
 import { boot, bootFresh, RefreshModal } from './data.js';
-import { toggleSection } from './render.js';
+import { toggleSection, preloadSection } from './render.js';
 import { setDiffFilter, setStatusFilter, applyFilters, pickRandom } from './filters.js';
 import { toggleCheck, debounceSave, debounceNotesSave, toggleReview, saveComplexity } from './progress.js';
 import { initToggles, toggleTags, toggleSolution, toggleNotes } from './toggles.js';
@@ -37,7 +37,8 @@ window.bootFresh    = bootFresh;
 window.RefreshModal = RefreshModal;
 
 // Render
-window.toggleSection = toggleSection;
+window.toggleSection  = toggleSection;
+window.preloadSection = preloadSection;
 
 // Filters & Actions
 window.setDiffFilter   = setDiffFilter;

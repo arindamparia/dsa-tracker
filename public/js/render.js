@@ -19,7 +19,7 @@ export function render() {
 
     el.innerHTML = `
       <div class="section-sticky">
-        <div class="section-header" onclick="toggleSection(${si})">
+        <div class="section-header" onclick="toggleSection(${si})" onmouseenter="preloadSection(${si})">
           <span class="section-num">${String(si + 1).padStart(2, '0')}</span>
           <span class="section-title">${sec.section}</span>
           <div class="section-meta">
@@ -145,6 +145,15 @@ export function toggleSection(si) {
       renderSection(si);
     }
   });
+}
+
+export function preloadSection(si) {
+  const tbody = document.getElementById(`tbody-${si}`);
+  if (!tbody || tbody.dataset.loaded !== 'false') return;
+  
+  tbody.dataset.loaded = 'loading';
+  // Yield to main thread to keep hover ultra-smooth, then build DOM quietly
+  setTimeout(() => { doRender(si, tbody); }, 10);
 }
 
 export function renderSection(si, sync = false) {

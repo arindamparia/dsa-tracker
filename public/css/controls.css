@@ -5,6 +5,8 @@
   background: rgba(10,10,15,0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
   padding: 12px 0 14px;
   margin: 0 -24px;
   padding-left: 24px; padding-right: 24px;
@@ -101,6 +103,8 @@
   background: rgba(12, 12, 22, 0.90);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  transform: translateZ(0);
+  will-change: transform, backdrop-filter;
   border: 1px solid rgba(124,106,247,0.4);
   border-radius: 18px;
   padding: 14px 22px;
