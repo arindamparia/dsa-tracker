@@ -43,9 +43,18 @@ export function normalizeComplexity(raw) {
     [/^O\s*\(\s*n³\s*\)$/i, 'O(n³)'],
     // O(2^n)
     [/^O\s*\(\s*2\s*\^\s*n\s*\)$/i, 'O(2^n)'],
-    [/^O\s*\(\s*2\s*\*\*\s*n\s*\)$/i, 'O(2^n)'],
-    // O(n!)
     [/^O\s*\(\s*n\s*!\s*\)$/i, 'O(n!)'],
+    // O(n^n)
+    [/^O\s*\(\s*n\s*\^\s*n\s*\)$/i, 'O(n^n)'],
+    // O(sqrt(n))
+    [/^O\s*\(\s*sqrt\s*\(?\s*n\s*\)?\s*\)$/i, 'O(sqrt(n))'],
+    // O(2^n * n^2) (e.g. TSP DP)
+    [/^O\s*\(\s*2\s*\^\s*n\s*\*?\s*n\s*\^\s*2\s*\)$/i, 'O(2^n * n²)'],
+    // O(n * log(m))
+    [/^O\s*\(\s*n\s*\*?\s*log\s*\(?\s*m\s*\)?\s*\)$/i, 'O(n log m)'],
+    // O(m * n)
+    [/^O\s*\(\s*m\s*\*?\s*n\s*\)$/i, 'O(m * n)'],
+    [/^O\s*\(\s*n\s*\*?\s*m\s*\)$/i, 'O(m * n)'],
   ];
 
   for (const [pattern, canonical] of aliases) {
@@ -53,12 +62,18 @@ export function normalizeComplexity(raw) {
   }
 
   // If it already exactly matches one of our options, return as-is
-  const accepted = ['O(1)', 'O(log n)', 'O(log(m+n))', 'O(n)', 'O(n log n)',
-                    'O(n+m)', 'O(V+E)', 'O(n²)', 'O(n³)', 'O(2^n)', 'O(n!)'];
+  const accepted = [
+    'O(1)', 'O(log n)', 'O(sqrt(n))', 'O(log(m+n))', 'O(n)', 
+    'O(n log n)', 'O(n log m)', 'O(n+m)', 'O(m * n)', 'O(V+E)', 
+    'O(n²)', 'O(n³)', 'O(2^n)', 'O(2^n * n²)', 'O(n!)', 'O(n^n)'
+  ];
   if (accepted.includes(s)) return s;
 
-  // Unknown — return empty so select falls back to O(?)
-  return '';
+  // New behaviour: If AI generated a highly custom complexity, preserve it but clean it
+  let custom = raw.trim().replace(/[*_`]/g, '').toUpperCase();
+  // Ensure it starts with O(...) if missing
+  if (!custom.startsWith('O(')) custom = `O(${custom})`;
+  return custom;
 }
 
 export const AI = {
@@ -175,18 +190,31 @@ export const AI = {
 
     let tVal = '', sVal = '';
 
-    if (timeSelect) {
+    if (timeSelect && timeNorm !== undefined) {
+      // If we got a custom complexity not present in the native HTML dropdown, we must append it first
+      if (timeNorm && !Array.from(timeSelect.options).some(o => o.value === timeNorm)) {
+        timeSelect.appendChild(new Option(timeNorm, timeNorm));
+      }
       timeSelect.value = timeNorm;
       tVal = timeSelect.value;
     }
 
-    if (spaceSelect) {
+    if (spaceSelect && spaceNorm !== undefined) {
+      if (spaceNorm && !Array.from(spaceSelect.options).some(o => o.value === spaceNorm)) {
+        spaceSelect.appendChild(new Option(spaceNorm, spaceNorm));
+      }
       spaceSelect.value = spaceNorm;
       sVal = spaceSelect.value;
     }
 
+    // Stringify the payload objects so they can be saved safely into MongoDB/Postgres as Text
+    const richPayload = JSON.stringify({
+      approach: analysis.approach,
+      efficiency: analysis.efficiency
+    });
+
     // Call the existing complexity save logic or just hit the API ourselves:
-    if (tVal || sVal || analysis.feedback) {
+    if (tVal || sVal || (analysis.approach && analysis.efficiency)) {
       const q = state.questions.find(x => x.lc_number === lc);
       if (q) {
         let changed = false;
@@ -194,27 +222,36 @@ export const AI = {
         if ((q.space_complexity || '') !== sVal) changed = true;
         
         const oldReview = (q.ai_analysis || '').trim();
-        const newReview = (analysis.feedback || '').trim();
+        const newReview = richPayload.trim();
         if (oldReview !== newReview) changed = true;
 
         if (changed) {
           q.time_complexity = tVal;
           q.space_complexity = sVal;
-          q.ai_analysis = analysis.feedback;
+          q.ai_analysis = newReview;
           saveComplexity(lc);
         } else if (window.showToast) {
-          // If nothing changed in DB but we still want to confirm it finished thinking:
-          window.showToast(`🤖 Analysis complete! No new changes to save.`, 'info');
+           window.showToast(`🤖 Analysis complete! No new changes to save.`, 'info');
         }
       }
     }
 
     // Display feedback in an expandable section below the code box
-    AI.renderFeedback(lc, analysis.feedback);
+    AI.renderFeedback(lc, richPayload);
   },
 
-  renderFeedback(lc, feedbackText) {
-    if (!feedbackText) return;
+  renderFeedback(lc, feedbackPayload) {
+    if (!feedbackPayload) return;
+    
+    // Attempt parsing structured AI JSON. Fallback to basic string text if legacy.
+    let data = null;
+    let isRich = false;
+    try {
+      data = JSON.parse(feedbackPayload);
+      if (data && data.approach && data.efficiency) isRich = true;
+    } catch {
+      // Legacy text fallback
+    }
     
     const solWrap = document.querySelector(`#row-${lc} .sol-cell-wrap`);
     if (solWrap) {
@@ -234,7 +271,35 @@ export const AI = {
        }
        const contentDiv = document.getElementById(`ai-fb-content-${lc}`);
        if (contentDiv) {
-         contentDiv.innerHTML = `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${feedbackText}</div>`;
+         if (isRich) {
+           contentDiv.innerHTML = `
+             <div class="ai-rich-fb">
+               <div class="ai-rich-section approach-section">
+                 <div class="ai-rich-title">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/></svg>
+                   Approach
+                 </div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Current:</span> <span class="ai-rich-val">${data.approach.current}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Suggested:</span> <span class="ai-rich-val suggested">${data.approach.suggested}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Key Idea:</span> <span class="ai-rich-val">${data.approach.key_idea}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Consider:</span> <span class="ai-rich-val consideration">${data.approach.consider}</span></div>
+               </div>
+               
+               <div class="ai-rich-section efficiency-section">
+                 <div class="ai-rich-title">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
+                   Efficiency
+                 </div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Current complexity:</span> <span class="ai-rich-complexity">${data.efficiency.current_complexity}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Suggested complexity:</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_complexity}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Suggestions:</span> <span class="ai-rich-val bold-val">${data.efficiency.suggestions}</span></div>
+               </div>
+             </div>
+           `;
+         } else {
+           contentDiv.innerHTML = `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${feedbackPayload}</div>`;
+         }
+         
          // Auto-expand if we just generated it
          contentDiv.style.display = 'block';
          const toggleBtn = document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`);

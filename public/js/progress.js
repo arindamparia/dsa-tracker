@@ -68,7 +68,20 @@ export async function toggleCheck(lc, si) {
 // ── Solution ──────────────────────────────────────────────────────
 
 export function debounceSave(lc, el) {
-  el.classList.toggle('has-content', el.value.length > 0);
+  const code = el.value.trim();
+  el.classList.toggle('has-content', code.length > 0);
+  
+  if (code.length > 0) {
+    const codeHeuristicBase = /[{}[\]();=><+\-*/]/;
+    const codeKeywords = /\b(class|public|private|def|return|int|std|vector|string|void|if|for|while|const|let|var|function)\b/;
+    if (!(codeHeuristicBase.test(code) && codeKeywords.test(code))) {
+      // Show an error and prevent saving, keeping the local value stranded until fixed
+      showToast('⚠ Cannot save: Text does not look like valid code.', 'error');
+      clearTimeout(state.saveTimers[lc]);
+      return;
+    }
+  }
+
   const q = state.questions.find(x => x.lc_number === lc);
   if (q) q.solution = el.value;
   clearTimeout(state.saveTimers[lc]);

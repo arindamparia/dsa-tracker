@@ -107,63 +107,84 @@ export function pickRandom() {
   document.querySelector('[data-group="diff"][data-filter="all"]')?.classList.add('active');
   document.querySelector('[data-group="status"][data-filter="all"]')?.classList.add('active');
 
-  // applyFilters collapses all (no filter active) — then immediately open target section
+  // Apply filters collapses all (no filter active) — then immediately open target section
   smoothTransition(() => {
     applyFilters();
     if (si !== -1) {
       const secEl = document.getElementById(`sec-${si}`);
-      if (secEl) secEl.classList.remove('collapsed');
+      if (secEl) {
+        secEl.classList.remove('collapsed');
+        // Force rendering of the table contents immediately because `applyFilters` wouldn't have flagged it 
+        // to render if search query is empty
+        const tbody = document.getElementById(`tbody-${si}`);
+        if (tbody && tbody.dataset.loaded === 'false') {
+          document.dispatchEvent(new CustomEvent('force-render-section', { detail: si }));
+        }
+      }
     }
   });
 
-  // Wait for section open animation (380ms), then scroll + show pointer
-  const tr = document.getElementById(`row-${choice.lc_number}`);
-  if (tr) {
-    tr.style.backgroundColor = 'rgba(124,106,247,0.2)';
+  // Since we dispatched the render event above, the DOM might not have the <tr> yet synchronously.
+  // Wait for the next paint frame, then queue the scroll animation.
+  setTimeout(() => {
+    const tr = document.getElementById(`row-${choice.lc_number}`);
+    if (tr) {
+      tr.style.backgroundColor = 'rgba(124,106,247,0.2)';
 
-    setTimeout(() => {
-      // Scroll instantly so getBoundingClientRect() gives the final settled position
-      tr.scrollIntoView({ behavior: 'instant', block: 'center' });
+      // Wait a bit for the accordion animation to unfold before scrolling down to it
+      setTimeout(() => {
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        const pointer = document.createElement('div');
+        pointer.id = 'random-pointer';
+        document.getElementById('random-pointer')?.remove();
 
-      // Read rect immediately after instant scroll — position is accurate
-      const rect = tr.getBoundingClientRect();
-      const pointer = document.createElement('div');
-      pointer.id = 'random-pointer';
+        pointer.style.cssText = `
+          position: fixed;
+          left: 14px;
+          transform: translateY(-50%) scale(0.85);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(12,12,22,0.92);
+          border: 1px solid rgba(124,106,247,0.5);
+          border-radius: 10px;
+          padding: 6px 12px 6px 8px;
+          font-family: 'Syne', sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          color: rgba(200,180,255,0.95);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(124,106,247,0.3);
+          pointer-events: none;
+          z-index: 999999;
+          white-space: nowrap;
+          animation: fadeInOut 6s ease forwards;
+        `;
+        pointer.innerHTML = `
+          <span style="font-size:18px;animation:bouncePoint 0.55s ease-in-out infinite;">👉</span>
+          <span>Solve this!</span>
+        `;
+        
+        document.body.appendChild(pointer);
+        
+        // Track the element physically by checking coordinates every frame while it animates
+        let tracking = true;
+        function updatePointerPosition() {
+          if (!tracking) return;
+          const rect = tr.getBoundingClientRect();
+          pointer.style.top = (rect.top + rect.height / 2) + 'px';
+          requestAnimationFrame(updatePointerPosition);
+        }
+        requestAnimationFrame(updatePointerPosition);
+        
+        setTimeout(() => {
+          tracking = false;
+          pointer.remove();
+        }, 6000);
+      }, 300);
 
-      // Remove any previous pointer
-      document.getElementById('random-pointer')?.remove();
-
-      pointer.style.cssText = `
-        position: fixed;
-        left: 8px;
-        top: ${rect.top + rect.height / 2}px;
-        transform: translateY(-50%) scale(0.85);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(12,12,22,0.92);
-        border: 1px solid rgba(124,106,247,0.5);
-        border-radius: 10px;
-        padding: 6px 12px 6px 8px;
-        font-family: 'Syne', sans-serif;
-        font-size: 13px;
-        font-weight: 700;
-        color: rgba(200,180,255,0.95);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(124,106,247,0.3);
-        pointer-events: none;
-        z-index: 9999;
-        white-space: nowrap;
-        animation: fadeInOut 3.5s ease forwards;
-      `;
-      pointer.innerHTML = `
-        <span style="font-size:18px;animation:bouncePoint 0.55s ease-in-out infinite;">👉</span>
-        <span>Solve this!</span>
-      `;
-      document.body.appendChild(pointer);
-      setTimeout(() => pointer.remove(), 3500);
-    }, 420);
-
-    setTimeout(() => tr.style.backgroundColor = '', 3500);
-  }
+      setTimeout(() => tr.style.backgroundColor = '', 7000);
+    }
+  }, 50);
 }
 

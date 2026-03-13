@@ -30,10 +30,22 @@ exports.handler = async (event, context) => {
       messages = [
         {
           role: 'system',
-          content: `You are an expert algorithm analyzer. Analyze the provided code for the problem: "${title}". Respond strictly in JSON format with exactly these three keys:
-1. "time_complexity": The Big O time complexity. MUST be exactly one of: ["O(1)", "O(log n)", "O(log(m+n))", "O(n)", "O(n log n)", "O(n+m)", "O(V+E)", "O(n²)", "O(n³)", "O(2^n)", "O(n!)"].
-2. "space_complexity": The Big O space complexity. MUST be exactly one of: ["O(1)", "O(log n)", "O(log(m+n))", "O(n)", "O(n log n)", "O(n+m)", "O(V+E)", "O(n²)", "O(n³)", "O(2^n)", "O(n!)"].
-3. "feedback": A very concise 1-3 sentence review of the approach, or any edge cases missed.`
+          content: `You are an expert algorithm analyzer. Analyze the provided code for the problem: "${title}". Respond strictly in JSON format with exactly this structure:
+{
+  "time_complexity": "The Big O time complexity. Prefer using one of these standard formats if applicable: ['O(1)', 'O(log n)', 'O(sqrt(n))', 'O(log(m+n))', 'O(n)', 'O(n log n)', 'O(n log m)', 'O(n+m)', 'O(m * n)', 'O(V+E)', 'O(n²)', 'O(n³)', 'O(2^n)', 'O(2^n * n²)', 'O(n!)', 'O(n^n)']. If the true complexity is strictly more accurate as something else (e.g. O(N * K)), use your custom format.",
+  "space_complexity": "The Big O space complexity. Prefer using the standard formats listed above if applicable.",
+  "approach": {
+    "current": "The underlying algorithms used (e.g. 'Hash Table / Array')",
+    "suggested": "The absolute most optimal algorithmic patterns (e.g. 'Hash Table / Sorting / String Matching')",
+    "key_idea": "A 1 sentence explanation of the optimal core mechanism.",
+    "consider": "A strict 1 sentence question pushing the candidate to think about an edge case or constraint."
+  },
+  "efficiency": {
+    "current_complexity": "The parsed time complexity of their code.",
+    "suggested_complexity": "The theoretical best possible time complexity.",
+    "suggestions": "A 1-2 sentence verdict on their efficiency, e.g. 'Your frequency array approach is actually optimal here, beating the sorting method!'"
+  }
+}`
         },
         { role: 'user', content: code }
       ];

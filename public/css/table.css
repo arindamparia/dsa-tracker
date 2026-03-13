@@ -327,3 +327,85 @@ tr.filtered-out { display: none; }
 .skeleton-text-sub { width: 30%; height: 14px; }
 .skeleton-badge    { width: 60px; height: 20px; border-radius: 12px; }
 .skeleton-textarea { width: 100%; height: 60px; border-radius: 8px; }
+
+/* ── RICH AI FEEDBACK RE-SKIN ── */
+.ai-rich-fb {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 10px;
+  animation: fadeInDown 0.3s ease;
+  font-family: 'Syne', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.ai-rich-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.approach-section .ai-rich-title {
+  color: #a87ffb; /* Leetcode approach purple */
+}
+.efficiency-section .ai-rich-title {
+  color: #7c6af7; /* Leetcode efficiency indigo/blue */
+}
+
+.ai-rich-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ai-rich-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ai-rich-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ai-rich-key {
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+.ai-rich-val {
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+}
+.ai-rich-val.suggested {
+  color: #06d6a0; /* Leetcode suggested green */
+}
+.ai-rich-val.consideration {
+  font-style: italic;
+  color: var(--text-dim);
+}
+.ai-rich-val.bold-val {
+  font-weight: 600;
+}
+
+.ai-rich-complexity {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.ai-rich-complexity.optimal {
+  color: #06d6a0;
+  background: rgba(6, 214, 160, 0.1);
+}
