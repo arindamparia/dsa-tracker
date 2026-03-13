@@ -128,18 +128,24 @@ function createTray(lc, similar, loading = false) {
 
 export const SimilarProblems = {
   async toggle(lc) {
+    const btn = document.getElementById(`sim-btn-${lc}`);
+    if (btn) btn.disabled = true;
+
     const existing = document.getElementById(`similar-${lc}`);
     if (existing) { 
       existing.classList.remove('open');
-      setTimeout(() => existing.remove(), 300);
+      setTimeout(() => {
+        existing.remove();
+        if (btn) btn.disabled = false;
+      }, 300);
       return; 
     }
 
     const q = state.questions.find(x => x.lc_number === lc);
-    if (!q) return;
+    if (!q) { if (btn) btn.disabled = false; return; }
 
     const row = document.getElementById(`row-${lc}`);
-    if (!row) return;
+    if (!row) { if (btn) btn.disabled = false; return; }
 
     const candidates = heuristicSimilar(q, state.questions);
 
@@ -147,7 +153,10 @@ export const SimilarProblems = {
       // ≤3 results — show directly, no LLM needed
       const tray = createTray(lc, candidates);
       row.after(tray);
-      requestAnimationFrame(() => tray.classList.add('open'));
+      requestAnimationFrame(() => {
+        tray.classList.add('open');
+        if (btn) btn.disabled = false;
+      });
       return;
     }
 
@@ -168,7 +177,10 @@ export const SimilarProblems = {
       if (finalCandidates.length > 0) {
         const tray = createTray(lc, finalCandidates);
         row.after(tray);
-        requestAnimationFrame(() => tray.classList.add('open'));
+        requestAnimationFrame(() => {
+          tray.classList.add('open');
+          if (btn) btn.disabled = false;
+        });
         return;
       }
     }
@@ -181,7 +193,11 @@ export const SimilarProblems = {
     const llmPicks = await rankWithLLM(q, candidates);
 
     const finalCandidates = llmPicks ?? candidates.slice(0, 3);
-    loadingTray.remove();
+    
+    // Swap HTML immediately to avoid animation jitter and tray collapse
+    const resultTray = createTray(lc, finalCandidates);
+    loadingTray.innerHTML = resultTray.innerHTML;
+    if (btn) btn.disabled = false;
 
     if (llmPicks) {
       // Cache successful LLM results to DB in the QUESTIONS table
@@ -201,10 +217,6 @@ export const SimilarProblems = {
         console.error('Failed to save similar problems to DB:', err);
       }
     }
-
-    const tray = createTray(lc, finalCandidates);
-    row.after(tray);
-    requestAnimationFrame(() => tray.classList.add('open'));
   }
 };
 
