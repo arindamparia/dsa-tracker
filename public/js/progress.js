@@ -1,4 +1,3 @@
-/** Checkbox toggling and solution/notes persistence. */
 import { state } from './state.js';
 import { Cache } from './cache.js';
 import { showToast } from './toast.js';
@@ -6,6 +5,7 @@ import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
 import { FocusMode } from './focus-mode.js';
 import { SRS } from './spaced-repetition.js';
+import { HardCelebration } from './hard-celebration.js';
 
 export async function toggleCheck(lc, si) {
   const q = state.questions.find(x => x.lc_number === lc);
@@ -24,6 +24,10 @@ export async function toggleCheck(lc, si) {
   setTimeout(() => chk.classList.remove('saving'), 600);
   chk.classList.toggle('checked', newDone);
   document.getElementById(`row-${lc}`).classList.toggle('done-row', newDone);
+
+  if (newDone && q.difficulty === 'Hard') {
+    HardCelebration.fire(q.name); // Sets active flag so Daily Goal waits if it also triggers
+  }
 
   updateStats();
   applyFilters({ preserveOpen: true });

@@ -40,6 +40,14 @@ export function render() {
       <div class="section-body">
         <div class="section-body-inner">
           <table class="q-table">
+            <colgroup>
+              <col class="check-cell">
+              <col class="prob-name">
+              <col class="diff-cell">
+              <col class="sol-cell">
+              <col class="notes-cell">
+              <col class="spacer-cell">
+            </colgroup>
             <tbody id="tbody-${si}"></tbody>
           </table>
         </div>
@@ -145,6 +153,15 @@ export function toggleSection(si) {
       renderSection(si);
     }
   });
+
+  // Scroll into view if opened (accounting for sticky header ~80px)
+  if (isNowCollapsed) {
+    requestAnimationFrame(() => {
+      const clicked = document.getElementById(`sec-${si}`);
+      const y = clicked.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  }
 }
 
 export function preloadSection(si) {

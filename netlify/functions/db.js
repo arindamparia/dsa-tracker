@@ -33,10 +33,22 @@ export async function initSchema(sql) {
     )
   `;
   
-  // Safe migrations for newly added columns
-  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS needs_review BOOLEAN DEFAULT FALSE`;
-  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS time_complexity TEXT DEFAULT ''`;
-  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS space_complexity TEXT DEFAULT ''`;
-  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS srs_interval_index INTEGER DEFAULT 0`;
-  await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS srs_last_reviewed_at TIMESTAMPTZ DEFAULT NULL`;
+  try {
+    await sql`ALTER TABLE questions ADD COLUMN IF NOT EXISTS similar_problems INTEGER[] DEFAULT NULL`;
+  } catch (e) {
+    if (!e.message.includes('already exists')) {
+      console.error("Migration error (similar_problems):", e);
+    }
+  }
+
+  // Safe migrations for newly added progress columns
+  try {
+    await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS needs_review BOOLEAN DEFAULT FALSE`;
+    await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS time_complexity TEXT DEFAULT ''`;
+    await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS space_complexity TEXT DEFAULT ''`;
+    await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS srs_interval_index INTEGER DEFAULT 0`;
+    await sql`ALTER TABLE progress ADD COLUMN IF NOT EXISTS srs_last_reviewed_at TIMESTAMPTZ DEFAULT NULL`;
+  } catch (e) {
+    console.error("Migration error (progress):", e);
+  }
 }

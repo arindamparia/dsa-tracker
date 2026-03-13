@@ -11,13 +11,13 @@ export const handler = async (event) => {
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method not allowed" }) };
 
   try {
-    const { lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, ai_analysis, solved_at, srs_interval_index, srs_last_reviewed_at } = JSON.parse(event.body || "{}");
+    const { lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, ai_analysis, solved_at, srs_interval_index, srs_last_reviewed_at, similar_problems } = JSON.parse(event.body || "{}");
     if (!lc_number) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "lc_number required" }) };
 
     const sql = getDb();
     await sql`
-      INSERT INTO progress (lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, ai_analysis, updated_at, solved_at, srs_interval_index, srs_last_reviewed_at)
-      VALUES (${lc_number}, ${is_done ?? false}, ${solution ?? ""}, ${notes ?? ""}, ${needs_review ?? false}, ${time_complexity ?? ""}, ${space_complexity ?? ""}, ${ai_analysis ?? ""}, NOW(), ${solved_at || null}, ${srs_interval_index ?? 0}, ${srs_last_reviewed_at || null})
+      INSERT INTO progress (lc_number, is_done, solution, notes, needs_review, time_complexity, space_complexity, ai_analysis, updated_at, solved_at, srs_interval_index, srs_last_reviewed_at, similar_problems)
+      VALUES (${lc_number}, ${is_done ?? false}, ${solution ?? ""}, ${notes ?? ""}, ${needs_review ?? false}, ${time_complexity ?? ""}, ${space_complexity ?? ""}, ${ai_analysis ?? ""}, NOW(), ${solved_at || null}, ${srs_interval_index ?? 0}, ${srs_last_reviewed_at || null}, ${similar_problems || null})
       ON CONFLICT (lc_number) DO UPDATE SET
         is_done          = EXCLUDED.is_done,
         solution         = EXCLUDED.solution,
@@ -29,6 +29,7 @@ export const handler = async (event) => {
         solved_at        = EXCLUDED.solved_at,
         srs_interval_index = EXCLUDED.srs_interval_index,
         srs_last_reviewed_at = EXCLUDED.srs_last_reviewed_at,
+        similar_problems = EXCLUDED.similar_problems,
         updated_at       = NOW()
     `;
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true }) };

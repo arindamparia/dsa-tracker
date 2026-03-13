@@ -9,8 +9,9 @@ import { groupBySections } from './utils.js';
 import { toggleStopwatch, resetStopwatch, setStopwatchLock } from './stopwatch.js';
 
 let sessionSection     = null;
-let sessionStartTime = null;
-let sessionStartDone = 0;   // done count at session start for the chosen section
+let sessionStartTime   = null;
+let sessionStartDone   = 0;
+let sessionStartSnapshot = new Map(); // lc_number → is_done at session start
 
 function getSectionsWithCounts() {
   const grouped = groupBySections(state.questions);
@@ -121,6 +122,13 @@ export const FocusMode = {
     sessionStartTime = Date.now();
     sessionStartDone = getSectionDoneCount(sectionName);
 
+    // Snapshot all questions in this section so we know exactly which ones get solved
+    sessionStartSnapshot = new Map(
+      state.questions
+        .filter(q => (q.section || 'Other') === sectionName)
+        .map(q => [q.lc_number, q.is_done])
+    );
+
     // Update UI
     const topicLabel = document.getElementById('focus-topic-label');
     if (topicLabel) topicLabel.textContent = sectionName;
@@ -151,29 +159,68 @@ export const FocusMode = {
   end() {
     if (!sessionSection) return;
 
-    const duration   = Date.now() - sessionStartTime;
-    const currentDone = getSectionDoneCount(sessionSection);
-    const solved     = currentDone - sessionStartDone;
+    const duration = Date.now() - sessionStartTime;
+
+    // Compute exactly which problems were newly solved this session
+    const solvedProblems = state.questions.filter(q =>
+      (q.section || 'Other') === sessionSection &&
+      q.is_done &&
+      !sessionStartSnapshot.get(q.lc_number)
+    );
+
+    const easy   = solvedProblems.filter(q => q.difficulty === 'Easy').length;
+    const medium = solvedProblems.filter(q => q.difficulty === 'Medium').length;
+    const hard   = solvedProblems.filter(q => q.difficulty === 'Hard').length;
+    const total  = solvedProblems.length;
+
+    // Build solved list HTML
+    const listHTML = solvedProblems.length > 0 ? `
+      <div class="focus-solved-list">
+        <div class="focus-solved-list-title">Solved this session</div>
+        ${solvedProblems.map(q => `
+          <div class="focus-solved-item">
+            <span class="fsi-check">✓</span>
+            <span class="fsi-name">${q.name}</span>
+            <span class="fsi-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span>
+            ${q.difficulty === 'Hard' ? '<span class="fsi-sword">⚔️</span>' : ''}
+          </div>
+        `).join('')}
+      </div>` : '';
+
+    const msg = total > 0
+      ? 'Great work! Keep the momentum going 🚀'
+      : 'No problems solved this time — reviewing counts too! 📖';
 
     // Show summary
     const body = document.getElementById('focus-summary-body');
     if (body) {
       body.innerHTML = `
-        <div class="focus-summary-stats">
-          <div class="focus-summary-stat">
-            <div class="focus-summary-stat-value">${solved}</div>
-            <div class="focus-summary-stat-label">Problems Solved</div>
+        <div class="focus-summary-header">Session Complete</div>
+        <div class="focus-summary-section-name">${sessionSection}</div>
+
+        <div class="focus-summary-time">
+          <span class="focus-summary-time-icon">⏱</span>
+          <span class="focus-summary-time-val">${formatDuration(duration)}</span>
+        </div>
+
+        <div class="focus-diff-row">
+          <div class="focus-diff-card easy-card">
+            <div class="focus-diff-num">${easy}</div>
+            <div class="focus-diff-label">Easy</div>
           </div>
-          <div class="focus-summary-stat">
-            <div class="focus-summary-stat-value">${formatDuration(duration)}</div>
-            <div class="focus-summary-stat-label">Time Spent</div>
+          <div class="focus-diff-card medium-card">
+            <div class="focus-diff-num">${medium}</div>
+            <div class="focus-diff-label">Medium</div>
+          </div>
+          <div class="focus-diff-card hard-card">
+            <div class="focus-diff-num">${hard}</div>
+            <div class="focus-diff-label">Hard</div>
           </div>
         </div>
-        <div class="focus-summary-topic">Section: <strong>${sessionSection}</strong></div>
-        ${solved > 0
-          ? `<div class="focus-summary-msg">Great work! Keep the momentum going 🚀</div>`
-          : `<div class="focus-summary-msg">No problems solved this time — that's okay, review counts too! 📖</div>`
-        }`;
+
+        ${listHTML}
+        <div class="focus-summary-msg">${msg}</div>
+      `;
     }
     document.getElementById('focus-summary-modal').classList.add('open');
 
@@ -187,9 +234,10 @@ export const FocusMode = {
     setStopwatchLock(false);
     resetStopwatch();
 
-    sessionSection   = null;
-    sessionStartTime = null;
-    sessionStartDone = 0;
+    sessionSection       = null;
+    sessionStartTime     = null;
+    sessionStartDone     = 0;
+    sessionStartSnapshot = new Map();
   },
 
   closeSummary() {

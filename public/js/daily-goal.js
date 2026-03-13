@@ -211,9 +211,16 @@ export const DailyGoal = {
     // Crossing detection: previous count was below goal, current is at/above
     const justCrossed = this._lastNotifiedDone < goal && todayDone >= goal;
     if (goal > 0 && justCrossed) {
-      spawnConfetti();
-      showCenterCaption(extra);
-      showGoalBanner(extra);
+      const trigger = () => {
+        spawnConfetti();
+        showCenterCaption(extra);
+        showGoalBanner(extra);
+      };
+      if (window._isHardCelebrationActive) {
+        window._pendingDailyGoalCelebration = trigger;
+      } else {
+        trigger();
+      }
     }
 
     this._lastNotifiedDone = todayDone;
