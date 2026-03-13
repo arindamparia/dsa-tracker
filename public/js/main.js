@@ -17,7 +17,7 @@ import { AddQuestionModal } from './modal-add.js';
 import { SolutionModal } from './modal-solution.js';
 import { ReportModal } from './modal-report.js';
 import { Logout } from './modal-logout.js';
-import { confirmClear } from './reset.js';
+import { ResetModal } from './reset.js';
 import { showToast } from './toast.js';
 import { initStopwatch, PomodoroModal } from './stopwatch.js';
 import { initTimerNudge } from './timer-nudge.js';
@@ -59,7 +59,7 @@ window.toggleSolution = toggleSolution;
 window.toggleNotes    = toggleNotes;
 
 // Misc
-window.confirmClear = confirmClear;
+window.ResetModal   = ResetModal;
 window.showToast    = showToast;
 window.PomodoroModal = PomodoroModal;
 
@@ -96,6 +96,7 @@ document.addEventListener('keydown', e => {
     DailyGoal.closeEditor();
     FocusMode.closePicker();
     FocusMode.closeSummary();
+    ResetModal.close();
   }
 });
 

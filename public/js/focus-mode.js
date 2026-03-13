@@ -13,16 +13,23 @@ let sessionStartTime   = null;
 let sessionStartDone   = 0;
 let sessionStartSnapshot = new Map(); // lc_number → is_done at session start
 
+let sessionTarget      = 'unsolved'; // 'unsolved', 'solved', 'all'
+
 function getSectionsWithCounts() {
   const grouped = groupBySections(state.questions);
+  const targetSelect = document.getElementById('focus-type-select');
+  const target = targetSelect ? targetSelect.value : 'unsolved';
+  
   return grouped.map(g => {
     let total = 0;
-    let unsolved = 0;
+    let available = 0;
     for (const q of g.questions) {
       total++;
-      if (!q.is_done) unsolved++;
+      if (target === 'unsolved' && !q.is_done) available++;
+      if (target === 'solved' && q.is_done) available++;
+      if (target === 'all') available++;
     }
-    return { name: g.section, total, unsolved };
+    return { name: g.section, total, available, target };
   });
 }
 
@@ -36,43 +43,46 @@ function renderSectionList() {
   const sections = getSectionsWithCounts();
 
   el.innerHTML = sections.map(s => {
-    const disabled = s.unsolved === 0;
+    const disabled = s.available === 0;
+    const labelMapping = { 'unsolved': 'unsolved', 'solved': 'solved', 'all': 'total problems' };
+    
     return `
       <button class="focus-topic-item ${disabled ? 'disabled' : ''}"
         ${disabled ? 'disabled' : `onclick="FocusMode.start('${s.name.replace(/'/g, "\\'")}')" `}>
         <span class="focus-topic-name">${s.name}</span>
         <span class="focus-topic-meta">
-          <span class="focus-topic-unsolved">${s.unsolved} unsolved</span>
+          <span class="focus-topic-unsolved">${s.available} ${labelMapping[s.target]}</span>
           <span class="focus-topic-total">of ${s.total}</span>
         </span>
       </button>`;
   }).join('');
 }
 
-function applyFocusFilter(sectionName) {
+function applyFocusFilter(sectionName, target) {
   // Clear existing filters
   const searchEl = document.getElementById('search');
   if (searchEl) searchEl.value = '';
 
-  // Set search to the topic name so applyFilters shows matching rows
-  // Actually, let's use a custom class-based approach for precision
   document.body.classList.add('focus-active');
 
   // Expand all sections that have visible rows, collapse others
   document.querySelectorAll('.section').forEach(sec => {
-    // Only difference is we check the section title text against the chosen section
     const titleEl = sec.querySelector('.section-title');
     const secTitle = titleEl ? titleEl.textContent.trim().toLowerCase() : '';
     const match = secTitle === sectionName.toLowerCase();
     
     sec.classList.toggle('focus-section-hidden', !match);
-    sec.classList.toggle('collapsed', !match); // auto-expand the matching section
+    sec.classList.toggle('collapsed', !match);
     
-    // Within the visible section, filter rows so ONLY undone problems show
     if (match) {
       sec.querySelectorAll('.q-table tr').forEach(tr => {
         const isDone = tr.classList.contains('done-row');
-        tr.classList.toggle('focus-hidden', isDone);
+        
+        let hideRow = false;
+        if (target === 'unsolved' && isDone) hideRow = true;
+        if (target === 'solved' && !isDone) hideRow = true;
+        
+        tr.classList.toggle('focus-hidden', hideRow);
       });
     }
   });
@@ -98,12 +108,21 @@ function formatDuration(ms) {
 }
 
 export const FocusMode = {
+  refreshList() {
+    renderSectionList();
+  },
+
   openPicker() {
     if (sessionSection) {
       // Already in a session — ask if they want to end it
       this.end();
       return;
     }
+    
+    // Default dropdown back to unsolved
+    const sel = document.getElementById('focus-type-select');
+    if (sel) sel.value = 'unsolved';
+    
     renderSectionList();
     document.getElementById('focus-picker-modal').classList.add('open');
   },
@@ -121,6 +140,9 @@ export const FocusMode = {
     sessionSection   = sectionName;
     sessionStartTime = Date.now();
     sessionStartDone = getSectionDoneCount(sectionName);
+    
+    const targetSelect = document.getElementById('focus-type-select');
+    sessionTarget = targetSelect ? targetSelect.value : 'unsolved';
 
     // Snapshot all questions in this section so we know exactly which ones get solved
     sessionStartSnapshot = new Map(
@@ -130,14 +152,16 @@ export const FocusMode = {
     );
 
     // Update UI
+    const targetEmojis = { 'unsolved': '🎯', 'solved': '🔄', 'all': '📚' };
     const topicLabel = document.getElementById('focus-topic-label');
-    if (topicLabel) topicLabel.textContent = sectionName;
+    if (topicLabel) topicLabel.innerHTML = `${targetEmojis[sessionTarget]} <strong>Focus Session:</strong> ${sectionName} <span style="opacity:0.6;font-size:11px;font-weight:400;margin-left:6px;">(${sessionTarget})</span>`;
+    
     const bar = document.getElementById('focus-bar');
     if (bar) bar.classList.remove('hidden');
     this._updateCount();
 
-    // Apply focus filter
-    applyFocusFilter(sectionName);
+    // Apply focus filter dynamically
+    applyFocusFilter(sectionName, sessionTarget);
 
     // Auto-start the stopwatch and lock it
     const modeBtn = document.getElementById('sw-mode');

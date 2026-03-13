@@ -113,6 +113,13 @@ function getLoginPage(error = "") {
 
 export default async function auth(request, context) {
   const url = new URL(request.url);
+
+  // ── Pass Netlify function invocations through directly ────────────
+  // Scheduled/API functions handle their own auth (REMINDER_SECRET, etc.)
+  if (url.pathname.startsWith("/.netlify/functions/")) {
+    return context.next();
+  }
+
   const sitePassword = Deno.env.get("SITE_PASSWORD");
 
   // ── No password set → pass through (dev mode) ────────────────────

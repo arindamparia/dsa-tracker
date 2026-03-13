@@ -54,7 +54,7 @@
         </button>
         <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
         <button class="btn-action" onclick="RefreshModal.open()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
-        <button class="btn-action btn-action-danger" onclick="confirmClear()">⚠️ Reset Progress</button>
+        <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
         <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
@@ -260,6 +260,24 @@
   </div>
 </div>
 
+<!-- RESET PROGRESS CONFIRMATION MODAL -->
+<div class="modal-overlay" id="reset-modal" onclick="ResetModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon" style="color:var(--hard)">⚠️</div>
+      <div class="modal-title">Reset Progress?</div>
+    </div>
+    <div class="confirm-modal-body">
+      Reset ALL progress (checkboxes, solutions, notes)?<br>
+      Questions will remain in the database.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="ResetModal.close()">Cancel</button>
+      <button class="btn-danger" style="background:var(--hard); color:#fff; border-color:var(--hard);" onclick="ResetModal.confirm()">Reset Progress</button>
+    </div>
+  </div>
+</div>
+
 <!-- POMODORO EDIT MODAL -->
 <div class="modal-overlay" id="pomodoro-modal" onclick="PomodoroModal.handleOverlayClick(event)">
   <div class="modal" style="max-width:340px">
@@ -367,7 +385,14 @@
 <div class="modal-overlay" id="focus-picker-modal" onclick="FocusMode.handlePickerOverlay(event)">
   <div class="modal auth-modal" style="max-width:380px;">
     <div class="modal-title" style="margin-bottom: 8px;">Pick a Section</div>
-    <div class="modal-sub" style="margin-bottom: 20px;">Choose a section to focus on. We'll filter to show only unsolved problems.</div>
+    <div class="modal-sub" style="margin-bottom: 20px;">Choose a category and section to focus on.</div>
+    <div style="margin-bottom: 15px;">
+      <select id="focus-type-select" class="form-select" onchange="FocusMode.refreshList()">
+        <option value="unsolved" selected>Target: Unsolved Problems</option>
+        <option value="solved">Target: Solved Problems</option>
+        <option value="all">Target: All Problems (Review)</option>
+      </select>
+    </div>
     <div class="focus-topic-list" id="focus-topic-list">
       <!-- Injected by focus-mode.js -->
     </div>
