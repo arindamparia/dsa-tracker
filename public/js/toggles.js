@@ -15,6 +15,7 @@ function saveToggles() {
     hideTags: state.hideTags,
     hideSolution: state.hideSolution,
     hideNotes: state.hideNotes,
+    hideCompanies: state.hideCompanies,
     timestamp: Date.now()
   };
   localStorage.setItem(TOGGLE_CACHE_KEY, JSON.stringify(data));
@@ -30,6 +31,7 @@ export function initToggles() {
         state.hideTags = !!parsed.hideTags;
         state.hideSolution = !!parsed.hideSolution;
         state.hideNotes = !!parsed.hideNotes;
+        state.hideCompanies = parsed.hideCompanies !== false; // default hidden
       }
     }
   } catch (err) {
@@ -37,18 +39,21 @@ export function initToggles() {
   }
 
   // Apply state to DOM initially
-  document.body.classList.toggle('tags-hidden',   state.hideTags);
-  document.body.classList.toggle('topic-hidden',  state.hideTags);
-  document.body.classList.toggle('solution-hidden', state.hideSolution);
-  document.body.classList.toggle('notes-hidden', state.hideNotes);
+  document.body.classList.toggle('tags-hidden',      state.hideTags);
+  document.body.classList.toggle('topic-hidden',     state.hideTags);
+  document.body.classList.toggle('solution-hidden',  state.hideSolution);
+  document.body.classList.toggle('notes-hidden',     state.hideNotes);
+  document.body.classList.toggle('companies-hidden', state.hideCompanies);
 
-  const btnTags = document.getElementById('toggle-tags');
-  const btnSol = document.getElementById('toggle-sol');
-  const btnNotes = document.getElementById('toggle-notes');
+  const btnTags      = document.getElementById('toggle-tags');
+  const btnSol       = document.getElementById('toggle-sol');
+  const btnNotes     = document.getElementById('toggle-notes');
+  const btnCompanies = document.getElementById('toggle-companies');
 
-  if (btnTags) btnTags.classList.toggle('active', !state.hideTags);
-  if (btnSol) btnSol.classList.toggle('active', !state.hideSolution);
-  if (btnNotes) btnNotes.classList.toggle('active', !state.hideNotes);
+  if (btnTags)      btnTags.classList.toggle('active', !state.hideTags);
+  if (btnSol)       btnSol.classList.toggle('active', !state.hideSolution);
+  if (btnNotes)     btnNotes.classList.toggle('active', !state.hideNotes);
+  if (btnCompanies) btnCompanies.classList.toggle('active', !state.hideCompanies);
 }
 
 export function toggleTags(btn) {
@@ -75,6 +80,15 @@ export function toggleNotes(btn) {
     state.hideNotes = !state.hideNotes;
     document.body.classList.toggle('notes-hidden', state.hideNotes);
     btn.classList.toggle('active', !state.hideNotes);
+    saveToggles();
+  });
+}
+
+export function toggleCompanies(btn) {
+  smoothTransition(() => {
+    state.hideCompanies = !state.hideCompanies;
+    document.body.classList.toggle('companies-hidden', state.hideCompanies);
+    btn.classList.toggle('active', !state.hideCompanies);
     saveToggles();
   });
 }

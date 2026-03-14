@@ -34,7 +34,8 @@ export const handler = async (event) => {
         COALESCE(p.ai_analysis, '') AS ai_analysis,
         COALESCE(p.srs_interval_index, 0) AS srs_interval_index,
         p.srs_last_reviewed_at           AS srs_last_reviewed_at,
-        q.similar_problems         AS similar_problems,
+        q.similar_problems                    AS similar_problems,
+        COALESCE(q.companies_asked, '{}')    AS companies_asked,
         p.updated_at               AS updated_at,
         p.solved_at                AS solved_at
       FROM questions q

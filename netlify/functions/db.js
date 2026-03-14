@@ -35,9 +35,10 @@ export async function initSchema(sql) {
   
   try {
     await sql`ALTER TABLE questions ADD COLUMN IF NOT EXISTS similar_problems INTEGER[] DEFAULT NULL`;
+    await sql`ALTER TABLE questions ADD COLUMN IF NOT EXISTS companies_asked TEXT[] DEFAULT '{}'`;
   } catch (e) {
     if (!e.message.includes('already exists')) {
-      console.error("Migration error (similar_problems):", e);
+      console.error("Migration error (questions columns):", e);
     }
   }
 

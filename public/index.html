@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="css/mastery-chart.css" />
 <link rel="stylesheet" href="css/daily-goal.css" />
 <link rel="stylesheet" href="css/focus-mode.css" />
+<link rel="stylesheet" href="css/company.css" />
 </head>
 <body class="tags-hidden topic-hidden solution-hidden">
 <div class="wrapper">
@@ -68,6 +69,10 @@
     <button class="btn-feature" onclick="MasteryChart.open()" title="View Section Mastery Map">
       <span class="feature-icon">🧠</span>
       <span class="feature-text">Section Mastery Map</span>
+    </button>
+    <button class="btn-feature" onclick="CompanyFilter.openPicker()" title="Start a company-focused prep session">
+      <span class="feature-icon">🏢</span>
+      <span class="feature-text">Company Prep Mode</span>
     </button>
   </div>
 
@@ -134,13 +139,34 @@
     </div>
   </div>
 
+  <!-- COMPANY PREP SESSION BAR (sticky, shown only during prep) -->
+  <div id="company-prep-bar" class="focus-bar hidden">
+    <div class="focus-bar-inner">
+      <span class="focus-bar-label">🏢 <strong>Company Prep:</strong> <span id="company-prep-label"></span></span>
+      <span class="focus-bar-count" id="company-prep-count">0 solved</span>
+      <button class="focus-end-btn" onclick="CompanyFilter.endPrep()">End Prep</button>
+    </div>
+  </div>
+
   <!-- CONTROLS -->
   <div class="controls">
     <input type="text" class="search-box" id="search" placeholder="Search by name, LC#, topic..." oninput="applyFilters()" />
-    <button class="btn-secondary" onclick="pickRandom()" style="margin-right: 12px;" title="Jump to a random unsolved problem">🎲 Random</button>
+    <button class="btn-secondary" id="random-btn" onclick="pickRandom()" style="margin-right: 12px;" title="Jump to a random unsolved problem">🎲 Random</button>
 
+    <!-- Company filter dropdown -->
+    <div class="company-filter-wrap" id="company-filter-wrap" style="margin-right:8px">
+      <button class="filter-btn company-active" id="company-filter-btn" onclick="CompanyFilter.toggle()">
+        <span id="company-filter-label">🏢 Company</span>
+      </button>
+      <button class="company-clear-x hidden" id="company-clear-btn" onclick="CompanyFilter.clear()" title="Clear company filter">×</button>
+      <div class="company-dropdown" id="company-dropdown">
+        <input type="text" class="company-search-input" id="company-search-input"
+               placeholder="Search company..."
+               oninput="CompanyFilter.search(this.value)" />
+        <div class="company-list" id="company-list"></div>
+      </div>
+    </div>
 
-    
     <div class="filter-divider"></div>
     <div class="filter-group">
       <button class="filter-btn active" data-group="diff" data-filter="all" onclick="setDiffFilter('all',this)">All</button>
@@ -160,6 +186,7 @@
       <button class="filter-btn view-toggle" id="toggle-tags" onclick="toggleTags(this)">⊞ Topics & Tags</button>
       <button class="filter-btn view-toggle" id="toggle-sol" onclick="toggleSolution(this)">⊞ Solution</button>
       <button class="filter-btn view-toggle active" id="toggle-notes" onclick="toggleNotes(this)">⊞ Notes</button>
+      <button class="filter-btn view-toggle" id="toggle-companies" onclick="toggleCompanies(this)">⊞ Companies</button>
     </div>
   </div>
 
@@ -377,6 +404,38 @@
     <div id="mastery-legend" class="mastery-legend"></div>
     <div class="modal-actions" style="margin-top: 20px; justify-content: flex-end;">
       <button class="btn-cancel" onclick="MasteryChart.close()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPANY PREP PICKER -->
+<div class="modal-overlay" id="company-prep-modal" onclick="CompanyFilter.handlePickerOverlay(event)">
+  <div class="modal auth-modal" style="max-width:400px;">
+    <div class="modal-title" style="margin-bottom:8px;">🏢 Company Prep Mode</div>
+    <div class="modal-sub" style="margin-bottom:16px;">Pick a company to focus your prep session. Sorted by question count.</div>
+    <input type="text" class="company-search-input" id="company-prep-search"
+           placeholder="Search company..."
+           oninput="CompanyFilter.filterPicker(this.value)"
+           style="border-radius:8px;margin-bottom:12px;" />
+    <div class="focus-topic-list" id="company-prep-list">
+      <!-- Injected by company-filter.js -->
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-cancel" onclick="CompanyFilter.closePicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPANY PREP SESSION SUMMARY -->
+<div class="modal-overlay" id="company-prep-summary-modal" onclick="CompanyFilter.handleSummaryOverlay(event)">
+  <div class="modal" style="max-width:420px;">
+    <div class="confirm-modal-header" style="justify-content:center;margin-bottom:16px;">
+      <div class="confirm-modal-icon">🏢</div>
+      <div class="modal-title">Prep Session Complete</div>
+    </div>
+    <div id="company-prep-summary-body" class="focus-summary-body"></div>
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn-submit" onclick="CompanyFilter.closeSummary()" style="background:var(--accent)">Done</button>
     </div>
   </div>
 </div>

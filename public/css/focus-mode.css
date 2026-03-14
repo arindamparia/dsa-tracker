@@ -49,7 +49,8 @@ body.focus-active .motivation-box,
 body.focus-active .top-stats,
 body.focus-active .stats-board,
 body.focus-active .global-progress,
-body.focus-active #review-queue { display: none !important; }
+body.focus-active #review-queue,
+body.focus-active #random-btn { display: none !important; }
 
 .focus-section-hidden { display: none !important; }
 tr.focus-hidden { display: none !important; }

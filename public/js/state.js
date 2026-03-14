@@ -15,6 +15,8 @@ export const state = {
   hideTags:     true, // toggled by toggleTags()
   hideSolution: true, // toggled by toggleSolution()
   hideNotes:    false, // toggled by toggleNotes()
-  focusTopic:   null,  // current topic for focus mode
-  focusActive:  false, // whether focus mode is currently active
+  focusTopic:      null,  // current topic for focus mode
+  focusActive:     false, // whether focus mode is currently active
+  companyFilter:   null,  // company name string | null
+  hideCompanies:   true,  // toggled by toggleCompanies()
 };

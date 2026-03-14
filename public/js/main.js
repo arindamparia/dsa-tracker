@@ -9,10 +9,11 @@
  *  4. Kick off the boot sequence
  */
 import { boot, bootFresh, RefreshModal } from './data.js';
+import { state } from './state.js';
 import { toggleSection, preloadSection } from './render.js';
 import { setDiffFilter, setStatusFilter, applyFilters, pickRandom } from './filters.js';
 import { toggleCheck, debounceSave, debounceNotesSave, toggleReview, saveComplexity } from './progress.js';
-import { initToggles, toggleTags, toggleSolution, toggleNotes } from './toggles.js';
+import { initToggles, toggleTags, toggleSolution, toggleNotes, toggleCompanies } from './toggles.js';
 import { AddQuestionModal } from './modal-add.js';
 import { SolutionModal } from './modal-solution.js';
 import { ReportModal } from './modal-report.js';
@@ -29,6 +30,8 @@ import { DailyGoal } from './daily-goal.js';
 import { FocusMode } from './focus-mode.js';
 import { SimilarProblems } from './similar-problems.js';
 import { AI } from './ai.js';
+import { CompanyFilter } from './company-filter.js';
+import { CompanyStats } from './company-stats.js';
 
 // ── Window bindings for inline HTML handlers ──────────────────────
 // Data
@@ -54,9 +57,10 @@ window.toggleReview      = toggleReview;
 window.saveComplexity    = saveComplexity;
 
 // View toggles
-window.toggleTags     = toggleTags;
-window.toggleSolution = toggleSolution;
-window.toggleNotes    = toggleNotes;
+window.toggleTags       = toggleTags;
+window.toggleSolution   = toggleSolution;
+window.toggleNotes      = toggleNotes;
+window.toggleCompanies  = toggleCompanies;
 
 // Misc
 window.ResetModal   = ResetModal;
@@ -86,6 +90,9 @@ window.DailyGoal        = DailyGoal;
 window.FocusMode        = FocusMode;
 window.SimilarProblems  = SimilarProblems;
 window.AI               = AI;
+window.CompanyFilter    = CompanyFilter;
+window.CompanyStats     = CompanyStats;
+window.state            = state; // needed by company-stats.js for companyFilter check
 
 // ── Keyboard shortcuts ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
@@ -96,6 +103,8 @@ document.addEventListener('keydown', e => {
     DailyGoal.closeEditor();
     FocusMode.closePicker();
     FocusMode.closeSummary();
+    CompanyFilter.closePicker();
+    CompanyFilter.closeSummary();
     ResetModal.close();
   }
 });
@@ -116,4 +125,5 @@ DailyGoal.init();
 boot().then(() => {
   // SRS needs questions to be loaded first
   SRS.init();
+  CompanyFilter.init();
 });

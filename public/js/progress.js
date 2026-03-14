@@ -4,6 +4,7 @@ import { showToast } from './toast.js';
 import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
 import { FocusMode } from './focus-mode.js';
+import { CompanyFilter } from './company-filter.js';
 import { SRS } from './spaced-repetition.js';
 import { HardCelebration } from './hard-celebration.js';
 
@@ -32,6 +33,7 @@ export async function toggleCheck(lc, si) {
   updateStats();
   applyFilters({ preserveOpen: true });
   FocusMode._updateCount();
+  CompanyFilter._updatePrepCount();
   SRS.render();
 
   try {

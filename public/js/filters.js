@@ -34,7 +34,7 @@ export function applyFilters(options = {}) {
   const preserveOpen = options.preserveOpen || false;
   const search     = document.getElementById('search').value.toLowerCase().trim();
   const sections   = groupBySections(state.questions);
-  const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all';
+  const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all' || state.companyFilter !== null;
 
   // Collapse all sections first (accordion rule) unless told to preserve open ones
   if (!preserveOpen) {
@@ -45,6 +45,9 @@ export function applyFilters(options = {}) {
 
   sections.forEach((sec, si) => {
     let anyVisible = false;
+    let visibleCount = 0;
+    const total = sec.questions.length;
+
     sec.questions.forEach(q => {
       let show = true;
 
@@ -52,18 +55,35 @@ export function applyFilters(options = {}) {
       if (state.statusFilter === 'done'   && !q.is_done) show = false;
       if (state.statusFilter === 'undone' &&  q.is_done) show = false;
       if (state.statusFilter === 'review' && !q.needs_review) show = false;
+      if (state.companyFilter !== null) {
+        if (!(q.companies_asked || []).includes(state.companyFilter)) show = false;
+      }
       if (search) {
-        const haystack = `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')}`.toLowerCase();
+        const haystack = `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')} ${(q.companies_asked || []).join(' ')}`.toLowerCase();
         if (!haystack.includes(search)) show = false;
       }
 
-      if (show) anyVisible = true;
+      if (show) { anyVisible = true; visibleCount++; }
 
       const tr = document.getElementById(`row-${q.lc_number}`);
       if (tr) {
         tr.classList.toggle('filtered-out', !show);
       }
     });
+
+    // Update section count: matching/total when filtered, done/total when not
+    const scEl = document.getElementById(`sc-${si}`);
+    if (scEl) {
+      if (isFiltered) {
+        scEl.textContent = `${visibleCount}/${total}`;
+        scEl.classList.toggle('sc-filtered', visibleCount > 0);
+        scEl.classList.toggle('sc-empty', visibleCount === 0);
+      } else {
+        const doneCnt = sec.questions.filter(q => q.is_done).length;
+        scEl.textContent = `${doneCnt}/${total}`;
+        scEl.classList.remove('sc-filtered', 'sc-empty');
+      }
+    }
 
     // If section needs to be visible but isn't loaded yet, force it to render synchronously
     if (isFiltered && anyVisible) {
@@ -73,9 +93,12 @@ export function applyFilters(options = {}) {
       }
     }
 
+    // Hide/show sections based on whether they have matching questions
+    const secEl = document.getElementById(`sec-${si}`);
+    if (secEl) secEl.classList.toggle('section-no-match', isFiltered && !anyVisible);
+
     // When filtered, auto-expand only the first section with results
     if (!preserveOpen && isFiltered && anyVisible && firstVisibleSec === null) {
-      const secEl = document.getElementById(`sec-${si}`);
       if (secEl) secEl.classList.remove('collapsed');
       firstVisibleSec = si;
     }
@@ -98,47 +121,53 @@ export function pickRandom() {
     sec.section === choice.section && sec.section_order === choice.section_order
   );
 
-  // Reset filters silently (no intermediate applyFilters calls)
+  // Reset ALL filters silently (no intermediate applyFilters calls)
   document.getElementById('search').value = '';
   state.diffFilter   = 'all';
   state.statusFilter = 'all';
+  state.companyFilter = null;
   document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-group="diff"][data-filter="all"]')?.classList.add('active');
   document.querySelector('[data-group="status"][data-filter="all"]')?.classList.add('active');
+  // Sync company filter button label
+  const cfLabel = document.getElementById('company-filter-label');
+  if (cfLabel) cfLabel.textContent = '🏢 Company';
+  document.getElementById('company-filter-btn')?.classList.remove('active');
+  document.getElementById('company-clear-btn')?.classList.add('hidden');
 
-  // Apply filters collapses all (no filter active) — then immediately open target section
+  // Apply filters, uncollapse section, render rows — all inside the transition callback
+  // so the scroll logic runs AFTER DOM changes are applied (fixes View Transition async race).
   smoothTransition(() => {
     applyFilters();
-    if (si !== -1) {
-      const secEl = document.getElementById(`sec-${si}`);
-      if (secEl) {
-        secEl.classList.remove('collapsed');
-        // Force rendering of the table contents immediately because `applyFilters` wouldn't have flagged it 
-        // to render if search query is empty
-        const tbody = document.getElementById(`tbody-${si}`);
-        if (tbody && tbody.dataset.loaded === 'false') {
-          document.dispatchEvent(new CustomEvent('force-render-section', { detail: si }));
-        }
-      }
+    if (si === -1) return;
+
+    const secEl = document.getElementById(`sec-${si}`);
+    if (!secEl) return;
+
+    secEl.classList.remove('collapsed');
+
+    const tbody = document.getElementById(`tbody-${si}`);
+    if (tbody && tbody.dataset.loaded === 'false') {
+      // Render synchronously so rows exist in DOM before we try to scroll
+      document.dispatchEvent(new CustomEvent('force-render-section', { detail: si }));
     }
-  });
 
-  // Since we dispatched the render event above, the DOM might not have the <tr> yet synchronously.
-  // Wait for the next paint frame, then queue the scroll animation.
-  setTimeout(() => {
-    const tr = document.getElementById(`row-${choice.lc_number}`);
-    if (tr) {
+    // Wait one rAF for the DOM to paint, then scroll after accordion animation
+    requestAnimationFrame(() => {
+      const tr = document.getElementById(`row-${choice.lc_number}`);
+      if (!tr) return;
+
       tr.style.backgroundColor = 'rgba(124,106,247,0.2)';
+      setTimeout(() => tr.style.backgroundColor = '', 7000);
 
-      // Wait a bit for the accordion animation to unfold before scrolling down to it
+      // 350ms — enough for the grid accordion transition (0.38s) to finish
       setTimeout(() => {
         tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
+
+        document.getElementById('random-pointer')?.remove();
         const pointer = document.createElement('div');
         pointer.id = 'random-pointer';
-        document.getElementById('random-pointer')?.remove();
-
         pointer.style.cssText = `
           position: fixed;
           left: 14px;
@@ -164,10 +193,8 @@ export function pickRandom() {
           <span style="font-size:18px;animation:bouncePoint 0.55s ease-in-out infinite;">👉</span>
           <span>Solve this!</span>
         `;
-        
         document.body.appendChild(pointer);
-        
-        // Track the element physically by checking coordinates every frame while it animates
+
         let tracking = true;
         function updatePointerPosition() {
           if (!tracking) return;
@@ -176,15 +203,10 @@ export function pickRandom() {
           requestAnimationFrame(updatePointerPosition);
         }
         requestAnimationFrame(updatePointerPosition);
-        
-        setTimeout(() => {
-          tracking = false;
-          pointer.remove();
-        }, 6000);
-      }, 300);
 
-      setTimeout(() => tr.style.backgroundColor = '', 7000);
-    }
-  }, 50);
+        setTimeout(() => { tracking = false; pointer.remove(); }, 6000);
+      }, 350);
+    });
+  });
 }
 

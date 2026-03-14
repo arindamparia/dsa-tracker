@@ -54,8 +54,6 @@ export function render() {
       </div>`;
     container.appendChild(el);
 
-    container.appendChild(el);
-
     const tbody = document.getElementById(`tbody-${si}`);
     tbody.dataset.loaded = 'false';
   });
@@ -77,6 +75,30 @@ export function buildRow(q, si) {
 
   const tags     = Array.isArray(q.tags) ? q.tags : [];
   const tagHtml  = tags.map(t => `<span class="tag-pill">${t}</span>`).join('');
+
+  // Company pills — sorted by total question count desc (same order as filter dropdown)
+  const COMPANY_VISIBLE = 4;
+  const companiesRaw = Array.isArray(q.companies_asked) ? q.companies_asked : [];
+  const companyCountMap = new Map();
+  state.questions.forEach(q2 => (q2.companies_asked || []).forEach(c => companyCountMap.set(c, (companyCountMap.get(c) || 0) + 1)));
+  const companies = [...companiesRaw].sort((a, b) => (companyCountMap.get(b) || 0) - (companyCountMap.get(a) || 0));
+  let companyHtml = '';
+  if (companies.length > 0) {
+    const visible = companies.slice(0, COMPANY_VISIBLE);
+    const hidden  = companies.slice(COMPANY_VISIBLE);
+    const visiblePills = visible.map(c => {
+      const safe = c.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `<span class="company-pill" onclick="CompanyFilter.select('${safe}')" title="Filter by ${c}">${c}</span>`;
+    }).join('');
+    const hiddenPills = hidden.map(c => {
+      const safe = c.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `<span class="company-pill cp-hidden" onclick="CompanyFilter.select('${safe}')" title="Filter by ${c}">${c}</span>`;
+    }).join('');
+    const moreBtn = hidden.length > 0
+      ? `<span class="company-pill-more" onclick="event.stopPropagation();CompanyFilter.toggleMore(${q.lc_number})">+${hidden.length} more</span>`
+      : '';
+    companyHtml = `<span class="company-pills-wrap" id="cpw-${q.lc_number}">${visiblePills}${hiddenPills}${moreBtn}</span>`;
+  }
   const solRaw   = q.solution || '';
   const notesRaw = q.notes    || '';
 
@@ -92,6 +114,7 @@ export function buildRow(q, si) {
       <button class="similar-btn" id="sim-btn-${q.lc_number}" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
       <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
+      ${companyHtml ? `<br>${companyHtml}` : ''}
     </td>
     <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
     <td class="sol-cell">
@@ -131,10 +154,11 @@ export function buildRow(q, si) {
 }
 
 export function toggleSection(si) {
-  smoothTransition(() => {
-    const clicked = document.getElementById(`sec-${si}`);
-    const isNowCollapsed = clicked.classList.contains('collapsed');
+  // Read BEFORE the transition — smoothTransition callback has its own scope
+  const clicked = document.getElementById(`sec-${si}`);
+  const isNowCollapsed = clicked.classList.contains('collapsed');
 
+  smoothTransition(() => {
     // Close all sections first (accordion behaviour)
     document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
 
@@ -145,13 +169,15 @@ export function toggleSection(si) {
     }
   });
 
-  // Scroll into view if opened (accounting for sticky header ~80px)
+  // Scroll into view after animation completes (grid transition = 0.38s)
   if (isNowCollapsed) {
-    requestAnimationFrame(() => {
-      const clicked = document.getElementById(`sec-${si}`);
-      const y = clicked.getBoundingClientRect().top + window.scrollY - 80;
+    setTimeout(() => {
+      const el = document.getElementById(`sec-${si}`);
+      if (!el) return;
+      const controlsH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--controls-h')) || 126;
+      const y = el.getBoundingClientRect().top + window.scrollY - controlsH;
       window.scrollTo({ top: y, behavior: 'smooth' });
-    });
+    }, 420); // slightly longer than the 0.38s grid transition
   }
 }
 
