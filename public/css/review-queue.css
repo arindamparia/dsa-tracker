@@ -117,3 +117,6 @@
   .srs-card { flex: 0 0 200px; }
   .srs-header { flex-direction: column; align-items: flex-start; }
 }
+@media (max-width: 480px) {
+  .srs-card { flex: 0 0 calc(85vw - 24px); }
+}

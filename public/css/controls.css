@@ -57,6 +57,10 @@
 
 @media (max-width: 768px) {
   #toggle-sol, #toggle-notes { display: none !important; }
+  .controls { margin: 0 -12px; padding-left: 12px; padding-right: 12px; gap: 8px; }
+  .search-wrap { min-width: 0; }
+  .filter-group { gap: 6px; }
+  .filter-btn { padding: 8px 10px; font-size: 10px; }
 }
 
 /* ── HANGING TIMER WIDGET ── */

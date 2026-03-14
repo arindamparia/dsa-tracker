@@ -285,6 +285,10 @@ body.companies-hidden .company-pills-wrap { display: none; }
   border-color: rgba(124,106,247,0.3);
 }
 
+@media (max-width: 600px) {
+  .company-dropdown { width: calc(100vw - 48px); left: auto; right: 0; }
+}
+
 /* Company filter active = show toggle button as teal */
 .filter-btn.company-active.active {
   background: rgba(124,106,247,0.1);

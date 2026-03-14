@@ -93,5 +93,7 @@ h1 {
 /* ── HIDE TIMER ON MOBILE ── */
 @media (max-width: 768px) {
   .timer-hang { display: none !important; }
+  .header-actions { margin-right: 0; flex-wrap: wrap; gap: 8px; }
+  .motivation-box { font-size: 14px; padding: 14px 16px; }
 }
 

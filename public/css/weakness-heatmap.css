@@ -62,3 +62,10 @@
 #heatmap-modal .modal {
   max-width: 680px; width: 96vw; max-height: 80vh; overflow-y: auto;
 }
+
+@media (max-width: 600px) {
+  .hm-row { grid-template-columns: 1fr 56px 56px 56px 50px; gap: 2px; }
+  .hm-cell { padding: 4px 2px; min-height: 38px; }
+  .hm-num { font-size: 11px; }
+  .hm-section-col { font-size: 10px; }
+}

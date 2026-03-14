@@ -225,3 +225,7 @@
   border-radius: 20px; padding: 5px 16px;
   color: #ff9f1c; letter-spacing: 0.05em;
 }
+
+@media (max-width: 600px) {
+  .goal-banner { right: 12px; left: 12px; bottom: 16px; max-width: none; }
+}

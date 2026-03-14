@@ -91,6 +91,13 @@ body.mock-interview-active .company-stats-section { display: none !important; }
 /* Config modal — prevent overflow on small screens */
 #mi-config-modal .modal { max-height: 90vh; overflow-y: auto; }
 
+@media (max-width: 600px) {
+  .mi-config-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mi-filter-row { grid-template-columns: 1fr; }
+  .mi-time-row { flex-wrap: wrap; gap: 6px; }
+  .mi-time-btn { flex: 1; text-align: center; min-width: 0; }
+}
+
 /* Summary */
 .mi-summary-header {
   font-size: 18px; font-weight: 800; color: var(--text);

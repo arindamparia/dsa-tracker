@@ -254,3 +254,11 @@ body.focus-active .focus-btn { background: var(--accent-glow); border-color: rgb
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px; color: rgba(255,130,60,0.65); letter-spacing: 0.04em;
 }
+
+@media (max-width: 600px) {
+  .focus-bar-inner { padding: 8px 12px; gap: 10px; }
+  .focus-topic-item { padding: 10px 12px; }
+  .focus-topic-unsolved { font-size: 9px; padding: 2px 6px; }
+  .focus-diff-row { gap: 8px; }
+  .hard-modal { padding: 24px 20px 20px; min-width: 0; }
+}
