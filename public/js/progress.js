@@ -8,7 +8,7 @@ import { CompanyFilter } from './company-filter.js';
 import { SRS } from './spaced-repetition.js';
 import { HardCelebration } from './hard-celebration.js';
 
-export async function toggleCheck(lc, si) {
+export async function toggleCheck(lc, _si) {
   const q = state.questions.find(x => x.lc_number === lc);
   if (!q) return;
   const newDone = !q.is_done;
@@ -24,7 +24,22 @@ export async function toggleCheck(lc, si) {
   chk.classList.add('saving');
   setTimeout(() => chk.classList.remove('saving'), 600);
   chk.classList.toggle('checked', newDone);
-  document.getElementById(`row-${lc}`).classList.toggle('done-row', newDone);
+  const rowEl = document.getElementById(`row-${lc}`);
+  rowEl.classList.toggle('done-row', newDone);
+  // Solved-today badge: add/remove live without re-render
+  if (newDone) {
+    rowEl.classList.add('solved-today');
+    const nameLink = rowEl.querySelector('.prob-name a');
+    if (nameLink && !rowEl.querySelector('.today-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'today-badge';
+      badge.textContent = 'TODAY';
+      nameLink.after(badge);
+    }
+  } else {
+    rowEl.classList.remove('solved-today');
+    rowEl.querySelector('.today-badge')?.remove();
+  }
 
   if (newDone && q.difficulty === 'Hard') {
     HardCelebration.fire(q.name); // Sets active flag so Daily Goal waits if it also triggers
@@ -57,6 +72,10 @@ export async function toggleCheck(lc, si) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     Cache.updateEntry(lc, { is_done: newDone, solved_at: q.solved_at });
+    // Suggest next problem after marking solved
+    if (newDone) {
+      setTimeout(() => window.SmartQueue?.suggestNext(q), 1200);
+    }
   } catch (err) {
     showToast('⚠ Save failed: ' + err.message, 'error');
     // rollback

@@ -72,6 +72,11 @@ export function buildRow(q, si) {
   tr.dataset.lc    = String(q.lc_number);
   tr.dataset.si    = si;
   if (q.is_done) tr.classList.add('done-row');
+  // Solved-today highlight: bright left border if marked done today
+  if (q.solved_at) {
+    const today = new Date().toDateString();
+    if (new Date(q.solved_at).toDateString() === today) tr.classList.add('solved-today');
+  }
 
   const tags     = Array.isArray(q.tags) ? q.tags : [];
   const tagHtml  = tags.map(t => `<span class="tag-pill">${t}</span>`).join('');
@@ -101,6 +106,8 @@ export function buildRow(q, si) {
   }
   const solRaw   = q.solution || '';
   const notesRaw = q.notes    || '';
+  const todayBadge = tr.classList.contains('solved-today')
+    ? '<span class="today-badge">TODAY</span>' : '';
 
   tr.innerHTML = `
     <td class="check-cell">
@@ -109,7 +116,7 @@ export function buildRow(q, si) {
     </td>
     <td class="prob-name">
       <span class="review-star ${q.needs_review ? 'active' : ''}" onclick="toggleReview(${q.lc_number}, this)" title="Needs Review">★</span>
-      <a href="${q.url}" target="_blank" rel="noopener" style="display:inline-block">${q.name}</a>
+      <a href="${q.url}" target="_blank" rel="noopener" style="display:inline-block">${q.name}</a>${todayBadge}
       <span class="topic-tag">${q.topic}</span>
       <button class="similar-btn" id="sim-btn-${q.lc_number}" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
       <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>

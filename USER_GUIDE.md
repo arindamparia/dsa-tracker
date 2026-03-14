@@ -49,12 +49,10 @@ Finding the right problem at the right time is crucial.
   - Each section header updates its count to show `matching/total` in purple.
   - Sections with **zero** matching questions are hidden entirely.
   - Only the first matching section is auto-expanded.
-- **👉 Pick Random**: Don't know what to solve? Click the **Pick Random** button!
-  - Clears **all** active filters (including any company filter) before picking.
-  - The system will pick a random unseen/unsolved problem.
-  - It will smoothly automatically scroll your viewport exactly to that row.
-  - A purple tooltip saying **"👉 Solve this!"** will physically attach to the row and track it flawlessly even if you scroll, remaining visible for exactly 6 seconds.
-  - The Random button is hidden during Focus Mode and Company Prep sessions.
+- **🧬 Smart Pick**: Not sure what to solve next? Click the **Smart Pick** button (or press `R`)!
+  - Uses the adaptive scoring algorithm (see Section 9) to pick the highest-priority unsolved problem — not random.
+  - Clears all active filters first, then scrolls to the row with a highlight and a **"👉 Solve this!"** pointer that tracks the row for 6 seconds.
+  - Hidden during Focus Mode and Company Prep sessions.
 - **Section Accordions**: Problems are grouped cleanly by patterns (e.g., "Two Pointers", "Greedy"). Click any thick section header to collapse or expand its contents.
 
 ---
@@ -130,6 +128,86 @@ The company equivalent of Focus Mode — a structured interview prep session tar
   - Easy / Medium / Hard breakdown of newly solved problems
   - List of every problem solved during the session
 - Ending the session automatically clears the company filter and restores the full UI.
+
+---
+
+## 🎤 7. Mock Interview Mode
+Simulate a real timed interview from inside the tracker — no AI crutches, just you and the clock.
+
+- **Setup**: Click **🎤 Mock Interview** in the study tools bar. Configure:
+  - Number of Easy / Medium / Hard problems (e.g. 1 + 2 + 1)
+  - Optional company or section filter (leave blank for random pool)
+  - Time limit: 30 / 45 / 60 / 90 / 120 minutes
+- **During the session**:
+  - Only your selected problems are visible — everything else is hidden
+  - A sticky bar shows the countdown timer, turning **red** in the final 5 minutes
+  - **AI Hint and Analyze Code buttons are disabled** — this is an honest simulation
+  - You can still write solutions and notes normally
+- **Submitting**: Click **Submit Interview** (or wait for time to expire) to end the session
+- **Report card**: Shows your score (`solved / total`), a rating label (🏆 Excellent / ✅ Passed / 📈 Needs Practice), time taken, Easy/Medium/Hard breakdown, and a list of solved vs unsolved problems
+
+> **Tip**: Run a mock interview after finishing a company prep session to test yourself under real conditions.
+
+---
+
+## 🔥 8. Weakness Heatmap
+A section × difficulty grid that instantly shows you where your biggest gaps are.
+
+- **Opening**: Click **🔥 Weakness Heatmap** in the study tools bar or press `H`
+- **Reading the grid**: Each cell shows completion % for that section + difficulty combination
+  - 🟥 Red (0–25%) — large gap, prioritize this
+  - 🟧 Orange-red (25–50%) — needs work
+  - 🟨 Yellow (50–70%) — making progress
+  - 🟩 Light green (70–90%) — nearly there
+  - 🟢 Green (90–100%) — mastered
+- **Drill-down**: Click any cell to instantly filter the main list to that section's difficulty. Cells marked `—` mean no questions exist for that combination.
+- The rightmost **Total** column shows your overall completion % per section.
+
+---
+
+## 🧬 9. Smart Pick (Adaptive Learning Algorithm)
+An intelligent problem picker that replaces pure-random selection with a priority-scored recommendation.
+
+**How it works** — each unsolved problem receives a score across 5 weighted factors:
+
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| Section weakness | 35% | Sections with more unsolved problems score higher |
+| Difficulty progression | 25% | Prefer Easy → Medium → Hard within a section |
+| SRS urgency | 20% | Problems due for spaced-repetition review float to the top |
+| Company relevance | 15% | Boosts problems matching your active company filter |
+| Never attempted | 5% | Small bonus for problems with no solution or notes yet |
+
+- **Smart Pick button**: Click **🧬 Smart Pick** or press `Q` to jump to the highest-priority problem
+- **Next suggestion card**: After you mark a problem done, a slide-in card appears at the bottom-right corner suggesting the next best problem. Click **Go →** to jump to it, or dismiss it (auto-hides after 8 seconds)
+
+---
+
+## ✨ 10. Other Enhancements
+
+### Solved Today Highlight
+Problems you solved today show a **green left border** on their row, so you can instantly see today's progress at a glance without checking the date.
+
+### Interview Readiness Score (Company Stats)
+Each company card in the **Company Stats** panel now shows a weighted readiness label:
+- **Interview Ready** (≥ 80%) — Hard problems count 3×, Medium 2×, Easy 1×
+- **On Track** (≥ 55%)
+- **Needs Work** (≥ 30%)
+- **Just Starting** (< 30%)
+
+This gives a more accurate sense of readiness than raw completion percentage, since a Hard problem solved is worth more than an Easy one.
+
+### Keyboard Shortcuts
+All shortcuts are inactive when typing in a text field.
+
+| Key | Action |
+|-----|--------|
+| `S` or `/` | Focus the search box |
+| `R` | Smart Pick (adaptive algorithm) |
+| `F` | Open Focus Mode picker |
+| `M` | Open Mock Interview config |
+| `H` | Open Weakness Heatmap |
+| `Esc` | Close any open modal |
 
 ---
 

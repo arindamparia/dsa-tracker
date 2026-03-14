@@ -32,6 +32,9 @@ import { SimilarProblems } from './similar-problems.js';
 import { AI } from './ai.js';
 import { CompanyFilter } from './company-filter.js';
 import { CompanyStats } from './company-stats.js';
+import './smart-queue.js';
+import './weakness-heatmap.js';
+import './mock-interview.js';
 
 // ── Window bindings for inline HTML handlers ──────────────────────
 // Data
@@ -96,6 +99,8 @@ window.state            = state; // needed by company-stats.js for companyFilter
 
 // ── Keyboard shortcuts ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
+  const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+
   if (e.key === 'Escape') {
     AddQuestionModal.close();
     Logout.close();
@@ -106,7 +111,27 @@ document.addEventListener('keydown', e => {
     CompanyFilter.closePicker();
     CompanyFilter.closeSummary();
     ResetModal.close();
+    window.WeaknessHeatmap?.close();
+    window.MockInterview?.closeConfig();
+    window.MockInterview?.closeSummary();
+    return;
   }
+
+  if (inInput) return; // don't hijack typing
+
+  // s or / → focus search
+  if (e.key === 's' || e.key === '/') {
+    e.preventDefault();
+    document.getElementById('search')?.focus();
+  }
+  // r → smart pick
+  if (e.key === 'r') { pickRandom(); }
+  // f → focus mode picker
+  if (e.key === 'f') { FocusMode.openPicker(); }
+  // m → mock interview
+  if (e.key === 'm') { window.MockInterview?.openConfig(); }
+  // h → heatmap
+  if (e.key === 'h') { window.WeaknessHeatmap?.open(); }
 });
 
 // ── Goal-changed event (avoids circular import with stats.js) ────
@@ -126,4 +151,6 @@ boot().then(() => {
   // SRS needs questions to be loaded first
   SRS.init();
   CompanyFilter.init();
+  // Populate company count label (panel starts collapsed)
+  CompanyStats.render();
 });

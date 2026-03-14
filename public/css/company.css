@@ -128,7 +128,8 @@ body.company-prep-active .stats-board,
 body.company-prep-active .global-progress,
 body.company-prep-active #review-queue,
 body.company-prep-active #random-btn,
-body.company-prep-active #company-clear-btn { display: none !important; }
+body.company-prep-active #company-clear-btn,
+body.company-prep-active .company-stats-section { display: none !important; }
 
 /* ── Company Readiness Stats Panel ──────────── */
 .company-stats-section {
@@ -216,6 +217,16 @@ body.company-prep-active #company-clear-btn { display: none !important; }
   font-size: 10px; color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
 }
+.cs-readiness {
+  display: inline-block; margin-top: 6px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.02em;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 6px; border-radius: 4px;
+}
+.rs-ready  { background: rgba(6,214,160,0.12);  color: var(--easy);   border: 1px solid rgba(6,214,160,0.25); }
+.rs-track  { background: rgba(248,181,0,0.10);   color: var(--medium); border: 1px solid rgba(248,181,0,0.2);  }
+.rs-needs  { background: rgba(255,71,87,0.10);   color: var(--hard);   border: 1px solid rgba(255,71,87,0.2);  }
+.rs-start  { background: rgba(152,152,176,0.08); color: var(--text-dim); border: 1px solid var(--border); }
 .cs-empty {
   text-align: center; padding: 24px;
   font-size: 12px; color: var(--text-muted);

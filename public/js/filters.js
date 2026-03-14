@@ -30,9 +30,18 @@ export function setStatusFilter(f, btn) {
   });
 }
 
+export function clearSearch() {
+  const el = document.getElementById('search');
+  el.value = '';
+  applyFilters();
+  el.focus();
+}
+window.clearSearch = clearSearch;
+
 export function applyFilters(options = {}) {
   const preserveOpen = options.preserveOpen || false;
   const search     = document.getElementById('search').value.toLowerCase().trim();
+  document.getElementById('search-clear-btn')?.classList.toggle('hidden', !search);
   const sections   = groupBySections(state.questions);
   const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all' || state.companyFilter !== null;
 
@@ -103,6 +112,11 @@ export function applyFilters(options = {}) {
       firstVisibleSec = si;
     }
   });
+
+  // Re-apply mock interview row/section visibility after normal filtering
+  if (window.MockInterview?.isActive()) {
+    window.MockInterview._applyFilter();
+  }
 }
 
 
@@ -112,7 +126,9 @@ export function pickRandom() {
     if (window.showToast) window.showToast('You have solved everything! 🎉', 'success');
     return;
   }
-  const choice = unsolved[Math.floor(Math.random() * unsolved.length)];
+  // Use smart algorithm if available, otherwise fall back to random
+  const choice = window.SmartQueue?.recommend(1)[0]
+    ?? unsolved[Math.floor(Math.random() * unsolved.length)];
 
   // Find which section index this question belongs to
   // (groupBySections doesn't attach sectionIndex to questions, so we compute it here)
@@ -123,6 +139,7 @@ export function pickRandom() {
 
   // Reset ALL filters silently (no intermediate applyFilters calls)
   document.getElementById('search').value = '';
+  document.getElementById('search-clear-btn')?.classList.add('hidden');
   state.diffFilter   = 'all';
   state.statusFilter = 'all';
   state.companyFilter = null;

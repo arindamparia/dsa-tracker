@@ -50,7 +50,8 @@ body.focus-active .top-stats,
 body.focus-active .stats-board,
 body.focus-active .global-progress,
 body.focus-active #review-queue,
-body.focus-active #random-btn { display: none !important; }
+body.focus-active #random-btn,
+body.focus-active .company-stats-section { display: none !important; }
 
 .focus-section-hidden { display: none !important; }
 tr.focus-hidden { display: none !important; }
@@ -60,33 +61,45 @@ body.focus-active .focus-btn { background: var(--accent-glow); border-color: rgb
 /* Topic picker list */
 .focus-topic-list {
   display: flex; flex-direction: column; gap: 6px;
-  max-height: 400px; overflow-y: auto;
+  max-height: 320px; overflow-y: auto; overflow-x: hidden;
 }
 .focus-topic-list::-webkit-scrollbar { width: 4px; }
 .focus-topic-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
 .focus-topic-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 14px; border-radius: 8px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 14px; border-radius: 8px;
   background: var(--surface); border: 1px solid var(--border);
   cursor: pointer; transition: all 0.2s;
   font-family: 'JetBrains Mono', monospace;
-  text-align: left; width: 100%;
+  text-align: left; width: 100%; min-width: 0; overflow: hidden;
 }
 .focus-topic-item:hover:not(.disabled) {
   border-color: rgba(124,106,247,0.4); background: var(--accent-glow);
   transform: translateX(4px);
 }
 .focus-topic-item:active:not(.disabled) { transform: scale(0.98); }
-.focus-topic-item.disabled {
-  opacity: 0.35; cursor: not-allowed;
+.focus-topic-item.disabled { opacity: 0.35; cursor: not-allowed; }
+.focus-topic-item.selected {
+  border-color: rgba(124,106,247,0.6);
+  background: rgba(124,106,247,0.1);
+}
+.focus-topic-item.selected:hover:not(.disabled) {
+  border-color: rgba(124,106,247,0.8);
+  transform: translateX(4px);
+}
+
+.focus-topic-check {
+  width: 16px; flex-shrink: 0;
+  font-size: 12px; color: var(--accent); font-weight: 700;
 }
 
 .focus-topic-name {
   font-size: 12px; color: var(--text); font-weight: 600;
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .focus-topic-meta {
-  display: flex; gap: 8px; align-items: center;
+  display: flex; gap: 8px; align-items: center; flex-shrink: 0; margin-left: auto;
 }
 .focus-topic-unsolved {
   font-size: 10px; color: var(--accent); background: var(--accent-glow);

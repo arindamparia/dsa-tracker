@@ -12,6 +12,25 @@
 }
 .q-table tbody tr.done-row { background: var(--done-bg); }
 .q-table tbody tr.done-row:hover { background: rgba(6,214,160,0.07); box-shadow: inset 3px 0 0 var(--easy); }
+.q-table tbody tr.solved-today {
+  box-shadow: inset 3px 0 0 var(--easy);
+  background: rgba(6,214,160,0.055) !important;
+}
+.q-table tbody tr.solved-today:hover { background: rgba(6,214,160,0.09) !important; }
+.today-badge {
+  display: inline-block; margin-left: 6px;
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
+  background: rgba(6,214,160,0.15); color: var(--easy);
+  border: 1px solid rgba(6,214,160,0.3);
+  font-family: 'JetBrains Mono', monospace;
+  vertical-align: middle;
+  animation: todayPulse 2.5s ease-in-out infinite;
+}
+@keyframes todayPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
 .q-table td { padding: 12px 14px; vertical-align: top; }
 
 /* ── CHECKBOX ── */
