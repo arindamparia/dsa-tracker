@@ -42,10 +42,19 @@ Finding the right problem at the right time is crucial.
 - **Global Search**: Type any Name, UI ID, Topic, or Tag into the top text box. The table dynamically filters out non-matches instantly.
 - **Difficulty Toggles**: Click the `All`, `Easy`, `Medium`, or `Hard` circular pills to isolate problems by structural complexity.
 - **Status Toggles**: Filter by `All`, `Done` (finished), `Undone` (unsolved), or `Review` (flagged for later). Clicking an active pill again resets the filter to `All`.
+- **🏢 Company Filter**: A dropdown listing every company that has tagged questions, sorted by question count (FAANG/high-frequency companies appear first). Each entry shows a progress bar and `solved/total` count.
+  - Click a company to filter the entire list to that company's questions.
+  - Click the same company again, or the **×** button that appears beside the dropdown, to clear the filter.
+- **Active Filter Behaviour**: Whenever any filter (difficulty, status, company, or search) is active:
+  - Each section header updates its count to show `matching/total` in purple.
+  - Sections with **zero** matching questions are hidden entirely.
+  - Only the first matching section is auto-expanded.
 - **👉 Pick Random**: Don't know what to solve? Click the **Pick Random** button!
+  - Clears **all** active filters (including any company filter) before picking.
   - The system will pick a random unseen/unsolved problem.
   - It will smoothly automatically scroll your viewport exactly to that row.
   - A purple tooltip saying **"👉 Solve this!"** will physically attach to the row and track it flawlessly even if you scroll, remaining visible for exactly 6 seconds.
+  - The Random button is hidden during Focus Mode and Company Prep sessions.
 - **Section Accordions**: Problems are grouped cleanly by patterns (e.g., "Two Pointers", "Greedy"). Click any thick section header to collapse or expand its contents.
 
 ---
@@ -65,7 +74,8 @@ The core interface where you will spend the majority of your time interacting wi
   - **Syntax Validation Heuristics**: You *cannot* paste plain English into this box. It verifies that your text contains structural brackets `{}` and code keywords (`public`, `def`, `let`) before it allows saving to the database, actively preventing junk data.
   - **Auto-Save**: You don't need to click save. Stop typing for `800ms`, and it will silently sync to the cloud (showing a green checkmark toast).
 - **Notes Textarea**: A resizeable text box for plain-English conceptual breakdowns, algorithm walkthroughs, or edge-case reminders.
-- **View Toggles (Clean UI)**: Use the top-right toggle switches to completely hide Solutions, Notes, or Topic Tags from the screen if you want a purist, distraction-free scanning layout.
+- **Company Pills**: Each row shows the companies that have asked that question as small purple pills, sorted by frequency (most common first). Clicking any pill activates the company filter for that company.
+- **View Toggles (Clean UI)**: Use the top-right toggle switches to completely hide Solutions, Notes, Topic Tags, or Company Pills from the screen for a distraction-free scanning layout.
 
 ### AI Integration 🤖
 The application features a deeply integrated Algorithm Engine (OpenAI).
@@ -101,7 +111,25 @@ The application features a deeply integrated Algorithm Engine (OpenAI).
   - The UI will aggressively strip away all Navigation, Headers, Charts, Tags, and Dropboxes.
   - Only the *Unsolved* problems of your selected category remain on the screen.
   - The stopwatch automatically initiates to track your exact working time.
-- **Completion Benchmark**: Once you finish and click "Exit Focus", a summary modal breaks down explicitly how many minutes you spent in the zone and a mathematical breakdown of exactly how many problems (sorted by difficulty) you successfully crushed during that specific session. 
+- **Completion Benchmark**: Once you finish and click "Exit Focus", a summary modal breaks down explicitly how many minutes you spent in the zone and a mathematical breakdown of exactly how many problems (sorted by difficulty) you successfully crushed during that specific session.
+
+---
+
+### 🏢 Company Prep Mode
+The company equivalent of Focus Mode — a structured interview prep session targeting a single company's question set.
+
+- **Starting**: Click the **🏢 Prep** button in the controls bar to open the company picker. Select any company to begin.
+- **During the session**:
+  - The list is filtered to only that company's questions.
+  - Header, stats, charts, review queue, and other non-essential UI are hidden.
+  - A sticky **Company Prep** bar appears at the top showing the company name, how many problems you've solved this session, and the elapsed time.
+  - The stopwatch auto-starts and is locked (controls greyed out) to prevent accidental resets.
+  - The **×** clear button next to the company dropdown is also hidden so you can't accidentally kill the session.
+- **Ending**: Click **End Prep** in the sticky bar. A summary modal appears with:
+  - Total session duration
+  - Easy / Medium / Hard breakdown of newly solved problems
+  - List of every problem solved during the session
+- Ending the session automatically clears the company filter and restores the full UI.
 
 ---
 
