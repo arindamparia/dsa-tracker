@@ -74,6 +74,12 @@
 .th-spacer                                       { display: none; }
 body.notes-hidden.solution-hidden .th-spacer     { display: table-cell; width: auto; }
 
+@media (max-width: 768px) {
+  .section-header { padding: 12px 14px; gap: 10px; }
+  .section-progress-mini { display: none; }
+  .th-check, .th-problem, .th-diff, .th-col { padding: 8px 10px; }
+}
+
 /* ── SECTION BODY (collapsible) ── */
 /* Use grid-template-rows trick for true-height smooth animation */
 .section-body {

@@ -134,6 +134,10 @@ tr.filtered-out { display: none; }
   span.sol-cell, span.notes-cell { display: none !important; }
   td.sol-cell, col.sol-cell, td.notes-cell, col.notes-cell { width: 0 !important; padding: 0 !important; border: none !important; overflow: hidden !important; }
   td.sol-cell > *, td.notes-cell > * { display: none !important; }
+  .q-table td { padding: 10px 10px; }
+  .prob-name a { font-size: 13px; }
+  .similar-item { min-width: 0; flex: 1 1 calc(50% - 4px); }
+  .similar-item-name { max-width: none; }
 }
 
 /* ── SIMILAR PROBLEMS ── */

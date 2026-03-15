@@ -14,3 +14,7 @@
   --controls-h: 126px;   /* two-row controls bar */
   --section-h:  55px;    /* section header */
 }
+
+@media (max-width: 768px) {
+  :root { --controls-h: 100px; }
+}

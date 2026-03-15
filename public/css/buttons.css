@@ -102,3 +102,10 @@
 .study-tools-bar {
   display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; margin-top: -16px;
 }
+
+@media (max-width: 768px) {
+  .btn-feature { min-width: 0; padding: 12px 16px; }
+  .btn-feature .feature-text { font-size: 14px; }
+  .btn-feature .feature-icon { font-size: 22px; }
+  .study-tools-bar { gap: 10px; }
+}
