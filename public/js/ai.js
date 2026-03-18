@@ -290,8 +290,10 @@ export const AI = {
                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
                    Efficiency
                  </div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Current complexity:</span> <span class="ai-rich-complexity">${data.efficiency.current_complexity}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Suggested complexity:</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_complexity}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Time Complexity(current):</span> <span class="ai-rich-complexity">${data.efficiency.current_time_complexity || data.efficiency.current_complexity || '—'}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Time Complexity(optimal):</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_time_complexity || data.efficiency.suggested_complexity || '—'}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Space Complexity(current):</span> <span class="ai-rich-complexity">${data.efficiency.current_space_complexity || '—'}</span></div>
+                 <div class="ai-rich-row"><span class="ai-rich-key">Space Complexity(optimal):</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_space_complexity || '—'}</span></div>
                  <div class="ai-rich-row"><span class="ai-rich-key">Suggestions:</span> <span class="ai-rich-val bold-val">${data.efficiency.suggestions}</span></div>
                </div>
              </div>

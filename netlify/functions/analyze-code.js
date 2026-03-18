@@ -41,8 +41,10 @@ exports.handler = async (event, context) => {
     "consider": "A strict 1 sentence question pushing the candidate to think about an edge case or constraint."
   },
   "efficiency": {
-    "current_complexity": "The parsed time complexity of their code.",
-    "suggested_complexity": "The theoretical best possible time complexity.",
+    "current_time_complexity": "The parsed time complexity of their code.",
+    "suggested_time_complexity": "The theoretical best possible time complexity.",
+    "current_space_complexity": "The parsed space complexity of their code.",
+    "suggested_space_complexity": "The theoretical best possible space complexity.",
     "suggestions": "A 1-2 sentence verdict on their efficiency, e.g. 'Your frequency array approach is actually optimal here, beating the sorting method!'"
   }
 }`
