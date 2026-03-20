@@ -233,6 +233,54 @@ body.company-prep-active .company-stats-section { display: none !important; }
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* ── Company stats pagination ── */
+.cs-pagination { margin-top: 12px; }
+.cs-pg-row {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.cs-pg-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+  padding: 6px 16px; border-radius: 8px; cursor: pointer;
+  transition: all 0.15s;
+}
+.cs-pg-btn:hover {
+  border-color: var(--accent); color: var(--accent);
+  background: rgba(124,106,247,0.07);
+}
+.cs-pg-btn.cs-pg-less {
+  color: var(--text-muted); border-color: var(--border);
+  background: transparent;
+}
+.cs-pg-btn.cs-pg-less:hover {
+  border-color: var(--border2); color: var(--text-dim);
+  background: var(--surface2);
+}
+.cs-pg-hint {
+  color: var(--text-muted); font-size: 10px; font-weight: 400;
+}
+
+/* ── Readiness Confirm Modal ── */
+.crc-company {
+  font-size: 20px; font-weight: 700; color: var(--text);
+  font-family: 'Syne', sans-serif; margin-bottom: 8px;
+}
+.crc-score {
+  font-size: 40px; font-weight: 800;
+  font-family: 'Syne', sans-serif; line-height: 1;
+}
+.crc-label {
+  font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted); margin-top: 4px;
+}
+.crc-sub {
+  font-size: 13px; color: var(--text-dim); margin: 10px 0 20px;
+}
+.crc-actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+
 /* ── Company Pills on Rows ───────────────────── */
 .company-pills-wrap {
   display: inline-flex;

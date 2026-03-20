@@ -238,13 +238,13 @@ export const DailyGoal = {
     if (!label) return;
     if (this._goal <= 0) {
       label.textContent = 'click to set goal';
-      label.className = '';
+      label.className = 'stat-sub';
     } else if (extra > 0) {
       label.innerHTML = `<span>${todayDone} / ${this._goal}</span><span class="goal-bonus-tag">+${extra} bonus 🔥</span>`;
-      label.className = 'goal-label-extra';
+      label.className = 'stat-sub goal-label-extra';
     } else {
       label.textContent = `${todayDone} / ${this._goal} daily goal`;
-      label.className = todayDone >= this._goal ? 'goal-label-met' : '';
+      label.className = todayDone >= this._goal ? 'stat-sub goal-label-met' : 'stat-sub';
     }
   },
 

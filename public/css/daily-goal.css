@@ -1,12 +1,12 @@
 /* ── DAILY GOAL ── */
 
 .daily-goal-ring-wrap {
-  position: absolute; top: 50%; left: 50%;
+  position: absolute; top: 80px; left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none; z-index: 0;
 }
 .today-card { position: relative; overflow: visible; padding-bottom: 28px !important; }
-.today-card .stat-value { position: relative; z-index: 1; }
+.today-card .stat-value { position: relative; z-index: 1; margin-bottom: 12px; }
 .today-card .stat-label { position: relative; z-index: 1; }
 .today-card .stat-sub   { position: relative; z-index: 1; }
 .today-card .today-track { position: relative; z-index: 1; }

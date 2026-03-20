@@ -1,6 +1,4 @@
-const fetch = require('node-fetch');
-
-exports.handler = async (event, context) => {
+export const handler = async (event) => {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -26,7 +24,7 @@ exports.handler = async (event, context) => {
       ];
     } else if (action === 'analyze') {
       if (!code) return { statusCode: 400, body: JSON.stringify({ error: 'Code is required for analysis' }) };
-      
+
       messages = [
         {
           role: 'system',
@@ -55,14 +53,8 @@ exports.handler = async (event, context) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'Invalid action' }) };
     }
 
-    const requestBody = {
-      model: 'gpt-5-mini',
-      messages: messages
-    };
-
-    if (action === 'analyze') {
-      requestBody.response_format = { type: 'json_object' };
-    }
+    const requestBody = { model: 'gpt-4o-mini', messages };
+    if (action === 'analyze') requestBody.response_format = { type: 'json_object' };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -86,7 +78,7 @@ exports.handler = async (event, context) => {
       try {
         const parsed = JSON.parse(content);
         return { statusCode: 200, body: JSON.stringify({ ok: true, data: parsed }) };
-      } catch (err) {
+      } catch {
         return { statusCode: 500, body: JSON.stringify({ error: 'Failed to parse JSON from OpenAI' }) };
       }
     } else {

@@ -459,6 +459,17 @@
   </div>
 </div>
 
+<!-- COMPANY READINESS CONFIRM MODAL -->
+<div class="modal-overlay" id="company-readiness-confirm-modal" onclick="if(event.target===this)CompanyFilter.closeReadinessConfirm()">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div class="confirm-modal-header" style="justify-content:center;margin-bottom:4px;">
+      <div class="confirm-modal-icon">🏢</div>
+      <div class="modal-title">Company Readiness</div>
+    </div>
+    <div id="company-readiness-confirm-body"></div>
+  </div>
+</div>
+
 <!-- COMPANY PREP SESSION SUMMARY -->
 <div class="modal-overlay" id="company-prep-summary-modal" onclick="CompanyFilter.handleSummaryOverlay(event)">
   <div class="modal" style="max-width:420px;">

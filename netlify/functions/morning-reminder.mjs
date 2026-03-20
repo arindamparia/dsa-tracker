@@ -1,4 +1,4 @@
-import { getDb } from "./db.js";
+import { getDb } from "./db.mjs";
 import { Resend } from "resend";
 
 // Netlify scheduled function — also HTTP-triggerable with ?secret=REMINDER_SECRET

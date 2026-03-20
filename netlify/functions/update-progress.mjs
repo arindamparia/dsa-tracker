@@ -1,4 +1,4 @@
-import { getDb } from "./db.js";
+import { getDb } from "./db.mjs";
 
 const CORS = {
   "Content-Type": "application/json",

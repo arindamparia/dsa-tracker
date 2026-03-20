@@ -1,4 +1,4 @@
-import { getDb, initSchema } from "./db.js";
+import { getDb, initSchema } from "./db.mjs";
 
 const CORS = {
   "Content-Type": "application/json",

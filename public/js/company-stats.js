@@ -41,8 +41,32 @@ function buildCompanyStats() {
     }));
 }
 
+const PAGE = 20;
+
+function buildCardHTML(c) {
+  const pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
+  const color = pct >= 80 ? 'var(--easy)' : pct >= 50 ? 'var(--medium)' : 'var(--hard)';
+  const isActive = window.state?.companyFilter === c.name;
+  const safeName = c.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const safeLabel = c.label.text.replace(/'/g, "\\'");
+  return `
+    <div class="cs-card${isActive ? ' active' : ''}"
+         onclick="CompanyFilter.confirmReadiness('${safeName}', ${c.done}, ${c.total}, '${safeLabel}')"
+         title="${c.name}: ${c.done}/${c.total} solved · Readiness ${c.score}%">
+      <div class="cs-card-name">${c.name}</div>
+      <div class="cs-pct" style="color:${color}">${pct}%</div>
+      <div class="cs-bar-track">
+        <div class="cs-bar-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+      <div class="cs-card-sub">${c.done}/${c.total}</div>
+      <div class="cs-readiness ${c.label.cls}">${c.label.text}</div>
+    </div>`;
+}
+
 export const CompanyStats = {
   _open: false,
+  _shown: PAGE,
+  _companies: [],
 
   toggle() {
     this._open = !this._open;
@@ -57,36 +81,52 @@ export const CompanyStats = {
   render() {
     const body = document.getElementById('company-stats-body');
     if (!body) return;
-    const companies = buildCompanyStats();
+    this._companies = buildCompanyStats();
+    this._shown = PAGE;
 
     const countEl = document.getElementById('company-stats-count');
-    if (countEl) countEl.textContent = `${companies.length} companies`;
+    if (countEl) countEl.textContent = `${this._companies.length} companies`;
 
-    if (companies.length === 0) {
+    if (this._companies.length === 0) {
       body.innerHTML = '<div class="cs-empty">No company data yet.</div>';
       return;
     }
 
-    body.innerHTML = `<div class="cs-grid">${
-      companies.map(c => {
-        const pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
-        const color = pct >= 80 ? 'var(--easy)' : pct >= 50 ? 'var(--medium)' : 'var(--hard)';
-        const isActive = window.state?.companyFilter === c.name;
-        const safeName = c.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        return `
-          <div class="cs-card${isActive ? ' active' : ''}"
-               onclick="CompanyFilter.select('${safeName}')"
-               title="${c.name}: ${c.done}/${c.total} solved · Readiness ${c.score}%">
-            <div class="cs-card-name">${c.name}</div>
-            <div class="cs-pct" style="color:${color}">${pct}%</div>
-            <div class="cs-bar-track">
-              <div class="cs-bar-fill" style="width:${pct}%;background:${color}"></div>
-            </div>
-            <div class="cs-card-sub">${c.done}/${c.total}</div>
-            <div class="cs-readiness ${c.label.cls}">${c.label.text}</div>
-          </div>`;
-      }).join('')
-    }</div>`;
+    body.innerHTML = '<div class="cs-grid" id="cs-grid"></div><div class="cs-pagination" id="cs-pagination"></div>';
+    this._renderPage();
+  },
+
+  _renderPage() {
+    const grid = document.getElementById('cs-grid');
+    const pg   = document.getElementById('cs-pagination');
+    if (!grid || !pg) return;
+
+    const slice = this._companies.slice(0, this._shown);
+    grid.innerHTML = slice.map(buildCardHTML).join('');
+
+    const total = this._companies.length;
+    const remaining = total - this._shown;
+    const canShowMore = remaining > 0;
+    const canShowLess = this._shown > PAGE;
+
+    if (!canShowMore && !canShowLess) { pg.innerHTML = ''; return; }
+
+    pg.innerHTML = `
+      <div class="cs-pg-row">
+        ${canShowMore ? `<button class="cs-pg-btn" onclick="CompanyStats.showMore()">Show ${Math.min(remaining, PAGE)} more <span class="cs-pg-hint">(${remaining} left)</span></button>` : ''}
+        ${canShowLess ? `<button class="cs-pg-btn cs-pg-less" onclick="CompanyStats.showLess()">Show less</button>` : ''}
+      </div>`;
+  },
+
+  showMore() {
+    this._shown = Math.min(this._shown + PAGE, this._companies.length);
+    this._renderPage();
+  },
+
+  showLess() {
+    this._shown = PAGE;
+    this._renderPage();
+    document.getElementById('cs-grid')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
   refreshIfOpen() {

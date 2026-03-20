@@ -46,6 +46,10 @@ export const CompanyFilter = {
 
   // ── Filter dropdown ────────────────────────────────────────────
   toggle() {
+    if (prepSessionCompany) {
+      if (window.showToast) window.showToast('Exit prep mode before changing company.', 'error');
+      return;
+    }
     this._open = !this._open;
     const dd = document.getElementById('company-dropdown');
     if (!dd) return;
@@ -112,6 +116,10 @@ export const CompanyFilter = {
   },
 
   select(company) {
+    if (prepSessionCompany) {
+      if (window.showToast) window.showToast('Exit prep mode before changing company.', 'error');
+      return;
+    }
     // Toggle off if already active
     if (state.companyFilter === company) {
       state.companyFilter = null;
@@ -311,6 +319,50 @@ export const CompanyFilter = {
 
   closeSummary() {
     document.getElementById('company-prep-summary-modal')?.classList.remove('open');
+  },
+
+  // ── Readiness confirm modal ────────────────────────────────────
+  confirmReadiness(company, done, total, labelText) {
+    if (prepSessionCompany) {
+      if (window.showToast) window.showToast('Exit prep mode before switching company.', 'error');
+      return;
+    }
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const color = pct >= 80 ? 'var(--easy)' : pct >= 50 ? 'var(--medium)' : 'var(--hard)';
+    const modal = document.getElementById('company-readiness-confirm-modal');
+    const body  = document.getElementById('company-readiness-confirm-body');
+    if (!modal || !body) return;
+    const safe = company.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    body.innerHTML = `
+      <div class="crc-company">${company}</div>
+      <div class="crc-score" style="color:${color}">${pct}%</div>
+      <div class="crc-label">${labelText}</div>
+      <div class="crc-sub">${done} / ${total} problems solved</div>
+      <div class="crc-actions">
+        <button class="btn-secondary" onclick="CompanyFilter.selectFromReadiness('${safe}')">Just Filter</button>
+        <button class="btn-submit" onclick="CompanyFilter.startPrepFromReadiness('${safe}')" style="background:var(--accent)">Start Prep Mode</button>
+      </div>
+    `;
+    modal.classList.add('open');
+  },
+
+  closeReadinessConfirm() {
+    document.getElementById('company-readiness-confirm-modal')?.classList.remove('open');
+  },
+
+  selectFromReadiness(company) {
+    this.closeReadinessConfirm();
+    state.companyFilter = company;
+    this._sync();
+    applyFilters();
+    if (window.CompanyStats) window.CompanyStats.refreshIfOpen();
+    document.querySelector('.controls')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
+  startPrepFromReadiness(company) {
+    this.closeReadinessConfirm();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    this.startPrep(company);
   },
 
   handleSummaryOverlay(e) {
