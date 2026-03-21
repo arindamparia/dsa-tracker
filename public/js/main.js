@@ -117,6 +117,16 @@ document.addEventListener('keydown', e => {
     return;
   }
 
+  // Enter → click the primary button of the active modal (skip if typing in a textarea)
+  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+    const overlay = document.querySelector('.modal-overlay.open');
+    if (overlay) {
+      const btn = overlay.querySelector('.btn-submit') || overlay.querySelector('.btn-danger');
+      if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
+      return;
+    }
+  }
+
   if (inInput) return; // don't hijack typing
 
   // s or / → focus search

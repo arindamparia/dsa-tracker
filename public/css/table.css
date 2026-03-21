@@ -432,3 +432,126 @@ tr.filtered-out { display: none; }
   color: #06d6a0;
   background: rgba(6, 214, 160, 0.1);
 }
+
+/* ── NEW AI REVIEW CARD (.air-*) ── */
+.air-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  animation: fadeInDown 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+/* Header: chips + thumbs */
+.air-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.air-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.air-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  color: var(--accent);
+  background: rgba(124,106,247,0.1);
+  border: 1px solid rgba(124,106,247,0.25);
+  border-radius: 20px;
+  padding: 2px 9px;
+}
+.air-thumbs { display: flex; gap: 4px; }
+.air-thumb {
+  background: transparent; border: none;
+  cursor: pointer; font-size: 15px; line-height: 1;
+  padding: 2px 4px; border-radius: 6px;
+  transition: transform 0.15s, background 0.15s;
+}
+.air-thumb:hover { background: rgba(255,255,255,0.06); transform: scale(1.15); }
+
+/* Summary bar */
+.air-summary {
+  font-size: 13px; font-weight: 600;
+  color: var(--accent); line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+/* Divider */
+.air-divider {
+  height: 1px; background: var(--border);
+  margin: 10px 0;
+}
+
+/* Sections */
+.air-section { display: flex; flex-direction: column; gap: 6px; }
+
+.air-stitle {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.air-stitle-approach { color: #a87ffb; }
+.air-stitle-eff      { color: #7c6af7; }
+.air-stitle-style    { color: #9898b0; }
+
+/* Rows */
+.air-row {
+  display: flex; align-items: baseline;
+  gap: 8px; font-size: 12.5px; line-height: 1.45;
+}
+.air-row-wrap { align-items: flex-start; }
+.air-key {
+  flex-shrink: 0; min-width: 88px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.air-val  { color: var(--text); flex: 1; }
+.air-green { color: var(--easy); }
+.air-dim   { color: var(--text-dim); font-style: italic; flex: 1; }
+
+/* Complexity badge */
+.air-cplx {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-style: italic;
+  color: var(--text);
+  background: rgba(255,255,255,0.05);
+  padding: 1px 7px; border-radius: 4px;
+}
+.air-cplx.air-green {
+  color: var(--easy);
+  background: rgba(6,214,160,0.08);
+}
+
+/* Efficiency section: left content + graph side by side */
+.air-eff {
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 12px;
+}
+.air-eff-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+/* Complexity graph */
+.air-graph-wrap {
+  flex-shrink: 0; width: 108px;
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 6px;
+}
+.air-graph-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; font-style: italic;
+  font-weight: 800; color: var(--text-dim);
+  line-height: 1; letter-spacing: -0.5px;
+  align-self: flex-end;
+}
+.air-graph-svg { width: 102px; height: 66px; display: block; }
+
+/* Star rating */
+.air-stars {
+  font-size: 14px; color: var(--medium);
+  letter-spacing: 1px;
+}
+.air-stars-empty { color: var(--border2); }

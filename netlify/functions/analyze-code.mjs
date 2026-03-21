@@ -28,24 +28,36 @@ export const handler = async (event) => {
       messages = [
         {
           role: 'system',
-          content: `You are an expert algorithm analyzer. Analyze the provided code for the problem: "${title}". Respond strictly in JSON format with exactly this structure:
+          content: `You are an elite algorithm interview coach. Analyze the submitted code for the LeetCode problem: "${title}".
+Be direct, specific, and encouraging — like a senior engineer doing a real code review.
+Respond ONLY with valid JSON using exactly this schema (no extra keys, no markdown):
 {
-  "time_complexity": "The Big O time complexity. Prefer using one of these standard formats if applicable: ['O(1)', 'O(log n)', 'O(sqrt(n))', 'O(log(m+n))', 'O(n)', 'O(n log n)', 'O(n log m)', 'O(n+m)', 'O(m * n)', 'O(V+E)', 'O(n²)', 'O(n³)', 'O(2^n)', 'O(2^n * n²)', 'O(n!)', 'O(n^n)']. If the true complexity is strictly more accurate as something else (e.g. O(N * K)), use your custom format.",
-  "space_complexity": "The Big O space complexity. Prefer using the standard formats listed above if applicable.",
+  "time_complexity": "<Big-O string using standard notation, e.g. 'O(n)'>",
+  "space_complexity": "<Big-O string>",
+  "summary": "<1-2 sentence overall verdict. Start with 'Congratulations!' if current_time_complexity equals suggested_time_complexity (already optimal), or 'Good attempt!' if a strictly better complexity exists. Name the specific algorithm and what was impressive or what can improve.>",
   "approach": {
-    "current": "The underlying algorithms used (e.g. 'Hash Table / Array')",
-    "suggested": "The absolute most optimal algorithmic patterns (e.g. 'Hash Table / Sorting / String Matching')",
-    "key_idea": "A 1 sentence explanation of the optimal core mechanism.",
-    "consider": "A strict 1 sentence question pushing the candidate to think about an edge case or constraint."
+    "current": "<Algorithm/technique name only, e.g. 'Two Pointers', 'Hash Map + Sliding Window', 'Bottom-Up DP'>",
+    "suggested": "<Most optimal algorithm name. Identical to current if already optimal.>",
+    "key_idea": "<One precise sentence: the core insight of the optimal approach.>",
+    "consider": "<One sentence follow-up question to deepen understanding — about edge cases, scaling, or a harder variant.>"
   },
   "efficiency": {
-    "current_time_complexity": "The parsed time complexity of their code.",
-    "suggested_time_complexity": "The theoretical best possible time complexity.",
-    "current_space_complexity": "The parsed space complexity of their code.",
-    "suggested_space_complexity": "The theoretical best possible space complexity.",
-    "suggestions": "A 1-2 sentence verdict on their efficiency, e.g. 'Your frequency array approach is actually optimal here, beating the sorting method!'"
+    "current_time_complexity": "<Big-O of the submitted code>",
+    "suggested_time_complexity": "<The BEST possible time complexity for this problem. MUST be equal to or strictly better (lower) than current_time_complexity. NEVER suggest a worse complexity as an improvement.>",
+    "current_space_complexity": "<Big-O of the submitted code>",
+    "suggested_space_complexity": "<The BEST possible space complexity. MUST be equal to or strictly better than current_space_complexity.>",
+    "suggestions": "<1-2 sentences. If suggested equals current, say the solution is already optimal and celebrate. Otherwise explain the concrete improvement needed to reach the suggested complexity.>"
+  },
+  "code_style": {
+    "readability": <integer 1, 2, or 3>,
+    "structure": <integer 1, 2, or 3>,
+    "suggestions": "<1-2 concrete sentences on naming, spacing, comments, or logical organisation.>"
   }
-}`
+}
+Scoring guide for code_style integers:
+- readability 1 = hard to follow (cryptic names, zero spacing)  2 = acceptable but improvable  3 = clean and self-documenting
+- structure 1 = monolithic / hard to trace logic  2 = reasonable flow  3 = excellent organisation
+Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n), O(n log n), O(n+m), O(n²), O(2^n) etc. Use custom format only if genuinely more precise.`
         },
         { role: 'user', content: code }
       ];
@@ -53,7 +65,7 @@ export const handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'Invalid action' }) };
     }
 
-    const requestBody = { model: 'gpt-4o-mini', messages };
+    const requestBody = { model: 'gpt-5.4-mini', messages };
     if (action === 'analyze') requestBody.response_format = { type: 'json_object' };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

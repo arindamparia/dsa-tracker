@@ -42,7 +42,7 @@ Respond ONLY with a JSON object: { "picks": [i, j, k] } where each value is a 0-
         'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.4-mini',
         messages,
         response_format: { type: 'json_object' }
       })

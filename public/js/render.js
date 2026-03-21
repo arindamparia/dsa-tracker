@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
+import { buildAIReviewHTML } from './ai.js';
 
 export function render() {
   const container = document.getElementById('sections');
@@ -277,6 +278,7 @@ function buildComplexityOptions(selected) {
 
 function renderAIAnalysisHTML(lc, payload) {
   if (!payload || !payload.trim()) return '';
+
   let data = null;
   let isRich = false;
   try {
@@ -284,46 +286,17 @@ function renderAIAnalysisHTML(lc, payload) {
     if (data && data.approach && data.efficiency) isRich = true;
   } catch {}
 
-  let contentHtml = '';
-  if (isRich) {
-    contentHtml = `
-      <div class="ai-rich-fb">
-        <div class="ai-rich-section approach-section">
-          <div class="ai-rich-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/></svg>
-            Approach
-          </div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Current:</span> <span class="ai-rich-val">${data.approach.current}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Suggested:</span> <span class="ai-rich-val suggested">${data.approach.suggested}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Key Idea:</span> <span class="ai-rich-val">${data.approach.key_idea}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Consider:</span> <span class="ai-rich-val consideration">${data.approach.consider}</span></div>
-        </div>
-        
-        <div class="ai-rich-section efficiency-section">
-          <div class="ai-rich-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
-            Efficiency
-          </div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Time Complexity(current):</span> <span class="ai-rich-complexity">${data.efficiency.current_time_complexity || data.efficiency.current_complexity || '—'}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Time Complexity(optimal):</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_time_complexity || data.efficiency.suggested_complexity || '—'}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Space Complexity(current):</span> <span class="ai-rich-complexity">${data.efficiency.current_space_complexity || '—'}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Space Complexity(optimal):</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_space_complexity || '—'}</span></div>
-          <div class="ai-rich-row"><span class="ai-rich-key">Suggestions:</span> <span class="ai-rich-val bold-val">${data.efficiency.suggestions}</span></div>
-        </div>
-      </div>
-    `;
-  } else {
-    contentHtml = `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${payload}</div>`;
-  }
+  const contentHtml = isRich
+    ? buildAIReviewHTML(lc, data)
+    : `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${payload}</div>`;
 
   return `
     <div class="ai-fb-container" id="ai-fb-container-${lc}">
       <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${lc})">
         <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
       </button>
-      <div class="ai-fb-content" id="ai-fb-content-${lc}" style="display: none;">
+      <div class="ai-fb-content" id="ai-fb-content-${lc}" style="display:none;">
         ${contentHtml}
       </div>
-    </div>
-  `;
+    </div>`;
 }

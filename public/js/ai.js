@@ -76,6 +76,126 @@ export function normalizeComplexity(raw) {
   return custom;
 }
 
+// ── Shared HTML builder (also imported by render.js for page-load rendering) ──
+
+function renderStars(n) {
+  n = Math.max(0, Math.min(3, n || 0));
+  return `<span class="air-stars">${'★'.repeat(n)}<span class="air-stars-empty">${'☆'.repeat(3 - n)}</span></span>`;
+}
+
+// Map a complexity string to one of 5 curve indices (0=fastest … 4=slowest)
+function complexityIndex(label) {
+  if (!label) return -1;
+  const l = label.toLowerCase().replace(/\s+/g, '');
+  if (l === 'o(1)')                                          return 0;
+  if (/o\(log/.test(l) && !/nlog/.test(l))                  return 1; // O(log n), O(log(m+n))
+  if (/o\(sqrt/.test(l))                                     return 1; // O(sqrt(n)) ≈ O(log n)
+  if (/^o\(n\)$|^o\(n\+m\)$|^o\(v\+e\)$/.test(l))         return 2; // O(n), O(n+m), O(V+E)
+  if (/nlog/.test(l))                                        return 3; // O(n log n), O(n log m)
+  if (/n[²2³3]|n\^[23]|m\*n/.test(l))                      return 4; // O(n²), O(n³), O(m*n)
+  if (/2\^n|n!|n\^n/.test(l))                               return 5; // O(2^n), O(n!), O(n^n)
+  return -1; // custom — no highlight
+}
+
+function complexityGraph(label) {
+  const safe = (label || '?').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const hi   = complexityIndex(label);
+
+  // Each entry: [SVG path from origin (10,60), r, g, b]
+  // Origin = bottom-left (10,60). SVG y is inverted — smaller y = higher on chart.
+  // Colors: green (fast) → yellow → red (slow), matching standard Big-O reference charts.
+  const curves = [
+    ['M10,60 L94,60',                              6, 214, 160],  // O(1)      — flat
+    ['M10,60 C12,40 26,33 94,28',                  6, 214, 160],  // O(log n)  — rises fast then levels off
+    ['M10,60 L94,10',                            136, 208,   0],  // O(n)      — linear diagonal
+    ['M10,60 Q28,50 55,24 Q76,11 94,6',          248, 181,   0],  // O(n log n)— slightly above linear
+    ['M10,60 Q13,59 28,50 Q55,26 94,4',          255,  71,  87],  // O(n²)     — steep parabola
+    ['M10,60 Q12,59 18,52 Q26,30 38,4',          180,   0,  50],  // O(2^n)    — nearly vertical (exponential)
+  ];
+
+  const paths = curves.map(([d, r, g, b], i) => {
+    const active = hi === i;
+    return `<path d="${d}" stroke="rgba(${r},${g},${b},${active ? '1' : '0.2'})" stroke-width="${active ? '2.5' : '1.2'}" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+
+  return `<div class="air-graph-wrap">
+    <div class="air-graph-label">${safe}</div>
+    <svg viewBox="0 0 102 66" class="air-graph-svg" xmlns="http://www.w3.org/2000/svg">
+      <line x1="10" y1="4"  x2="10" y2="62" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+      <line x1="10" y1="62" x2="98" y2="62" stroke="rgba(255,255,255,0.14)" stroke-width="0.8"/>
+      ${paths}
+    </svg>
+  </div>`;
+}
+
+export function buildAIReviewHTML(_lc, data) {
+  if (!data) return '';
+
+  const ap  = data.approach   || {};
+  const eff = data.efficiency || {};
+  const sty = data.code_style && typeof data.code_style.readability === 'number' ? data.code_style : null;
+
+  const hasSummary = !!data.summary;
+
+  const tc  = eff.current_time_complexity   || eff.current_complexity   || '—';
+  const stc = eff.suggested_time_complexity || eff.suggested_complexity || '—';
+  const sc  = eff.current_space_complexity  || '';
+  const ssc = eff.suggested_space_complexity || '';
+
+  return `
+    <div class="air-card">
+      <div class="air-header">
+        <div class="air-chips">
+          <span class="air-chip">✓ Approach</span>
+          <span class="air-chip">✓ Efficiency</span>
+          ${sty ? '<span class="air-chip">✓ Code Style</span>' : ''}
+        </div>
+      </div>
+
+      ${hasSummary ? `<div class="air-summary">${data.summary}</div>` : ''}
+      <div class="air-divider"></div>
+
+      <div class="air-section">
+        <div class="air-stitle air-stitle-approach">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/></svg>
+          Approach
+        </div>
+        ${ap.current   ? `<div class="air-row"><span class="air-key">Current:</span><span class="air-val">${ap.current}</span></div>` : ''}
+        ${ap.suggested ? `<div class="air-row"><span class="air-key">Suggested:</span><span class="air-val air-green">${ap.suggested}</span></div>` : ''}
+        ${ap.key_idea  ? `<div class="air-row air-row-wrap"><span class="air-key">Key Idea:</span><span class="air-val">${ap.key_idea}</span></div>` : ''}
+        ${ap.consider  ? `<div class="air-row air-row-wrap"><span class="air-key">Consider:</span><span class="air-val air-dim">${ap.consider}</span></div>` : ''}
+      </div>
+      <div class="air-divider"></div>
+
+      <div class="air-section air-eff">
+        <div class="air-eff-left">
+          <div class="air-stitle air-stitle-eff">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
+            Efficiency
+          </div>
+          <div class="air-row"><span class="air-key">Current complexity:</span><span class="air-cplx">${tc}</span></div>
+          <div class="air-row"><span class="air-key">Suggested complexity:</span><span class="air-cplx air-green">${stc}</span></div>
+          ${sc  ? `<div class="air-row"><span class="air-key">Space (current):</span><span class="air-cplx">${sc}</span></div>`          : ''}
+          ${ssc ? `<div class="air-row"><span class="air-key">Space (optimal):</span><span class="air-cplx air-green">${ssc}</span></div>` : ''}
+          ${eff.suggestions ? `<div class="air-row air-row-wrap"><span class="air-key">Suggestions:</span><span class="air-val">${eff.suggestions}</span></div>` : ''}
+        </div>
+        ${complexityGraph(stc)}
+      </div>
+
+      ${sty ? `
+      <div class="air-divider"></div>
+      <div class="air-section">
+        <div class="air-stitle air-stitle-style">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" fill="currentColor"/></svg>
+          Code Style
+        </div>
+        <div class="air-row"><span class="air-key">Readability:</span>${renderStars(sty.readability)}</div>
+        <div class="air-row"><span class="air-key">Structure:</span>${renderStars(sty.structure)}</div>
+        ${sty.suggestions ? `<div class="air-row air-row-wrap"><span class="air-key">Suggestions:</span><span class="air-val air-dim">${sty.suggestions}</span></div>` : ''}
+      </div>` : ''}
+    </div>`;
+}
+
 export const AI = {
   async fetchAI(action, lc_number, code = '') {
     const q = state.questions.find(x => String(x.lc_number) === String(lc_number));
@@ -209,8 +329,10 @@ export const AI = {
 
     // Stringify the payload objects so they can be saved safely into MongoDB/Postgres as Text
     const richPayload = JSON.stringify({
-      approach: analysis.approach,
-      efficiency: analysis.efficiency
+      summary:    analysis.summary,
+      approach:   analysis.approach,
+      efficiency: analysis.efficiency,
+      code_style: analysis.code_style,
     });
 
     const q = state.questions.find(x => x.lc_number === lc);
@@ -236,87 +358,52 @@ export const AI = {
 
   renderFeedback(lc, feedbackPayload) {
     if (!feedbackPayload) return;
-    
-    // Attempt parsing structured AI JSON. Fallback to basic string text if legacy.
+
     let data = null;
     let isRich = false;
     try {
       data = JSON.parse(feedbackPayload);
       if (data && data.approach && data.efficiency) isRich = true;
-    } catch {
-      // Legacy text fallback
-    }
-    
+    } catch {}
+
     const solWrap = document.querySelector(`#row-${lc} .sol-cell-wrap`);
-    if (solWrap) {
-       let fbDiv = document.getElementById(`ai-fb-container-${lc}`);
-       if (!fbDiv) {
-         fbDiv = document.createElement('div');
-         fbDiv.id = `ai-fb-container-${lc}`;
-         fbDiv.className = 'ai-fb-container';
-         fbDiv.style.marginTop = '8px';
-         fbDiv.innerHTML = `
-           <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${lc})">
-             <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
-           </button>
-           <div class="ai-fb-content" id="ai-fb-content-${lc}" style="display: none;"></div>
-         `;
-         solWrap.appendChild(fbDiv);
-       }
-       const contentDiv = document.getElementById(`ai-fb-content-${lc}`);
-       if (contentDiv) {
-         if (isRich) {
-           contentDiv.innerHTML = `
-             <div class="ai-rich-fb">
-               <div class="ai-rich-section approach-section">
-                 <div class="ai-rich-title">
-                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/></svg>
-                   Approach
-                 </div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Current:</span> <span class="ai-rich-val">${data.approach.current}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Suggested:</span> <span class="ai-rich-val suggested">${data.approach.suggested}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Key Idea:</span> <span class="ai-rich-val">${data.approach.key_idea}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Consider:</span> <span class="ai-rich-val consideration">${data.approach.consider}</span></div>
-               </div>
-               
-               <div class="ai-rich-section efficiency-section">
-                 <div class="ai-rich-title">
-                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="ai-rich-icon"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
-                   Efficiency
-                 </div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Time Complexity(current):</span> <span class="ai-rich-complexity">${data.efficiency.current_time_complexity || data.efficiency.current_complexity || '—'}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Time Complexity(optimal):</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_time_complexity || data.efficiency.suggested_complexity || '—'}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Space Complexity(current):</span> <span class="ai-rich-complexity">${data.efficiency.current_space_complexity || '—'}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Space Complexity(optimal):</span> <span class="ai-rich-complexity optimal">${data.efficiency.suggested_space_complexity || '—'}</span></div>
-                 <div class="ai-rich-row"><span class="ai-rich-key">Suggestions:</span> <span class="ai-rich-val bold-val">${data.efficiency.suggestions}</span></div>
-               </div>
-             </div>
-           `;
-         } else {
-           contentDiv.innerHTML = `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${feedbackPayload}</div>`;
-         }
-         
-         // Auto-expand if we just generated it
-         contentDiv.style.display = 'block';
-         const toggleBtn = document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`);
-         if (toggleBtn) toggleBtn.classList.add('open');
-       }
+    if (!solWrap) return;
+
+    let fbDiv = document.getElementById(`ai-fb-container-${lc}`);
+    if (!fbDiv) {
+      fbDiv = document.createElement('div');
+      fbDiv.id = `ai-fb-container-${lc}`;
+      fbDiv.className = 'ai-fb-container';
+      fbDiv.style.marginTop = '8px';
+      fbDiv.innerHTML = `
+        <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${lc})">
+          <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
+        </button>
+        <div class="ai-fb-content" id="ai-fb-content-${lc}" style="display:none;"></div>
+      `;
+      solWrap.appendChild(fbDiv);
+    }
+
+    const contentDiv = document.getElementById(`ai-fb-content-${lc}`);
+    if (contentDiv) {
+      contentDiv.innerHTML = isRich
+        ? buildAIReviewHTML(lc, data)
+        : `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${feedbackPayload}</div>`;
+
+      contentDiv.style.display = 'block';
+      document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`)?.classList.add('open');
     }
   },
 
   toggleFeedback(lc) {
     const contentDiv = document.getElementById(`ai-fb-content-${lc}`);
-    const toggleBtn = document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`);
-    if (contentDiv) {
-      if (contentDiv.style.display === 'none') {
-        contentDiv.style.display = 'block';
-        if (toggleBtn) toggleBtn.classList.add('open');
-      } else {
-        contentDiv.style.display = 'none';
-        if (toggleBtn) toggleBtn.classList.remove('open');
-      }
-    }
-  }
+    const toggleBtn  = document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`);
+    if (!contentDiv) return;
+    const open = contentDiv.style.display === 'none';
+    contentDiv.style.display = open ? 'block' : 'none';
+    toggleBtn?.classList.toggle('open', open);
+  },
+
 };
 
 window.AI = AI;
