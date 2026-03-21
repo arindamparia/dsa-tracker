@@ -126,7 +126,8 @@ export function pickRandom() {
     if (window.showToast) window.showToast('You have solved everything! 🎉', 'success');
     return;
   }
-  // Use smart algorithm if available, otherwise fall back to random
+  // Rotate away from the last ignored pick, then recommend
+  window.SmartQueue?.advancePick();
   const choice = window.SmartQueue?.recommend(1)[0]
     ?? unsolved[Math.floor(Math.random() * unsolved.length)];
 

@@ -74,6 +74,7 @@ export async function toggleCheck(lc, _si) {
     Cache.updateEntry(lc, { is_done: newDone, solved_at: q.solved_at });
     // Suggest next problem after marking solved
     if (newDone) {
+      window.SmartQueue?.onSolved(lc);
       setTimeout(() => window.SmartQueue?.suggestNext(q), 1200);
     }
   } catch (err) {

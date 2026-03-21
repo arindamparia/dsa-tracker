@@ -73,35 +73,92 @@ function scoreQuestion(q, secMap) {
   return weakness * 0.35 + diffStep * 0.25 + srsBoost * 0.20 + companyBoost * 0.15 + notAttempted * 0.05;
 }
 
+const DIFF_ORDER = { Easy: 1, Medium: 2, Hard: 3 };
+
 // ── Public API ────────────────────────────────────────────────────
 export const SmartQueue = {
+  // Session-level exclusion: questions picked but not solved yet
+  _excluded: new Set(),
+  _lastPickedLc: null,
+
   /**
-   * Returns the top N recommended unsolved problems, sorted by score desc.
+   * Call before each pickRandom to rotate away from the last suggestion.
+   * Resets after 20 ignores to avoid exhausting the pool.
    */
-  recommend(n = 5) {
-    const secMap = buildSectionStats();
-    return state.questions
-      .filter(q => !q.is_done)
-      .map(q => ({ ...q, _score: scoreQuestion(q, secMap) }))
-      .sort((a, b) => b._score - a._score)
-      .slice(0, n);
+  advancePick() {
+    if (this._lastPickedLc) {
+      this._excluded.add(this._lastPickedLc);
+      if (this._excluded.size > 20) this._excluded.clear();
+    }
   },
 
   /**
-   * Suggest next problem after solving one (Feature 12).
-   * Shows a slide-in card at bottom-right. Dismissed on click or 8s timeout.
+   * When a question is solved, clear it from the exclusion list
+   * so it doesn't take up a slot.
+   */
+  onSolved(lc_number) {
+    this._excluded.delete(lc_number);
+    this._lastPickedLc = null;
+  },
+
+  /**
+   * Returns the top N recommended unsolved problems, sorted by score desc.
+   * Excludes session-ignored questions unless pool is exhausted.
+   */
+  recommend(n = 5) {
+    const secMap = buildSectionStats();
+    const unsolved = state.questions.filter(q => !q.is_done);
+
+    // Try excluding already-seen picks; fall back to full pool if too few remain
+    const pool = unsolved.filter(q => !this._excluded.has(q.lc_number));
+    const source = pool.length > 0 ? pool : unsolved;
+
+    const results = source
+      .map(q => ({ ...q, _score: scoreQuestion(q, secMap) }))
+      .sort((a, b) => b._score - a._score)
+      .slice(0, n);
+
+    if (results.length > 0) this._lastPickedLc = results[0].lc_number;
+    return results;
+  },
+
+  /**
+   * Suggest next problem after solving one.
+   * Prioritises: same topic → same section → similar difficulty → smart score.
    */
   suggestNext(justSolvedQ) {
-    // Find best problem in same section first, else globally
     const secMap = buildSectionStats();
-    const sameSection = state.questions
-      .filter(q => !q.is_done && q.section === justSolvedQ.section)
-      .map(q => ({ ...q, _score: scoreQuestion(q, secMap) }))
+    const solvedDiff = DIFF_ORDER[justSolvedQ.difficulty] || 2;
+
+    // Build lookup sets for fast membership checks
+    const linkedToSolved = new Set(justSolvedQ.similar_problems || []);
+    // Also flag questions that list justSolvedQ as one of their similars (reverse link)
+    const reverseLinkSet = new Set(
+      state.questions
+        .filter(q => (q.similar_problems || []).includes(justSolvedQ.lc_number))
+        .map(q => q.lc_number)
+    );
+
+    const suggestion = state.questions
+      .filter(q => !q.is_done)
+      .map(q => {
+        let bonus = 0;
+        // Explicitly linked similar problem → highest bonus
+        if (linkedToSolved.has(q.lc_number) || reverseLinkSet.has(q.lc_number)) bonus += 0.40;
+        // Same topic → strong signal
+        if (q.topic && q.topic === justSolvedQ.topic)                            bonus += 0.25;
+        // Same section → medium signal
+        if (q.section === justSolvedQ.section)                                   bonus += 0.10;
+        // Difficulty: same = 0.20, one step harder = 0.10, easier = 0
+        const qDiff = DIFF_ORDER[q.difficulty] || 2;
+        if (qDiff === solvedDiff)          bonus += 0.20;
+        else if (qDiff === solvedDiff + 1) bonus += 0.10;
+
+        return { ...q, _score: scoreQuestion(q, secMap) + bonus };
+      })
       .sort((a, b) => b._score - a._score)[0];
 
-    const suggestion = sameSection || this.recommend(1)[0];
     if (!suggestion) return;
-
     this._showSuggestionCard(suggestion);
   },
 
