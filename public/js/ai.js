@@ -92,7 +92,7 @@ function complexityIndex(label) {
   if (/o\(sqrt/.test(l))                                     return 1; // O(sqrt(n)) ≈ O(log n)
   if (/^o\(n\)$|^o\(n\+m\)$|^o\(v\+e\)$/.test(l))         return 2; // O(n), O(n+m), O(V+E)
   if (/nlog/.test(l))                                        return 3; // O(n log n), O(n log m)
-  if (/n[²2³3]|n\^[23]|m\*n/.test(l))                      return 4; // O(n²), O(n³), O(m*n)
+  if (/n[²2³3]|n\^[23]|[a-z]\*[a-z]|n(?!log)[a-z]/.test(l)) return 4; // O(n²), O(n³), O(m*n), O(n*k), O(nk), O(nm)…
   if (/2\^n|n!|n\^n/.test(l))                               return 5; // O(2^n), O(n!), O(n^n)
   return -1; // custom — no highlight
 }
@@ -128,6 +128,15 @@ function complexityGraph(label) {
   </div>`;
 }
 
+// Tab switcher for Time / Space panels inside the efficiency section
+window.airSwitchTab = function(btn, tab) {
+  const section = btn.closest('.air-eff-section');
+  section.querySelectorAll('.air-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  section.querySelectorAll('.air-tab-panel').forEach(p => { p.style.display = 'none'; });
+  section.querySelector(`.air-${tab}-panel`).style.display = '';
+};
+
 export function buildAIReviewHTML(_lc, data) {
   if (!data) return '';
 
@@ -139,8 +148,12 @@ export function buildAIReviewHTML(_lc, data) {
 
   const tc  = eff.current_time_complexity   || eff.current_complexity   || '—';
   const stc = eff.suggested_time_complexity || eff.suggested_complexity || '—';
-  const sc  = eff.current_space_complexity  || '';
-  const ssc = eff.suggested_space_complexity || '';
+  const sc  = eff.current_space_complexity  || '—';
+  const ssc = eff.suggested_space_complexity || '—';
+
+  // Backward-compat: old saves have a single `suggestions`; new ones have split fields
+  const timeSugg  = eff.time_suggestions  || eff.suggestions || '';
+  const spaceSugg = eff.space_suggestions || '';
 
   return `
     <div class="air-card">
@@ -167,19 +180,37 @@ export function buildAIReviewHTML(_lc, data) {
       </div>
       <div class="air-divider"></div>
 
-      <div class="air-section air-eff">
-        <div class="air-eff-left">
-          <div class="air-stitle air-stitle-eff">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
-            Efficiency
-          </div>
-          <div class="air-row"><span class="air-key">Current complexity:</span><span class="air-cplx">${tc}</span></div>
-          <div class="air-row"><span class="air-key">Suggested complexity:</span><span class="air-cplx air-green">${stc}</span></div>
-          ${sc  ? `<div class="air-row"><span class="air-key">Space (current):</span><span class="air-cplx">${sc}</span></div>`          : ''}
-          ${ssc ? `<div class="air-row"><span class="air-key">Space (optimal):</span><span class="air-cplx air-green">${ssc}</span></div>` : ''}
-          ${eff.suggestions ? `<div class="air-row air-row-wrap"><span class="air-key">Suggestions:</span><span class="air-val">${eff.suggestions}</span></div>` : ''}
+      <div class="air-section air-eff-section">
+        <div class="air-stitle air-stitle-eff">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M13 3L4 14h7v7l9-11h-7z" fill="currentColor"/></svg>
+          Efficiency
         </div>
-        ${complexityGraph(stc)}
+        <div class="air-eff-tabs">
+          <button class="air-tab active" onclick="airSwitchTab(this,'time')">⏱ Time</button>
+          <button class="air-tab" onclick="airSwitchTab(this,'space')">📦 Space</button>
+        </div>
+
+        <div class="air-tab-panel air-time-panel">
+          <div class="air-eff-inner">
+            <div class="air-eff-left">
+              <div class="air-row"><span class="air-key">Current:</span><span class="air-cplx">${tc}</span></div>
+              <div class="air-row"><span class="air-key">Optimal:</span><span class="air-cplx air-green">${stc}</span></div>
+              ${timeSugg ? `<div class="air-row air-row-wrap"><span class="air-key">Notes:</span><span class="air-val">${timeSugg}</span></div>` : ''}
+            </div>
+            ${complexityGraph(stc)}
+          </div>
+        </div>
+
+        <div class="air-tab-panel air-space-panel" style="display:none">
+          <div class="air-eff-inner">
+            <div class="air-eff-left">
+              <div class="air-row"><span class="air-key">Current:</span><span class="air-cplx">${sc}</span></div>
+              <div class="air-row"><span class="air-key">Optimal:</span><span class="air-cplx air-green">${ssc}</span></div>
+              ${spaceSugg ? `<div class="air-row air-row-wrap"><span class="air-key">Notes:</span><span class="air-val">${spaceSugg}</span></div>` : ''}
+            </div>
+            ${complexityGraph(ssc)}
+          </div>
+        </div>
       </div>
 
       ${sty ? `

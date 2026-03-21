@@ -46,7 +46,8 @@ Respond ONLY with valid JSON using exactly this schema (no extra keys, no markdo
     "suggested_time_complexity": "<The BEST possible time complexity for this problem. MUST be equal to or strictly better (lower) than current_time_complexity. NEVER suggest a worse complexity as an improvement.>",
     "current_space_complexity": "<Big-O of the submitted code>",
     "suggested_space_complexity": "<The BEST possible space complexity. MUST be equal to or strictly better than current_space_complexity.>",
-    "suggestions": "<1-2 sentences. If suggested equals current, say the solution is already optimal and celebrate. Otherwise explain the concrete improvement needed to reach the suggested complexity.>"
+    "time_suggestions": "<1-2 sentences specifically about TIME complexity. If suggested_time equals current_time, celebrate and say it is optimal. Otherwise explain the concrete algorithmic change needed to achieve the better time complexity.>",
+    "space_suggestions": "<1-2 sentences specifically about SPACE complexity. If suggested_space equals current_space, celebrate and say it is optimal. Otherwise explain the concrete change needed to reduce memory usage.>"
   },
   "code_style": {
     "readability": <integer 1, 2, or 3>,
