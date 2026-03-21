@@ -4,7 +4,7 @@ header { padding: 16px 0 16px; border-bottom: 1px solid var(--border); margin-bo
 
 .header-badge {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--accent-glow); border: 1px solid rgba(124,106,247,0.3); border-radius: 999px;
+  background: var(--accent-glow); border: 1px solid rgba(var(--accent-rgb), 0.3); border-radius: 999px;
   padding: 5px 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
   color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
 }
@@ -20,6 +20,11 @@ h1 {
   margin-bottom: 4px;
 }
 
+[data-theme="light"] h1 {
+  background: linear-gradient(135deg, #1c1c2e 30%, var(--accent) 100%);
+  -webkit-background-clip: text; background-clip: text;
+}
+
 .header-meta { display: flex; flex-wrap: wrap; gap: 20px; color: var(--text-muted); font-size: 13px; font-family: 'JetBrains Mono', monospace; margin-top: 8px; }
 .header-meta span { display: flex; align-items: center; gap: 6px; }
 .header-meta b { color: var(--text-dim); }
@@ -29,7 +34,7 @@ h1 {
 .motivation-box {
   margin: -16px 0 32px 0;
   padding: 18px 20px;
-  background: linear-gradient(135deg, var(--surface) 0%, rgba(124,106,247,0.05) 100%);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(var(--accent-rgb), 0.05) 100%);
   border-left: 3px solid var(--accent);
   border-radius: 8px;
   color: var(--text-dim);
@@ -63,7 +68,7 @@ h1 {
 
 #quote-shuffle-btn {
   background: none;
-  border: 1px solid rgba(124,106,247,0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 8px;
   color: var(--accent);
   font-size: 18px;
@@ -78,7 +83,7 @@ h1 {
   margin-top: 2px;
 }
 #quote-shuffle-btn:hover {
-  background: rgba(124,106,247,0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   border-color: var(--accent);
   transform: rotate(30deg);
 }

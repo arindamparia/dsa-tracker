@@ -4,7 +4,7 @@
 #mi-bar .mi-countdown {
   font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
   color: var(--text); letter-spacing: 0.08em;
-  padding: 2px 10px; background: rgba(0,0,0,0.25); border-radius: 6px;
+  padding: 2px 10px; background: var(--shadow-sm); border-radius: 6px;
 }
 #mi-bar .mi-countdown.mi-urgent { color: var(--hard); animation: urgentPulse 1s ease infinite; }
 @keyframes urgentPulse {
@@ -54,7 +54,7 @@
   transition: all 0.15s;
 }
 .mi-time-btn.active, .mi-time-btn:hover {
-  border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,0.08);
+  border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb),0.08);
 }
 
 /* Problem list sidebar */
@@ -109,9 +109,9 @@ body.mock-interview-active .company-stats-section { display: none !important; }
   font-size: 13px; font-weight: 700; margin: 0 auto 14px;
   font-family: 'JetBrains Mono', monospace; display: block; text-align: center;
 }
-.mi-excellent { color: var(--easy);   background: rgba(6,214,160,0.12);   border: 1px solid rgba(6,214,160,0.3); }
+.mi-excellent { color: var(--easy);   background: rgba(var(--easy-rgb),0.12);   border: 1px solid rgba(var(--easy-rgb),0.3); }
 .mi-passed    { color: #7df; background: rgba(100,200,255,0.10); border: 1px solid rgba(100,200,255,0.2); }
-.mi-needs     { color: var(--medium); background: rgba(248,181,0,0.10);    border: 1px solid rgba(248,181,0,0.2); }
+.mi-needs     { color: var(--medium); background: rgba(var(--medium-rgb),0.10);    border: 1px solid rgba(var(--medium-rgb),0.2); }
 .mi-start     { color: var(--text-dim); background: rgba(152,152,176,0.08); border: 1px solid var(--border); }
 .mi-score-big {
   font-size: 48px; font-weight: 900; color: var(--accent);

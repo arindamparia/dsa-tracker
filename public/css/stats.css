@@ -57,6 +57,14 @@
   transition: color 0.3s, text-shadow 0.3s;
 }
 
+[data-theme="light"] .top-stats .stat-value {
+  text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] .stat-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
 /* Scroll-reveal: cards start invisible, JS adds .revealed */
 .stat-card.reveal-ready {
   opacity: 0;
@@ -88,15 +96,15 @@
   100% { transform: scale(1); }
 }
 .streak-active {
-  color: #ff9f43;
-  text-shadow: 0 0 20px rgba(255,159,67,0.4);
+  color: var(--orange);
+  text-shadow: 0 0 20px rgba(var(--orange-rgb), 0.4);
   animation: heartbeat 2.4s ease-in-out infinite;
   display: inline-block;
 }
 
 .today-active {
   color: var(--easy);
-  text-shadow: 0 0 20px rgba(6,214,160,0.4);
+  text-shadow: 0 0 20px rgba(var(--easy-rgb), 0.4);
 }
 
 .today-track {
@@ -106,3 +114,29 @@
   margin-top: 12px;
   background: var(--surface3);
 }
+
+/* ── Loading skeleton for stat cards ── */
+/* Applied while body.loading — removed by updateStats() when real data arrives */
+body.loading .stat-value,
+body.loading .stat-sub {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+  animation: none !important;
+  background: var(--surface2);
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+body.loading .stat-value::after,
+body.loading .stat-sub::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+body.loading .progress-track { opacity: 0.15; }
+body.loading #prog-pct        { visibility: hidden; }

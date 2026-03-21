@@ -6,8 +6,8 @@
   z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none;
 }
 #toast.show    { opacity: 1; transform: translateY(0); }
-#toast.error   { border-color: rgba(255,71,87,0.4);  color: var(--hard); }
-#toast.success { border-color: rgba(6,214,160,0.4);  color: var(--easy); }
+#toast.error   { border-color: rgba(var(--hard-rgb), 0.4);  color: var(--hard); }
+#toast.success { border-color: rgba(var(--easy-rgb), 0.4);  color: var(--easy); }
 
 /* ── LOADING STATES ── */
 .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }

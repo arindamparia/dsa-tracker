@@ -13,7 +13,7 @@ import { state } from './state.js';
 import { toggleSection, preloadSection } from './render.js';
 import { setDiffFilter, setStatusFilter, applyFilters, pickRandom } from './filters.js';
 import { toggleCheck, debounceSave, debounceNotesSave, toggleReview, saveComplexity } from './progress.js';
-import { initToggles, toggleTags, toggleSolution, toggleNotes, toggleCompanies } from './toggles.js';
+import { initToggles, initTheme, toggleTags, toggleSolution, toggleNotes, toggleCompanies, toggleTheme } from './toggles.js';
 import { AddQuestionModal } from './modal-add.js';
 import { SolutionModal } from './modal-solution.js';
 import { ReportModal } from './modal-report.js';
@@ -21,7 +21,6 @@ import { Logout } from './modal-logout.js';
 import { ResetModal } from './reset.js';
 import { showToast } from './toast.js';
 import { initStopwatch, PomodoroModal } from './stopwatch.js';
-import { initTimerNudge } from './timer-nudge.js';
 import { initReveal } from './reveal.js';
 import { initMotivation } from './quotes.js';
 import { SRS } from './spaced-repetition.js';
@@ -64,6 +63,7 @@ window.toggleTags       = toggleTags;
 window.toggleSolution   = toggleSolution;
 window.toggleNotes      = toggleNotes;
 window.toggleCompanies  = toggleCompanies;
+window.toggleTheme      = toggleTheme;
 
 // Misc
 window.ResetModal   = ResetModal;
@@ -152,10 +152,10 @@ document.addEventListener('goal-changed', () => {
 
 // ── Boot ──────────────────────────────────────────────────────────
 initStopwatch();
-initTimerNudge();
 initReveal();
 initMotivation();
 initToggles();
+initTheme();
 DailyGoal.init();
 boot().then(() => {
   // SRS needs questions to be loaded first

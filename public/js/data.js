@@ -1,7 +1,7 @@
 /** Data fetching — boot from cache or API, hard refresh. */
 import { state } from './state.js';
 import { Cache } from './cache.js';
-import { render } from './render.js';
+import { render, renderSkeletonSections } from './render.js';
 import { showToast } from './toast.js';
 
 export async function boot() {
@@ -11,6 +11,7 @@ export async function boot() {
 }
 
 export async function bootFresh() {
+  renderSkeletonSections();
   try {
     const res = await fetch('/.netlify/functions/get-questions', { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -39,8 +40,6 @@ export const RefreshModal = {
   async confirm() {
     this.close();
     Cache.clear();
-    document.getElementById('sections').innerHTML =
-      '<div class="loading-msg"><span class="loading-dots">Loading questions</span></div>';
     await bootFresh();
     showToast('Questions refreshed from database ✓', 'success');
   }

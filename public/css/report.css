@@ -39,9 +39,9 @@
 }
 
 .heatmap-box[data-level="0"] { background: var(--surface3); } /* #1e1e28 */
-.heatmap-box[data-level="1"] { background: rgba(6, 214, 160, 0.4); } /* light green */
-.heatmap-box[data-level="2"] { background: var(--easy); } /* green */
-.heatmap-box[data-level="3"] { background: #00b875; } /* deep green */
+.heatmap-box[data-level="1"] { background: rgba(var(--easy-rgb), 0.4); }
+.heatmap-box[data-level="2"] { background: var(--easy); }
+.heatmap-box[data-level="3"] { background: var(--easy-dark); }
 
 .heatmap-legend {
   display: flex;
@@ -76,7 +76,7 @@
   text-align: center;
   pointer-events: none;
   z-index: 2147483647 !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 12px var(--shadow-lg);
   display: none;
 }
 

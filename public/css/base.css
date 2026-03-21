@@ -29,11 +29,11 @@ body::before {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
   z-index: 99999;
   display: flex; align-items: center; gap: 10px;
-  background: rgba(12,12,22,0.95); backdrop-filter: blur(16px);
-  border: 1px solid rgba(124,106,247,0.45);
+  background: var(--surface-blur2); backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
   border-radius: 12px; padding: 10px 14px;
   font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,106,247,0.12);
+  box-shadow: 0 8px 32px var(--shadow-lg), 0 0 0 1px rgba(var(--accent-rgb), 0.12);
   opacity: 0; transition: opacity 0.3s, transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
   white-space: nowrap;
 }
@@ -46,7 +46,7 @@ body::before {
   font-weight: 700; color: #fff; cursor: pointer; letter-spacing: 0.04em;
   transition: background 0.15s, transform 0.1s;
 }
-.update-banner-btn:hover { background: #9180ff; transform: translateY(-1px); }
+.update-banner-btn:hover { background: var(--accent-light); transform: translateY(-1px); }
 .update-banner-btn:active { transform: scale(0.95); }
 .update-banner-close {
   background: none; border: none; color: var(--text-muted); font-size: 12px;

@@ -16,7 +16,7 @@
   padding: 4px 8px; font-size: 13px; line-height: 1;
   cursor: pointer; transition: all 0.15s;
 }
-.company-clear-x:hover { color: var(--hard); border-color: rgba(255,71,87,0.4); background: rgba(255,71,87,0.06); }
+.company-clear-x:hover { color: var(--hard); border-color: rgba(var(--hard-rgb),0.4); background: rgba(var(--hard-rgb),0.06); }
 .company-clear-x.hidden { display: none; }
 
 #company-filter-btn {
@@ -43,7 +43,7 @@
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,106,247,0.1);
+  box-shadow: 0 8px 32px var(--shadow-lg), 0 0 0 1px rgba(var(--accent-rgb),0.1);
   z-index: 200;
   overflow: hidden;
   display: none;
@@ -88,7 +88,7 @@
 }
 .company-list-item:last-child { border-bottom: none; }
 .company-list-item:hover  { background: var(--surface2); }
-.company-list-item.active { background: rgba(124,106,247,0.12); }
+.company-list-item.active { background: rgba(var(--accent-rgb),0.12); }
 
 .cli-top {
   display: flex;
@@ -193,9 +193,9 @@ body.company-prep-active .company-stats-section { display: none !important; }
   box-shadow: 0 4px 14px rgba(0,0,0,0.35);
 }
 .cs-card.active {
-  border-color: rgba(124,106,247,0.5);
-  background: rgba(124,106,247,0.08);
-  box-shadow: 0 0 12px rgba(124,106,247,0.12);
+  border-color: rgba(var(--accent-rgb),0.5);
+  background: rgba(var(--accent-rgb),0.08);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb),0.12);
 }
 .cs-card-name {
   font-size: 10px; font-weight: 600;
@@ -223,9 +223,9 @@ body.company-prep-active .company-stats-section { display: none !important; }
   font-family: 'JetBrains Mono', monospace;
   padding: 2px 6px; border-radius: 4px;
 }
-.rs-ready  { background: rgba(6,214,160,0.12);  color: var(--easy);   border: 1px solid rgba(6,214,160,0.25); }
-.rs-track  { background: rgba(248,181,0,0.10);   color: var(--medium); border: 1px solid rgba(248,181,0,0.2);  }
-.rs-needs  { background: rgba(255,71,87,0.10);   color: var(--hard);   border: 1px solid rgba(255,71,87,0.2);  }
+.rs-ready  { background: rgba(var(--easy-rgb),0.12);  color: var(--easy);   border: 1px solid rgba(var(--easy-rgb),0.25); }
+.rs-track  { background: rgba(var(--medium-rgb),0.10);   color: var(--medium); border: 1px solid rgba(var(--medium-rgb),0.2);  }
+.rs-needs  { background: rgba(var(--hard-rgb),0.10);   color: var(--hard);   border: 1px solid rgba(var(--hard-rgb),0.2);  }
 .rs-start  { background: rgba(152,152,176,0.08); color: var(--text-dim); border: 1px solid var(--border); }
 .cs-empty {
   text-align: center; padding: 24px;
@@ -247,7 +247,7 @@ body.company-prep-active .company-stats-section { display: none !important; }
 }
 .cs-pg-btn:hover {
   border-color: var(--accent); color: var(--accent);
-  background: rgba(124,106,247,0.07);
+  background: rgba(var(--accent-rgb),0.07);
 }
 .cs-pg-btn.cs-pg-less {
   color: var(--text-muted); border-color: var(--border);
@@ -292,22 +292,23 @@ body.companies-hidden .company-pills-wrap { display: none; }
 
 .company-pill {
   display: inline-block;
-  background: rgba(124,106,247,0.07);
-  border: 1px solid rgba(124,106,247,0.16);
+  background: rgba(var(--accent-rgb),0.07);
+  border: 1px solid rgba(var(--accent-rgb),0.16);
   border-radius: 4px;
   padding: 1px 6px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
-  color: rgba(174,164,255,0.85);
+  color: rgba(174,164,255,0.85); /* overridden in light mode below */
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.14s;
 }
 .company-pill:hover {
-  background: rgba(124,106,247,0.18);
+  background: rgba(var(--accent-rgb),0.18);
   color: var(--accent);
-  border-color: rgba(124,106,247,0.4);
+  border-color: rgba(var(--accent-rgb),0.4);
 }
+[data-theme="light"] .company-pill { color: var(--accent); }
 
 /* Hidden overflow pills */
 .company-pill.cp-hidden         { display: none; }
@@ -330,7 +331,7 @@ body.companies-hidden .company-pills-wrap { display: none; }
 .company-pill-more:hover {
   background: var(--surface2);
   color: var(--text);
-  border-color: rgba(124,106,247,0.3);
+  border-color: rgba(var(--accent-rgb),0.3);
 }
 
 @media (max-width: 600px) {
@@ -339,7 +340,7 @@ body.companies-hidden .company-pills-wrap { display: none; }
 
 /* Company filter active = show toggle button as teal */
 .filter-btn.company-active.active {
-  background: rgba(124,106,247,0.1);
-  border-color: rgba(124,106,247,0.4);
+  background: rgba(var(--accent-rgb),0.1);
+  border-color: rgba(var(--accent-rgb),0.4);
   color: var(--accent);
 }

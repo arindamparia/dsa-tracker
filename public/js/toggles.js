@@ -9,6 +9,7 @@ import { smoothTransition } from './utils.js';
 // Cache keys and 24-hour expiration threshold
 const TOGGLE_CACHE_KEY = 'dsa_toggles';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const THEME_KEY = 'dsa_theme';
 
 function saveToggles() {
   const data = {
@@ -91,4 +92,28 @@ export function toggleCompanies(btn) {
     btn.classList.toggle('active', !state.hideCompanies);
     saveToggles();
   });
+}
+
+// ── Theme (dark / light) ──────────────────────────────────────────────────
+export function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+}
+
+export function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem(THEME_KEY, 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem(THEME_KEY, 'light');
+  }
+  const btn = document.getElementById('toggle-theme');
+  if (btn) {
+    btn.classList.add('theme-fab-spin');
+    btn.addEventListener('animationend', () => btn.classList.remove('theme-fab-spin'), { once: true });
+  }
 }

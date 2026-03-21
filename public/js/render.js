@@ -5,6 +5,74 @@ import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
 import { buildAIReviewHTML } from './ai.js';
 
+const SKELETON_ROW = `
+  <tr class="skeleton-row">
+    <td class="check-cell"><div class="skeleton-box skeleton-check"></div></td>
+    <td class="prob-name">
+      <div class="skeleton-box skeleton-text"></div>
+      <div class="skeleton-box skeleton-text-sub"></div>
+    </td>
+    <td class="diff-cell"><div class="skeleton-box skeleton-badge"></div></td>
+    <td class="sol-cell"><div class="skeleton-box skeleton-textarea"></div></td>
+    <td class="notes-cell"><div class="skeleton-box skeleton-textarea"></div></td>
+    <td class="spacer-cell"></td>
+  </tr>`;
+
+const COLGROUP_HTML = `
+  <colgroup>
+    <col class="check-cell">
+    <col class="prob-name">
+    <col class="diff-cell">
+    <col class="sol-cell">
+    <col class="notes-cell">
+    <col class="spacer-cell">
+  </colgroup>`;
+
+const COL_HEADERS_HTML = `
+  <div class="section-col-headers">
+    <span class="th-check">✓</span>
+    <span class="th-problem">Problem</span>
+    <span class="th-diff">Difficulty</span>
+    <span class="th-col sol-cell">Solution</span>
+    <span class="th-col notes-cell">Notes</span>
+    <span class="th-spacer"></span>
+  </div>`;
+
+// Width variations so skeleton sections don't look identical
+const TITLE_WIDTHS = [140, 180, 110, 160, 130, 170, 120];
+
+export function renderSkeletonSections(count = 7) {
+  const container = document.getElementById('sections');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const isOpen = i < 2; // first 2 sections are open showing rows
+    const el = document.createElement('div');
+    el.className = `section skeleton-section${isOpen ? '' : ' collapsed'}`;
+    el.innerHTML = `
+      <div class="section-sticky">
+        <div class="section-header">
+          <span class="skeleton-box skeleton-section-num"></span>
+          <span class="skeleton-box skeleton-section-title" style="width:${TITLE_WIDTHS[i % TITLE_WIDTHS.length]}px"></span>
+          <div class="section-meta">
+            <span class="skeleton-box skeleton-section-count"></span>
+            <div class="section-progress-mini"><div class="section-progress-mini-fill" style="width:0%"></div></div>
+            <span class="chevron" style="opacity:0.25">▾</span>
+          </div>
+        </div>
+        ${COL_HEADERS_HTML}
+      </div>
+      <div class="section-body">
+        <div class="section-body-inner">
+          <table class="q-table">
+            ${COLGROUP_HTML}
+            <tbody>${isOpen ? Array(4).fill(SKELETON_ROW).join('') : ''}</tbody>
+          </table>
+        </div>
+      </div>`;
+    container.appendChild(el);
+  }
+}
+
 export function render() {
   const container = document.getElementById('sections');
   container.innerHTML = '';

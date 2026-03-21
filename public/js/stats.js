@@ -4,6 +4,7 @@ import { groupBySections, smoothTransition } from './utils.js';
 import { DailyGoal } from './daily-goal.js';
 
 export function updateStats() {
+  document.body.classList.remove('loading');
   const total = state.questions.length;
   let done = 0, easy = 0, easyTotal = 0, medium = 0, medTotal = 0, hard = 0, hardTotal = 0, notes = 0;
   
