@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { saveComplexity } from './progress.js';
+import { saveComplexity, saveAIAnalysis } from './progress.js';
 
 /**
  * Normalizes AI-returned complexity strings to exactly match our accepted option values:
@@ -213,26 +213,20 @@ export const AI = {
       efficiency: analysis.efficiency
     });
 
-    // Call the existing complexity save logic or just hit the API ourselves:
-    if (tVal || sVal || (analysis.approach && analysis.efficiency)) {
-      const q = state.questions.find(x => x.lc_number === lc);
-      if (q) {
-        let changed = false;
-        if ((q.time_complexity || '') !== tVal) changed = true;
-        if ((q.space_complexity || '') !== sVal) changed = true;
-        
-        const oldReview = (q.ai_analysis || '').trim();
-        const newReview = richPayload.trim();
-        if (oldReview !== newReview) changed = true;
+    const q = state.questions.find(x => x.lc_number === lc);
+    if (q) {
+      // Always persist the AI analysis to DB + localStorage immediately after generation
+      const oldReview = (q.ai_analysis || '').trim();
+      if (oldReview !== richPayload.trim()) {
+        await saveAIAnalysis(lc, richPayload.trim());
+      }
 
-        if (changed) {
-          q.time_complexity = tVal;
-          q.space_complexity = sVal;
-          q.ai_analysis = newReview;
-          saveComplexity(lc);
-        } else if (window.showToast) {
-           window.showToast(`🤖 Analysis complete! No new changes to save.`, 'info');
-        }
+      // Save complexity selects if they changed
+      const complexityChanged = (q.time_complexity || '') !== tVal || (q.space_complexity || '') !== sVal;
+      if (complexityChanged) {
+        q.time_complexity = tVal;
+        q.space_complexity = sVal;
+        saveComplexity(lc);
       }
     }
 

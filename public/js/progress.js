@@ -258,3 +258,36 @@ export async function saveComplexity(lc) {
     showToast('⚠ Complexity save failed: ' + err.message, 'error');
   }
 }
+
+export async function saveAIAnalysis(lc, aiAnalysis) {
+  const q = state.questions.find(x => x.lc_number === lc);
+  if (!q) return;
+
+  q.ai_analysis = aiAnalysis;
+
+  try {
+    const res = await fetch('/.netlify/functions/update-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lc_number: lc,
+        is_done: q.is_done || false,
+        solution: q.solution || '',
+        notes: q.notes || '',
+        needs_review: q.needs_review || false,
+        time_complexity: q.time_complexity || '',
+        space_complexity: q.space_complexity || '',
+        ai_analysis: aiAnalysis,
+        solved_at: q.solved_at || null,
+        srs_interval_index: q.srs_interval_index || 0,
+        srs_last_reviewed_at: q.srs_last_reviewed_at || null,
+      }),
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    // Persist to localStorage so page reload shows the analysis without a re-run
+    Cache.updateEntry(lc, { ai_analysis: aiAnalysis });
+  } catch (err) {
+    showToast('⚠ AI analysis save failed: ' + err.message, 'error');
+  }
+}
