@@ -251,6 +251,8 @@ DailyGoal.init();
 
   // Watermark with user email to deter content theft.
   // Email is XML-escaped before embedding into SVG to prevent injection.
+  // Angle, tile size, and offset are randomised on every page load so the
+  // pattern never looks identical across sessions.
   const wmEl = document.getElementById('watermark');
   if (wmEl && email) {
     const safeEmail = email
@@ -259,13 +261,24 @@ DailyGoal.init();
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
+
+    // Randomise each session: angle ∈ [-35, -15], tile W ∈ [540, 660], tile H ∈ [230, 290]
+    const angle  = -(15 + Math.floor(Math.random() * 21));         // -15 to -35
+    const tileW  = 540 + Math.floor(Math.random() * 121);          // 540–660
+    const tileH  = 230 + Math.floor(Math.random() * 61);           // 230–290
+    const cx = tileW / 2, cy = tileH / 2;
+    // Random phase offset so the grid starts at a different position each load
+    const offX   = Math.floor(Math.random() * tileW);
+    const offY   = Math.floor(Math.random() * tileH);
+
     const svg = encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260">` +
-      `<text x="300" y="130" text-anchor="middle" dominant-baseline="middle" ` +
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${tileW}" height="${tileH}">` +
+      `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" ` +
       `font-family="monospace" font-size="13" fill="#000000" ` +
-      `transform="rotate(-25,300,130)">${safeEmail}</text></svg>`
+      `transform="rotate(${angle},${cx},${cy})">${safeEmail}</text></svg>`
     );
-    wmEl.style.backgroundImage = `url("data:image/svg+xml,${svg}")`;
+    wmEl.style.backgroundImage    = `url("data:image/svg+xml,${svg}")`;
+    wmEl.style.backgroundPosition = `${offX}px ${offY}px`;
   }
 
   // Reveal the page only after initial content is in the DOM (no blank flash).

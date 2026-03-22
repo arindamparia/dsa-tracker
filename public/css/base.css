@@ -98,6 +98,12 @@ body::before {
   opacity: 0.08;
   filter: none;
 }
+@media (max-width: 768px) {
+  #watermark {
+    background-repeat: no-repeat;
+    background-position: center !important;
+  }
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
