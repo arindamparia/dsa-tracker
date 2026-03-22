@@ -5,15 +5,25 @@ import { showToast } from './toast.js';
 
 export const ResetModal = {
   open() {
+    const input = document.getElementById('reset-confirm-input');
+    const btn   = document.getElementById('reset-confirm-btn');
+    if (input) input.value = '';
+    if (btn)   btn.disabled = true;
     document.getElementById('reset-modal').classList.add('open');
+    setTimeout(() => input?.focus(), 50);
   },
-  
+
   close() {
     document.getElementById('reset-modal').classList.remove('open');
   },
-  
+
   handleOverlayClick(e) {
     if (e.target === document.getElementById('reset-modal')) this.close();
+  },
+
+  onType(val) {
+    const btn = document.getElementById('reset-confirm-btn');
+    if (btn) btn.disabled = val !== 'RESET';
   },
 
   async confirm() {

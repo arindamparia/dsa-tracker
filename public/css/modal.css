@@ -51,7 +51,13 @@
   font-size: 20px; flex-shrink: 0;
 }
 .confirm-modal-header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
-.confirm-modal-body   { font-size: 13px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; line-height: 1.65; margin-bottom: 28px; }
+.confirm-modal-body   { font-size: 13px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; line-height: 1.65; margin-bottom: 16px; }
+
+.reset-confirm-field  { margin-bottom: 24px; }
+.reset-confirm-label  { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+.reset-confirm-label strong { color: var(--hard); letter-spacing: 0.05em; }
+.reset-confirm-input  { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
+.reset-confirm-input:focus { border-color: var(--hard) !important; }
 
 /* ── POMODORO STEPPER ── */
 .pomo-stepper {

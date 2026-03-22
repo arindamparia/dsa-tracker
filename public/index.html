@@ -416,15 +416,23 @@
   <div class="modal" style="max-width:420px">
     <div class="confirm-modal-header">
       <div class="confirm-modal-icon" style="color:var(--hard)">⚠️</div>
-      <div class="modal-title">Reset Progress?</div>
+      <div class="modal-title">Reset All Progress?</div>
     </div>
     <div class="confirm-modal-body">
-      Reset ALL progress (checkboxes, solutions, notes)?<br>
+      This will permanently erase <strong>all</strong> checkboxes, solutions, and notes.<br>
       Questions will remain in the database.
+    </div>
+    <div class="reset-confirm-field">
+      <label class="reset-confirm-label">Type <strong>RESET</strong> to confirm</label>
+      <input id="reset-confirm-input" class="form-input reset-confirm-input"
+             type="text" placeholder="RESET" autocomplete="off" spellcheck="false"
+             oninput="ResetModal.onType(this.value)" />
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="ResetModal.close()">Cancel</button>
-      <button class="btn-danger" style="background:var(--hard); color:#fff; border-color:var(--hard);" onclick="ResetModal.confirm()">Reset Progress</button>
+      <button id="reset-confirm-btn" class="btn-danger" disabled
+              style="background:var(--hard); color:#fff; border-color:var(--hard);"
+              onclick="ResetModal.confirm()">Reset Progress</button>
     </div>
   </div>
 </div>
