@@ -10,6 +10,7 @@
  */
 import { initAuth, getToken, getUserEmail, getUserName } from './auth.js'; // getToken used by fetch interceptor below
 import { boot, bootFresh, RefreshModal } from './data.js';
+import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
 import { state } from './state.js';
 import { toggleSection, preloadSection } from './render.js';
 import { setDiffFilter, setStatusFilter, applyFilters, pickRandom } from './filters.js';
@@ -171,6 +172,13 @@ document.addEventListener('goal-changed', () => {
   };
 })();
 
+// ── BFCache: reload on restore so data is always fresh ────────────
+// pagehide (in index.html inline script) re-inserts the loader overlay
+// so the BFCache snapshot is dark. Here we reload on restore.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) window.location.reload();
+});
+
 // ── Boot ──────────────────────────────────────────────────────────
 initStopwatch();
 initReveal();
@@ -183,6 +191,44 @@ DailyGoal.init();
 (async () => {
   const authed = await initAuth();
   if (!authed) return; // Clerk is redirecting to welcome page
+
+  // ── Cross-tab auth sync ──────────────────────────────────────────────────
+  // Clerk uses BroadcastChannel internally, so addListener fires in ALL tabs
+  // when the session changes — even tabs that didn't trigger the change.
+  // Strategy: don't forcefully redirect mid-session. Instead, mark the session
+  // as stale and handle it on the next user interaction (click/keydown/submit).
+  if (window._clerk) {
+    const myUserId = window._clerk.user?.id ?? null;
+    let _staleAction = null; // 'logout' | 'switch' — set when auth changes in another tab
+
+    window._clerk.addListener(({ user }) => {
+      const newUserId = user?.id ?? null;
+      if (!newUserId && myUserId) {
+        _staleAction = 'logout';
+      } else if (newUserId && myUserId && newUserId !== myUserId) {
+        _staleAction = 'switch';
+      }
+    });
+
+    // On next user interaction, clear caches and navigate.
+    // capture:true means this fires BEFORE the button's own handler — no stale API calls.
+    const IGNORED_KEYS = new Set(['Alt','Control','Meta','Shift','Tab','Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12']);
+    const handleStaleInteraction = (e) => {
+      if (!_staleAction) return;
+      // Don't intercept window-switching / system keys — those aren't app interactions
+      if (e.type === 'keydown' && (IGNORED_KEYS.has(e.key) || e.altKey || e.ctrlKey || e.metaKey)) return;
+      e.stopImmediatePropagation(); // prevent the original handler from running
+      Cache.clear(); UserCache.clear(); HintCache.clear(); SimilarCache.clear();
+      if (_staleAction === 'logout') {
+        window.location.href = '/welcome.html';
+      } else {
+        window.location.reload();
+      }
+    };
+    document.addEventListener('click',   handleStaleInteraction, { capture: true });
+    document.addEventListener('keydown',  handleStaleInteraction, { capture: true });
+    document.addEventListener('submit',   handleStaleInteraction, { capture: true });
+  }
 
   // Set up header/watermark before page is revealed
   const email = getUserEmail();
@@ -218,7 +264,12 @@ DailyGoal.init();
     const loader = document.getElementById('page-loader');
     if (loader) {
       loader.classList.add('page-loader-ready');
-      loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+      // Guarantee DOM removal even if transitionend never fires (e.g. tab hidden
+      // during transition leaves it in the DOM with opacity:0, causing compositor
+      // layer flashes when switching back to the window).
+      const remove = () => loader.remove();
+      loader.addEventListener('transitionend', remove, { once: true });
+      setTimeout(remove, 500); // 300ms transition + 200ms buffer
     }
   };
 

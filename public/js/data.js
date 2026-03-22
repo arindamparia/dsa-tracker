@@ -33,6 +33,14 @@ export async function refreshUserSettings() {
   } catch {}
 }
 
+// Refresh user settings when the tab regains visibility after the UserCache expires.
+// Registered once at module load — not inside boot() to avoid duplicate listeners.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !UserCache.get()) {
+    refreshUserSettings();
+  }
+});
+
 export async function boot(onReady) {
   const cachedProfile = UserCache.get();
   if (cachedProfile) applyUserProfile(cachedProfile); // applies name/reminders for quick UI
@@ -41,18 +49,15 @@ export async function boot(onReady) {
   if (cached) {
     state.questions = cached;
     buildSearchIndex();
-    render();
-    onReady?.(); // reveal page now — content is ready
-    // Always fetch security-sensitive values (is_subscribed, user_role) fresh from server
+    // Show skeleton immediately, reveal the page, then wait for fresh user settings
+    // before painting the actual data. User sees: skeleton → data (single transition).
+    renderSkeletonSections();
+    onReady?.();
     await refreshUserSettings();
+    render();
   } else {
     await bootFresh(onReady);
   }
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && !UserCache.get()) {
-      refreshUserSettings();
-    }
-  });
 }
 
 export async function bootFresh(onReady) {
