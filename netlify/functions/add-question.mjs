@@ -1,4 +1,4 @@
-import { getDb } from "./db.mjs";
+import { getDb, initSchema } from "./db.mjs";
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 
 const CORS = {
@@ -12,13 +12,23 @@ export const handler = async (event) => {
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method not allowed" }) };
 
   // ── Auth ─────────────────────────────────────────────────────────
+  let userEmail;
   try {
-    await getAuthEmail(event);
+    userEmail = await getAuthEmail(event);
   } catch (err) {
     return { ...unauthorized(err.message), headers: CORS };
   }
 
   try {
+    const sql = getDb();
+    await initSchema(sql);
+
+    // ── Role check — ADMIN only ───────────────────────────────────
+    const [userRow] = await sql`SELECT role FROM users WHERE email = ${userEmail}`;
+    if (!userRow || userRow.role !== 'ADMIN') {
+      return { statusCode: 403, headers: CORS, body: JSON.stringify({ ok: false, error: 'Admin access required' }) };
+    }
+
     const body = JSON.parse(event.body || "{}");
     const { lc_number, name, url, topic, difficulty, section, section_order, tags } = body;
 
@@ -31,7 +41,6 @@ export const handler = async (event) => {
 
     const tagsArr = Array.isArray(tags) ? tags : (tags ? String(tags).split(",").map(t => t.trim()).filter(Boolean) : []);
     const secOrder = section_order ?? 99;
-    const sql = getDb();
 
     const result = await sql`
       INSERT INTO questions (lc_number, name, url, topic, difficulty, section, section_order, tags)

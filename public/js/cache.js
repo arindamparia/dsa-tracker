@@ -6,6 +6,34 @@ const KEY    = 'dsa_questions';
 const TS_KEY = 'dsa_cache_ts';
 const TTL    = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
 
+// ── User profile cache (5-minute TTL) ────────────────────────────
+const USER_KEY    = 'dsa_user_profile';
+const USER_TS_KEY = 'dsa_user_ts';
+const USER_TTL    = 5 * 60 * 1000; // 5 minutes in ms
+
+export const UserCache = {
+  get() {
+    try {
+      const ts = parseInt(localStorage.getItem(USER_TS_KEY) || '0', 10);
+      if (Date.now() - ts > USER_TTL) return null; // expired
+      const raw = localStorage.getItem(USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  },
+
+  set(profile) {
+    try {
+      localStorage.setItem(USER_KEY, JSON.stringify(profile));
+      localStorage.setItem(USER_TS_KEY, String(Date.now()));
+    } catch {}
+  },
+
+  clear() {
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(USER_TS_KEY);
+  },
+};
+
 export const Cache = {
   get() {
     try {

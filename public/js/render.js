@@ -258,9 +258,10 @@ export function toggleSection(si) {
 }
 
 export function preloadSection(si) {
+  if (window.MockInterview?.isActive()) return; // block during interview
   const tbody = document.getElementById(`tbody-${si}`);
   if (!tbody || tbody.dataset.loaded !== 'false') return;
-  
+
   tbody.dataset.loaded = 'loading';
   // Yield to main thread to keep hover ultra-smooth, then build DOM quietly
   setTimeout(() => { doRender(si, tbody); }, 10);
@@ -268,8 +269,12 @@ export function preloadSection(si) {
 
 export function renderSection(si, sync = false) {
   const tbody = document.getElementById(`tbody-${si}`);
-  if (!tbody || tbody.dataset.loaded !== 'false') return;
-  
+  if (!tbody) return;
+  // sync (force-render): proceed unless already fully rendered
+  // async (lazy): only proceed if not yet started
+  if (sync  && tbody.dataset.loaded === 'true')  return;
+  if (!sync && tbody.dataset.loaded !== 'false') return;
+
   tbody.dataset.loaded = 'loading';
 
   if (sync) {
@@ -309,6 +314,14 @@ function doRender(si, tbody) {
   tbody.innerHTML = '';
   tbody.appendChild(frag);
   tbody.dataset.loaded = 'true';
+  // Disable AI buttons during mock interview
+  if (window.MockInterview?.isActive()) {
+    tbody.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
+      b.disabled = true;
+      b.title = 'AI disabled during mock interview';
+    });
+    window.MockInterview._markInterviewRows();
+  }
   applyFilters({ preserveOpen: true });
 }
 

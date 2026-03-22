@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="css/mock-interview.css" />
 </head>
 <body class="tags-hidden topic-hidden solution-hidden loading">
+<div id="watermark" aria-hidden="true"></div>
 <div class="wrapper">
 
   <!-- HANGING TIMER WIDGET -->
@@ -61,7 +62,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn-add" onclick="openModal()">
+        <button id="btn-add-question" class="btn-add" onclick="openModal()" style="display:none">
           <span class="plus">+</span> Add Question
         </button>
         <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
@@ -370,7 +371,7 @@
     </div>
     <div class="confirm-modal-body">
       Your local cache will be cleared and your session ended.<br>
-      You'll need to enter the password again to access the tracker.
+      You'll be redirected to the sign-in page.
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="Logout.close()">Cancel</button>

@@ -18,6 +18,45 @@ import { toggleStopwatch, resetStopwatch, setStopwatchLock } from './stopwatch.j
 let session = null; // active session state
 let _countdownInterval = null;
 
+const SESSION_KEY = 'dsa_mi_session';
+
+function saveSession() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      lcNumbers: session.problems.map(q => q.lc_number),
+      startedAt: session.startedAt,
+      endsAt:    session.endsAt,
+      minutes:   session.minutes,
+      snapshotDone: [...session.snapshotDone.entries()],
+    }));
+  } catch {}
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+export function restoreSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (Date.now() >= saved.endsAt) { clearSession(); return false; }
+    const problems = saved.lcNumbers
+      .map(lc => state.questions.find(q => q.lc_number === lc))
+      .filter(Boolean);
+    if (!problems.length) { clearSession(); return false; }
+    session = {
+      problems,
+      startedAt:    saved.startedAt,
+      endsAt:       saved.endsAt,
+      minutes:      saved.minutes,
+      snapshotDone: new Map(saved.snapshotDone),
+    };
+    return true;
+  } catch { return false; }
+}
+
 function pickProblems({ easyN, mediumN, hardN, company, section, includeSolved }) {
   const pool = state.questions.filter(q => {
     if (!includeSolved && q.is_done) return false;
@@ -133,6 +172,7 @@ export const MockInterview = {
 
     this.closeConfig();
     document.body.classList.add('mock-interview-active');
+    saveSession();
 
     // Lock stopwatch and start counting elapsed time
     const modeBtn = document.getElementById('sw-mode');
@@ -253,9 +293,14 @@ export const MockInterview = {
       b.title = b.classList.contains('ai-hint-btn') ? 'Get a small hint' : 'Analyze Complexity & Quality';
     });
 
+    // Clean up interview-specific classes
+    document.querySelectorAll('.mi-section').forEach(s => s.classList.remove('mi-section'));
+    document.querySelectorAll('.mi-row').forEach(r => r.classList.remove('mi-row'));
+
     // Remove filter
     import('./filters.js').then(m => m.applyFilters());
 
+    clearSession();
     session = null;
   },
 
@@ -269,20 +314,32 @@ export const MockInterview = {
 
   _applyFilter() {
     if (!session) return;
-    const lcSet = new Set(session.problems.map(q => q.lc_number));
-    document.querySelectorAll('.q-table tbody tr').forEach(tr => {
-      const lc = parseInt(tr.id?.replace('row-', ''));
-      tr.classList.toggle('mi-hidden', !lcSet.has(lc));
-    });
-    // Show only sections with interview problems; expand them so rows are visible
     const sections = groupBySections(state.questions);
+    const interviewLcs = new Set(session.problems.map(q => String(q.lc_number)));
+
+    // Mark which sections contain interview problems
     document.querySelectorAll('.section').forEach(sec => {
       const si = parseInt(sec.id?.replace('sec-', ''));
       const secData = sections[si];
       if (!secData) return;
-      const hasProb = secData.questions.some(q => lcSet.has(q.lc_number));
-      sec.classList.toggle('section-no-match', !hasProb);
-      if (hasProb) sec.classList.remove('collapsed');
+      const hasProb = secData.questions.some(q => interviewLcs.has(String(q.lc_number)));
+      sec.classList.toggle('mi-section', hasProb);
+      if (hasProb) {
+        document.dispatchEvent(new CustomEvent('force-render-section', { detail: si }));
+        sec.classList.remove('collapsed');
+      }
+    });
+
+    // Mark individual interview rows
+    this._markInterviewRows();
+  },
+
+  /** Add mi-row class to each interview problem's row (called after render). */
+  _markInterviewRows() {
+    if (!session) return;
+    session.problems.forEach(q => {
+      const row = document.getElementById(`row-${q.lc_number}`);
+      if (row) row.classList.add('mi-row');
     });
   },
 
@@ -298,6 +355,25 @@ export const MockInterview = {
   },
 
   isActive() { return !!session; },
+
+  /** Call after restoreSession() to re-attach UI for a persisted session. */
+  resume() {
+    if (!session) return;
+    document.body.classList.add('mock-interview-active');
+    const bar = document.getElementById('mi-bar');
+    if (bar) bar.classList.remove('hidden');
+    document.getElementById('mi-bar-label').textContent =
+      `🎯 Mock Interview — ${session.problems.length} problem${session.problems.length > 1 ? 's' : ''}`;
+    const sidebar = document.getElementById('mi-sidebar');
+    if (sidebar) sidebar.innerHTML = buildProblemList(session.problems);
+    this._applyFilter();
+    updateCountdown();
+    _countdownInterval = setInterval(updateCountdown, 1000);
+    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
+      b.disabled = true;
+      b.title = 'AI disabled during mock interview';
+    });
+  },
 };
 
 window.MockInterview = MockInterview;

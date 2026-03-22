@@ -1,4 +1,5 @@
 import { state } from './state.js';
+import { UserCache } from './cache.js';
 import { showToast } from './toast.js';
 
 // ── Country code list (flag emoji + name + dial code) ──────────────
@@ -169,6 +170,16 @@ export const UserSettings = {
       state.userPhone        = phone;
       state.remindersEnabled = enabled;
       state.reminderEmail    = remEmail || null;
+
+      // Persist to localStorage cache
+      UserCache.set({
+        is_subscribed:     state.isSubscribed,
+        reminders_enabled: enabled,
+        reminder_email:    remEmail || null,
+        user_name:         rawName  || null,
+        user_phone:        phone,
+        user_role:         state.userRole,
+      });
 
       // Refresh header display name if it changed
       const metaEl = document.getElementById('hdr-user-meta');

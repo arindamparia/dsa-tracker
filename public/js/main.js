@@ -35,7 +35,7 @@ import { CompanyStats } from './company-stats.js';
 import { UserSettings } from './user-settings.js';
 import './smart-queue.js';
 import './weakness-heatmap.js';
-import './mock-interview.js';
+import { restoreSession } from './mock-interview.js';
 
 // ── Window bindings for inline HTML handlers ──────────────────────
 // Data
@@ -195,9 +195,28 @@ DailyGoal.init();
     metaEl.title = email;
   }
 
+  // Watermark with user email to deter content theft
+  const wmEl = document.getElementById('watermark');
+  if (wmEl && email) {
+    const svg = encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260">` +
+      `<text x="300" y="130" text-anchor="middle" dominant-baseline="middle" ` +
+      `font-family="monospace" font-size="13" fill="#000000" ` +
+      `transform="rotate(-25,300,130)">${email}</text></svg>`
+    );
+    wmEl.style.backgroundImage = `url("data:image/svg+xml,${svg}")`;
+  }
+
   boot().then(() => {
+    // Show Add Question button only for ADMIN users
+    if (state.userRole === 'ADMIN') {
+      document.getElementById('btn-add-question')?.style.setProperty('display', '');
+    }
     SRS.init();
     CompanyFilter.init();
     CompanyStats.render();
+
+    // Restore mock interview session if one was active before page refresh
+    if (restoreSession()) window.MockInterview.resume();
   });
 })();

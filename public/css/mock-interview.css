@@ -74,10 +74,7 @@
 }
 .mi-prob-name:hover { color: var(--accent); }
 
-/* Hidden rows during mock interview */
-body.mock-interview-active .q-table tbody tr.mi-hidden { display: none; }
-
-/* Hide non-essential UI during mock interview (mirrors focus-mode.css) */
+/* Hide non-essential UI during mock interview */
 body.mock-interview-active header,
 body.mock-interview-active .study-tools-bar,
 body.mock-interview-active .motivation-box,
@@ -86,7 +83,18 @@ body.mock-interview-active .stats-board,
 body.mock-interview-active .global-progress,
 body.mock-interview-active #review-queue,
 body.mock-interview-active #random-btn,
-body.mock-interview-active .company-stats-section { display: none !important; }
+body.mock-interview-active .company-stats-section,
+body.mock-interview-active .controls,
+body.mock-interview-active #timer-hang { display: none !important; }
+
+/* Show only interview sections; within them show only interview rows */
+body.mock-interview-active .section { display: none; }
+body.mock-interview-active .section.mi-section { display: block; }
+body.mock-interview-active .mi-section .q-table tbody tr { display: none; }
+body.mock-interview-active .mi-section .q-table tbody tr.mi-row { display: table-row; }
+
+/* Fix sticky offset: controls are hidden, stick below the mi-bar (~50px) */
+body.mock-interview-active .section-sticky { top: 50px !important; }
 
 /* Config modal — prevent overflow on small screens */
 #mi-config-modal .modal { max-height: 90vh; overflow-y: auto; }

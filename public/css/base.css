@@ -59,6 +59,22 @@ body::before {
   #update-banner.update-banner-show { transform: translateY(0); }
 }
 
+/* ── WATERMARK ── */
+#watermark {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 50;
+  background-repeat: repeat;
+  user-select: none;
+  /* Dark mode default: SVG black fill → invert to white */
+  opacity: 0.12;
+  filter: invert(1);
+}
+[data-theme='light'] #watermark {
+  /* Light mode: black fill on white, no invert needed */
+  opacity: 0.08;
+  filter: none;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .form-grid { grid-template-columns: 1fr; }
