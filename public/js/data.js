@@ -82,8 +82,8 @@ export async function bootFresh(onReady) {
     render();
   } catch (err) {
     document.getElementById('sections').innerHTML =
-      `<div class="error-msg">⚠ Failed to load: ${err.message}<br><br>
-       <button class="btn-secondary" onclick="bootFresh()" style="margin:auto;display:block">Retry</button></div>`;
+      `<div class="error-msg">⚠ Something went wrong. Please check your connection and try again.<br><br>
+       <button class="btn-secondary" onclick="bootFresh()" style="margin:auto;display:block">Try Again</button></div>`;
   }
 }
 
@@ -101,6 +101,6 @@ export const RefreshModal = {
     this.close();
     Cache.clear();
     await bootFresh();
-    showToast('Questions refreshed from database ✓', 'success');
+    showToast('Questions updated ✓', 'success');
   }
 };

@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { saveComplexity, saveAIAnalysis } from './progress.js';
 import { HintCache, Cache } from './cache.js';
+import { handleError } from './errors.js';
 
 /**
  * Normalizes AI-returned complexity strings to exactly match our accepted option values:
@@ -238,7 +239,7 @@ export const AI = {
 
     const q = state.questions.find(x => String(x.lc_number) === String(lc_number));
     if (!q) {
-      if (window.showToast) window.showToast(`Error: Could not find question data for LC# ${lc_number}`, 'error');
+      handleError(new Error('not found'), 'Question not found. Try refreshing the page.');
       return null;
     }
 
@@ -264,7 +265,7 @@ export const AI = {
       return data.data;
 
     } catch (err) {
-      if (window.showToast) window.showToast(`⚠ AI Error: ${err.message}`, 'error');
+      handleError(err, 'AI is unavailable right now. Please try again.');
       return null;
     }
   },

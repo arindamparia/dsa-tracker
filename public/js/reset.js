@@ -2,6 +2,7 @@
 import { state } from './state.js';
 import { render } from './render.js';
 import { showToast } from './toast.js';
+import { handleError } from './errors.js';
 
 export const ResetModal = {
   open() {
@@ -44,7 +45,12 @@ export const ResetModal = {
     );
     
     showToast('Resetting progress...', 'info');
-    await Promise.allSettled(promises);
-    showToast('Progress reset ✓', 'success');
+    const results = await Promise.allSettled(promises);
+    const failed = results.filter(r => r.status === 'rejected').length;
+    if (failed > 0) {
+      handleError(new Error('partial'), `Reset incomplete — ${failed} item${failed > 1 ? 's' : ''} couldn't be saved. Please try again.`);
+    } else {
+      showToast('Progress reset ✓', 'success');
+    }
   }
 };

@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { UserCache } from './cache.js';
 import { showToast } from './toast.js';
 import { getUserEmail } from './auth.js';
+import { handleError } from './errors.js';
 
 // ── Country code list (flag emoji + name + dial code) ──────────────
 const COUNTRIES = [
@@ -190,7 +191,7 @@ export const UserSettings = {
       showToast('Settings saved ✓', 'success');
       this.close();
     } catch (err) {
-      showToast(`Error: ${err.message}`, 'error');
+      handleError(err, "Couldn't save settings. Please try again.");
     } finally {
       if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
     }

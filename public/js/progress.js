@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { Cache } from './cache.js';
 import { showToast } from './toast.js';
+import { handleError } from './errors.js';
 import { updateStats } from './stats.js';
 import { applyFilters } from './filters.js';
 import { FocusMode } from './focus-mode.js';
@@ -78,7 +79,7 @@ export async function toggleCheck(lc, _si) {
       setTimeout(() => window.SmartQueue?.suggestNext(q), 1200);
     }
   } catch (err) {
-    showToast('⚠ Save failed: ' + err.message, 'error');
+    handleError(err, "Couldn't save. Please try again.");
     // rollback
     q.is_done = !newDone;
     chk.classList.toggle('checked', !newDone);
@@ -146,8 +147,7 @@ export async function persistSolution(lc, value) {
     Cache.updateEntry(lc, { solution: value });
     showToast('Solution saved ✓', 'success');
   } catch (err) {
-    if (err.name === 'AbortError') return; // silently discard superseded request
-    showToast('⚠ Save failed: ' + err.message, 'error');
+    handleError(err, "Couldn't save your solution. Please try again.");
   }
 }
 
@@ -195,8 +195,7 @@ export async function persistNotes(lc, value) {
     Cache.updateEntry(lc, { notes: value });
     showToast('Notes saved ✓', 'success');
   } catch (err) {
-    if (err.name === 'AbortError') return; // silently discard superseded request
-    showToast('⚠ Save failed: ' + err.message, 'error');
+    handleError(err, "Couldn't save your notes. Please try again.");
   }
 }
 
@@ -231,7 +230,7 @@ export async function toggleReview(lc, el) {
     if (!data.ok) throw new Error(data.error);
     Cache.updateEntry(lc, { needs_review: newReview });
   } catch (err) {
-    showToast('⚠ Save failed: ' + err.message, 'error');
+    handleError(err, "Couldn't save. Please try again.");
     q.needs_review = !newReview;
     el.classList.toggle('active', !newReview);
   }
@@ -274,7 +273,7 @@ export async function saveComplexity(lc) {
     Cache.updateEntry(lc, { time_complexity: tVal, space_complexity: sVal });
     showToast('Complexity saved ✓', 'success');
   } catch (err) {
-    showToast('⚠ Complexity save failed: ' + err.message, 'error');
+    handleError(err, "Couldn't save complexity. Please try again.");
   }
 }
 
@@ -324,6 +323,6 @@ export async function saveAIAnalysis(lc, aiAnalysis) {
     // Persist to localStorage so page reload shows the analysis without a re-run
     Cache.updateEntry(lc, { ai_analysis: aiAnalysis });
   } catch (err) {
-    showToast('⚠ AI analysis save failed: ' + err.message, 'error');
+    handleError(err, "Couldn't save AI analysis.");
   }
 }
