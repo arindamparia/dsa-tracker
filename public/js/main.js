@@ -277,8 +277,11 @@ DailyGoal.init();
       `font-family="monospace" font-size="13" fill="#000000" ` +
       `transform="rotate(${angle},${cx},${cy})">${safeEmail}</text></svg>`
     );
-    wmEl.style.backgroundImage    = `url("data:image/svg+xml,${svg}")`;
-    wmEl.style.backgroundPosition = `${offX}px ${offY}px`;
+    wmEl.style.backgroundImage = `url("data:image/svg+xml,${svg}")`;
+    // On mobile the CSS centres a single instance; random offset only on desktop
+    if (window.innerWidth > 768) {
+      wmEl.style.backgroundPosition = `${offX}px ${offY}px`;
+    }
   }
 
   // Reveal the page only after initial content is in the DOM (no blank flash).
