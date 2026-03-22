@@ -140,3 +140,90 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
+
+/* ── USER SETTINGS MODAL ── */
+.us-field-group { margin-bottom: 18px; }
+.us-label {
+  display: block;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.us-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-family: inherit;
+}
+.us-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.us-input:focus { border-color: var(--accent); }
+.us-phone-row {
+  display: flex;
+  gap: 8px;
+}
+.us-phone-code {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 10px 8px;
+  outline: none;
+  cursor: pointer;
+  flex: 0 0 200px;
+  max-width: 200px;
+  transition: border-color 0.15s;
+}
+.us-phone-code:focus { border-color: var(--accent); }
+.us-phone-num { flex: 1; }
+.us-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 18px 0;
+}
+.us-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.us-toggle-row .us-label { margin-bottom: 0; }
+/* Toggle switch */
+.us-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.us-switch input { opacity: 0; width: 0; height: 0; }
+.us-slider {
+  position: absolute; inset: 0;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.us-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; bottom: 3px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+.us-switch input:checked + .us-slider { background: var(--accent); border-color: var(--accent); }
+.us-switch input:checked + .us-slider::before { transform: translateX(20px); background: #fff; }
+.hidden { display: none !important; }

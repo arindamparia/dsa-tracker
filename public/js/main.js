@@ -32,6 +32,7 @@ import { SimilarProblems } from './similar-problems.js';
 import { AI } from './ai.js';
 import { CompanyFilter } from './company-filter.js';
 import { CompanyStats } from './company-stats.js';
+import { UserSettings } from './user-settings.js';
 import './smart-queue.js';
 import './weakness-heatmap.js';
 import './mock-interview.js';
@@ -96,6 +97,7 @@ window.SimilarProblems  = SimilarProblems;
 window.AI               = AI;
 window.CompanyFilter    = CompanyFilter;
 window.CompanyStats     = CompanyStats;
+window.UserSettings     = UserSettings;
 window.state            = state; // needed by company-stats.js for companyFilter check
 
 // ── Keyboard shortcuts ────────────────────────────────────────────
@@ -112,6 +114,7 @@ document.addEventListener('keydown', e => {
     CompanyFilter.closePicker();
     CompanyFilter.closeSummary();
     ResetModal.close();
+    UserSettings.close();
     window.WeaknessHeatmap?.close();
     window.MockInterview?.closeConfig();
     window.MockInterview?.closeSummary();

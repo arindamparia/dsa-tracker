@@ -67,6 +67,7 @@
         <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
         <button class="btn-action" onclick="RefreshModal.open()" title="Re-fetch all questions from database">↺ Hard Refresh</button>
         <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
+        <button class="btn-action" onclick="UserSettings.open()" title="Profile &amp; Settings">⚙ Settings</button>
         <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
@@ -308,6 +309,54 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-submit" id="f-submit" onclick="submitQuestion()">Add Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER SETTINGS MODAL -->
+<div class="modal-overlay" id="user-settings-modal" onclick="UserSettings.handleOverlayClick(event)">
+  <div class="modal" style="max-width:480px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon">⚙</div>
+      <div class="modal-title">Profile &amp; Settings</div>
+    </div>
+    <div class="modal-body" style="padding:0 28px 4px">
+
+      <div class="us-field-group">
+        <label class="us-label">Display Name</label>
+        <input id="us-name" class="us-input" type="text" placeholder="Your name" maxlength="80" autocomplete="name" />
+      </div>
+
+      <div class="us-field-group">
+        <label class="us-label">Phone Number</label>
+        <div class="us-phone-row">
+          <select id="us-phone-code" class="us-phone-code"></select>
+          <input id="us-phone-number" class="us-input us-phone-num" type="tel"
+                 placeholder="9876543210" maxlength="20"
+                 oninput="this.value=this.value.replace(/[^\d\s\-()+]/g,'')" />
+        </div>
+      </div>
+
+      <div class="us-divider"></div>
+
+      <div class="us-field-group us-toggle-row">
+        <label class="us-label">Daily Email Reminders</label>
+        <label class="us-switch">
+          <input id="us-reminders-toggle" type="checkbox" onchange="UserSettings.onReminderToggle()" />
+          <span class="us-slider"></span>
+        </label>
+      </div>
+
+      <div id="us-reminder-email-row" class="us-field-group hidden">
+        <label class="us-label">Reminder Email <span class="us-hint">(leave blank to use account email)</span></label>
+        <input id="us-reminder-email" class="us-input" type="email"
+               placeholder="your@email.com" maxlength="120" autocomplete="email" />
+      </div>
+
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="UserSettings.close()">Cancel</button>
+      <button class="btn-submit" id="us-save-btn" onclick="UserSettings.save()">Save</button>
     </div>
   </div>
 </div>

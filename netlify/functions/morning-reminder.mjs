@@ -14,85 +14,97 @@ export default async (request, context) => {
       }
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const sql    = getDb();
-
-    // Scheduled functions have no Clerk token — use the recipient's email as the user identity
-    const reminderEmail = (process.env.REMINDER_TO_EMAIL || "").toLowerCase();
-
-    // Fetch a random unsolved problem + overall stats in parallel
-    const [[problem], [stats]] = await Promise.all([
-      sql`
-        SELECT q.name, q.lc_number, q.difficulty, q.topic, q.url
-        FROM   questions q
-        LEFT JOIN progress p
-          ON  p.lc_number  = q.lc_number
-          AND p.user_email = ${reminderEmail}
-        WHERE  COALESCE(p.is_done, false) = false
-        ORDER  BY RANDOM()
-        LIMIT  1;
-      `,
-      sql`
-        SELECT
-          COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = true)  AS done,
-          COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = false) AS remaining
-        FROM   questions q
-        LEFT JOIN progress p
-          ON  p.lc_number  = q.lc_number
-          AND p.user_email = ${reminderEmail};
-      `,
-    ]);
-
-    const siteUrl  = process.env.URL          || "https://dsatrackerforarindam.netlify.app";
-    const toEmail  = process.env.REMINDER_TO_EMAIL  || "";
+    const resend    = new Resend(process.env.RESEND_API_KEY);
+    const sql       = getDb();
+    const siteUrl   = process.env.URL || "https://dsatrackerforarindam.netlify.app";
     const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
-    const done      = Number(stats?.done      || 0);
-    const remaining = Number(stats?.remaining || 0);
-    const total     = done + remaining;
-    const pct       = total ? Math.round((done / total) * 100) : 0;
+    // ── Get all opted-in users ────────────────────────────────────
+    const users = await sql`
+      SELECT email,
+             COALESCE(NULLIF(TRIM(reminder_email), ''), email) AS send_to,
+             name
+      FROM   users
+      WHERE  reminders_enabled = TRUE
+    `;
 
-    const todayDate = new Date();
-    const today = todayDate.toLocaleDateString("en-IN", {
-      weekday: "long", day: "numeric", month: "long",
-    });
-    // Subject line format: "Friday, 13 Mar"
-    const subjectDate = todayDate.toLocaleDateString("en-IN", {
-      weekday: "long", day: "numeric", month: "short",
-    });
+    if (!users.length) {
+      return new Response(JSON.stringify({ ok: true, count: 0 }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    // ── Difficulty colours (dark bg) ───────────────────────────────────
+    // ── Difficulty colours ────────────────────────────────────────
     const diffStyle = {
       Easy:   { color: "#06d6a0", border: "rgba(6,214,160,0.4)" },
       Medium: { color: "#f8b500", border: "rgba(248,181,0,0.4)" },
       Hard:   { color: "#ff4757", border: "rgba(255,71,87,0.4)" },
     };
-    const ds = diffStyle[problem?.difficulty] || diffStyle.Hard;
 
-    // ── Plain-text version (critical for deliverability) ───────────────
-    const plainText = problem
-      ? [
-          `Hi Arindam,`,
-          ``,
-          `Here is your LeetCode problem for today (${today}):`,
-          ``,
-          `  ${problem.name}`,
-          `  Difficulty : ${problem.difficulty}`,
-          `  Topic      : ${problem.topic}`,
-          `  Link       : ${problem.url}`,
-          ``,
-          `Your progress: ${done} of ${total} solved (${pct}%).`,
-          `${remaining} problems remaining.`,
-          ``,
-          `Open your tracker: ${siteUrl}`,
-          ``,
-          `— DSA Tracker`,
-        ].join("\n")
-      : `Hi Arindam,\n\nNo unsolved problems left — every single one is done. Impressive.\n\nOpen your tracker: ${siteUrl}\n\n— DSA Tracker`;
+    const todayDate   = new Date();
+    const today       = todayDate.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+    const subjectDate = todayDate.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
 
-    // ── HTML version (dark theme) ───────────────────────────────────────
-    const problemBlock = problem
-      ? `
+    let sent = 0;
+    for (const user of users) {
+      const userEmail   = user.email;
+      const toEmail     = user.send_to;
+      const displayName = user.name || toEmail.split("@")[0];
+
+      // Fetch a random unsolved problem + overall stats in parallel
+      const [[problem], [stats]] = await Promise.all([
+        sql`
+          SELECT q.name, q.lc_number, q.difficulty, q.topic, q.url
+          FROM   questions q
+          LEFT JOIN progress p
+            ON  p.lc_number  = q.lc_number
+            AND p.user_email = ${userEmail}
+          WHERE  COALESCE(p.is_done, false) = false
+          ORDER  BY RANDOM()
+          LIMIT  1
+        `,
+        sql`
+          SELECT
+            COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = true)  AS done,
+            COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = false) AS remaining
+          FROM   questions q
+          LEFT JOIN progress p
+            ON  p.lc_number  = q.lc_number
+            AND p.user_email = ${userEmail}
+        `,
+      ]);
+
+      const done      = Number(stats?.done      || 0);
+      const remaining = Number(stats?.remaining || 0);
+      const total     = done + remaining;
+      const pct       = total ? Math.round((done / total) * 100) : 0;
+
+      const ds = diffStyle[problem?.difficulty] || diffStyle.Hard;
+
+      // ── Plain-text version ──────────────────────────────────────
+      const plainText = problem
+        ? [
+            `Hi ${displayName},`,
+            ``,
+            `Here is your LeetCode problem for today (${today}):`,
+            ``,
+            `  ${problem.name}`,
+            `  Difficulty : ${problem.difficulty}`,
+            `  Topic      : ${problem.topic}`,
+            `  Link       : ${problem.url}`,
+            ``,
+            `Your progress: ${done} of ${total} solved (${pct}%).`,
+            `${remaining} problems remaining.`,
+            ``,
+            `Open your tracker: ${siteUrl}`,
+            ``,
+            `— DSA Tracker`,
+          ].join("\n")
+        : `Hi ${displayName},\n\nNo unsolved problems left — every single one is done. Impressive.\n\nOpen your tracker: ${siteUrl}\n\n— DSA Tracker`;
+
+      // ── HTML version ────────────────────────────────────────────
+      const problemBlock = problem
+        ? `
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border:1px solid #2a2a3e;border-radius:10px;overflow:hidden;">
           <tr>
             <td style="background:#16162a;padding:10px 20px;border-bottom:1px solid #2a2a3e;">
@@ -114,9 +126,9 @@ export default async (request, context) => {
             </td>
           </tr>
         </table>`
-      : `<p style="margin-top:20px;color:#6b6b85;font-size:14px;">Every problem in your list is solved. Nothing left for today!</p>`;
+        : `<p style="margin-top:20px;color:#6b6b85;font-size:14px;">Every problem in your list is solved. Nothing left for today!</p>`;
 
-    const progressBar = `
+      const progressBar = `
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border:1px solid #2a2a3e;border-radius:10px;overflow:hidden;">
         <tr>
           <td style="padding:16px 20px;">
@@ -134,7 +146,7 @@ export default async (request, context) => {
         </tr>
       </table>`;
 
-    const html = `<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -154,8 +166,6 @@ export default async (request, context) => {
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-
-          <!-- Card -->
           <tr>
             <td style="background:#111118;border-radius:14px;border:1px solid #2a2a3e;overflow:hidden;">
 
@@ -163,10 +173,8 @@ export default async (request, context) => {
               <div style="height:3px;background:linear-gradient(90deg,#7c6af7,#06d6a0);"></div>
 
               <div style="padding:28px 28px 10px;">
-                <!-- Logo / label -->
                 <p style="margin:0 0 6px;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:#6b6b85;">DSA Tracker</p>
-                <!-- Greeting -->
-                <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#e8e8f0;line-height:1.2;">Good Morning, Arindam &#128075;</h1>
+                <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#e8e8f0;line-height:1.2;">Good Morning, ${displayName} &#128075;</h1>
                 <p style="margin:0;font-size:14px;color:#9898b0;line-height:1.6;">
                   Your daily LeetCode problem is ready. Solve one today, stay sharp always.
                 </p>
@@ -192,7 +200,6 @@ export default async (request, context) => {
 
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -201,22 +208,24 @@ export default async (request, context) => {
 </body>
 </html>`;
 
-    await resend.emails.send({
-      from:     `DSA Tracker <${fromEmail}>`,
-      to:       toEmail,
-      reply_to: toEmail,                     // replies go back to yourself
-      subject:  `🌅 Your DSA Problem of the Day — ${subjectDate}`,
-      text:     plainText,                   // plain-text alternative (key for deliverability)
-      html,
-      headers: {
-        // Tells Gmail this is a scheduled digest, not cold spam
-        "List-Unsubscribe": `<mailto:${toEmail}?subject=Unsubscribe%20DSA%20Reminder>`,
-        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-        "X-Mailer": "DSA-Tracker/1.0",
-      },
-    });
+      await resend.emails.send({
+        from:     `DSA Tracker <${fromEmail}>`,
+        to:       toEmail,
+        reply_to: toEmail,
+        subject:  `🌅 Your DSA Problem of the Day — ${subjectDate}`,
+        text:     plainText,
+        html,
+        headers: {
+          "List-Unsubscribe": `<mailto:${toEmail}?subject=Unsubscribe%20DSA%20Reminder>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          "X-Mailer": "DSA-Tracker/1.0",
+        },
+      });
 
-    return new Response(JSON.stringify({ ok: true, problem: problem?.name || null }), {
+      sent++;
+    }
+
+    return new Response(JSON.stringify({ ok: true, count: sent }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {

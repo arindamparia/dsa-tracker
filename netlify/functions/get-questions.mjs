@@ -22,11 +22,17 @@ export const handler = async (event) => {
     const sql = getDb();
     await initSchema(sql);
 
-    // Upsert caller into users table — updates clerk_id if missing
-    await sql`
+    // Upsert caller into users table — updates clerk_id if missing; return subscription status
+    const [userRow] = await sql`
       INSERT INTO users (email, clerk_id) VALUES (${userEmail}, ${clerkId})
       ON CONFLICT (email) DO UPDATE SET clerk_id = COALESCE(users.clerk_id, EXCLUDED.clerk_id)
+      RETURNING is_subscribed, reminders_enabled, reminder_email, name, phone
     `;
+    const isSubscribed     = userRow?.is_subscribed     ?? false;
+    const remindersEnabled = userRow?.reminders_enabled ?? false;
+    const reminderEmail    = userRow?.reminder_email    ?? null;
+    const userName         = userRow?.name              ?? null;
+    const userPhone        = userRow?.phone             ?? null;
 
     const rows = await sql`
       SELECT
@@ -61,7 +67,7 @@ export const handler = async (event) => {
     return {
       statusCode: 200,
       headers: CORS,
-      body: JSON.stringify({ ok: true, questions: rows }),
+      body: JSON.stringify({ ok: true, questions: rows, is_subscribed: isSubscribed, reminders_enabled: remindersEnabled, reminder_email: reminderEmail, user_name: userName, user_phone: userPhone }),
     };
   } catch (err) {
     return {

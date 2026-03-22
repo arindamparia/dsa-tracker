@@ -17,7 +17,12 @@ export async function bootFresh() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    state.questions = data.questions;
+    state.questions       = data.questions;
+    state.isSubscribed    = data.is_subscribed     ?? false;
+    state.remindersEnabled = data.reminders_enabled ?? false;
+    state.reminderEmail   = data.reminder_email     ?? null;
+    state.userName        = data.user_name          ?? null;
+    state.userPhone       = data.user_phone         ?? null;
     Cache.set(state.questions);
     render();
   } catch (err) {

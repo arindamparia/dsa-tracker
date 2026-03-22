@@ -228,7 +228,13 @@ export function buildAIReviewHTML(_lc, data) {
 }
 
 export const AI = {
+  _notSubscribedToast() {
+    if (window.showToast) window.showToast('🔒 AI features require a subscription.', 'error');
+  },
+
   async fetchAI(action, lc_number, code = '') {
+    if (!state.isSubscribed) { this._notSubscribedToast(); return null; }
+
     const q = state.questions.find(x => String(x.lc_number) === String(lc_number));
     if (!q) {
       if (window.showToast) window.showToast(`Error: Could not find question data for LC# ${lc_number}`, 'error');
@@ -245,8 +251,12 @@ export const AI = {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
+        if (res.status === 403 || data.error === 'subscription_required') {
+          this._notSubscribedToast();
+          return null;
+        }
         throw new Error(data.error || 'Failed to fetch AI response');
       }
 

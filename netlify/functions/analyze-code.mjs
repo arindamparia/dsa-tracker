@@ -1,4 +1,5 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
+import { getDb } from "./db.mjs";
 
 const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, Authorization" };
 
@@ -6,8 +7,24 @@ export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
-  try { await getAuthEmail(event); }
+  let userEmail;
+  try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
+
+  // ── Subscription check ─────────────────────────────────────────
+  try {
+    const sql = getDb();
+    const [row] = await sql`SELECT is_subscribed FROM users WHERE email = ${userEmail}`;
+    if (!row?.is_subscribed) {
+      return {
+        statusCode: 403,
+        headers: CORS,
+        body: JSON.stringify({ ok: false, error: 'subscription_required' }),
+      };
+    }
+  } catch {
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error' }) };
+  }
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
