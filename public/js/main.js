@@ -192,6 +192,16 @@ DailyGoal.init();
   const authed = await initAuth();
   if (!authed) return; // Clerk is redirecting to welcome page
 
+  // ── Clear caches on user switch (any logout path) ────────────────────────
+  // Compares current Clerk user against last known user stored in localStorage.
+  // If they differ, all caches are wiped so the new user never sees stale data.
+  const currentUserEmail = getUserEmail();
+  const lastUserEmail = localStorage.getItem('dsa_last_user');
+  if (currentUserEmail && lastUserEmail && lastUserEmail !== currentUserEmail) {
+    Cache.clear(); UserCache.clear(); HintCache.clear(); SimilarCache.clear();
+  }
+  if (currentUserEmail) localStorage.setItem('dsa_last_user', currentUserEmail);
+
   // ── Cross-tab auth sync ──────────────────────────────────────────────────
   // Clerk uses BroadcastChannel internally, so addListener fires in ALL tabs
   // when the session changes — even tabs that didn't trigger the change.
