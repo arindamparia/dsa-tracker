@@ -1,5 +1,13 @@
+import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
+
+const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, Authorization" };
+
 export const handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
+
+  try { await getAuthEmail(event); }
+  catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
@@ -79,8 +87,7 @@ Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n)
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI Error:', errorText);
+      await response.text();
       return { statusCode: response.status, body: JSON.stringify({ error: 'OpenAI API request failed' }) };
     }
 
@@ -99,7 +106,6 @@ Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n)
     }
 
   } catch (err) {
-    console.error('Function error:', err);
     return { statusCode: 500, body: JSON.stringify({ error: 'Internal server error' }) };
   }
 };

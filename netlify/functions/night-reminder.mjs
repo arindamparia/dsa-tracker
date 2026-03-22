@@ -16,20 +16,26 @@ export default async (request, context) => {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const sql    = getDb();
 
+    // Scheduled functions have no Clerk token — use the recipient's email as the user identity
+    const reminderEmail = (process.env.REMINDER_TO_EMAIL || "").toLowerCase();
+
     // Fetch today's solved count + overall stats in parallel
     const [[todayStats], [stats]] = await Promise.all([
       sql`
         SELECT COUNT(*) AS solved_today
         FROM   progress
-        WHERE  is_done = TRUE
-          AND  updated_at >= CURRENT_DATE;
+        WHERE  is_done    = TRUE
+          AND  user_email = ${reminderEmail}
+          AND  solved_at  >= CURRENT_DATE;
       `,
       sql`
         SELECT
           COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = true)  AS done,
           COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = false) AS remaining
         FROM   questions q
-        LEFT JOIN progress p ON q.lc_number = p.lc_number;
+        LEFT JOIN progress p
+          ON  p.lc_number  = q.lc_number
+          AND p.user_email = ${reminderEmail};
       `,
     ]);
 
@@ -41,7 +47,9 @@ export default async (request, context) => {
       const [p] = await sql`
         SELECT q.name, q.lc_number, q.difficulty, q.topic, q.url
         FROM   questions q
-        LEFT JOIN progress p ON q.lc_number = p.lc_number
+        LEFT JOIN progress p
+          ON  p.lc_number  = q.lc_number
+          AND p.user_email = ${reminderEmail}
         WHERE  COALESCE(p.is_done, false) = false
         ORDER  BY RANDOM()
         LIMIT  1;
@@ -50,7 +58,7 @@ export default async (request, context) => {
     }
 
     const siteUrl   = process.env.URL               || "https://dsatrackerforarindam.netlify.app";
-    const toEmail   = process.env.REMINDER_TO_EMAIL || "arindamparia321@gmail.com";
+    const toEmail   = process.env.REMINDER_TO_EMAIL || "";
     const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
     const done        = Number(stats?.done      || 0);
@@ -305,12 +313,10 @@ export default async (request, context) => {
       },
     });
 
-    console.log("Night reminder sent. Solved today:", solvedToday);
     return new Response(JSON.stringify({ ok: true, solvedToday }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("night-reminder error:", err);
     return new Response(JSON.stringify({ ok: false, error: err.message }), {
       status: 500, headers: { "Content-Type": "application/json" },
     });

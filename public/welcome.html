@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DSA Mastery Tracker</title>
+<meta name="clerk-publishable-key" content="pk_test_aW1wcm92ZWQtZ3JhY2tsZS01NS5jbGVyay5hY2NvdW50cy5kZXYk" />
+<meta name="clerk-domain" content="https://improved-grackle-55.clerk.accounts.dev" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0a0a0f;
+    --surface: #111118;
+    --surface2:#18181f;
+    --border:  #2a2a38;
+    --text:    #e8e8f0;
+    --text-dim:#9898b0;
+    --text-muted:#6b6b85;
+    --accent:  #7c6af7;
+    --easy:    #06d6a0;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 40px 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 24px 16px;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--easy));
+  }
+
+  .logo {
+    font-size: 36px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--text) 60%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  button {
+    width: 100%;
+    padding: 13px 24px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  button:active { transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  #btn-signin {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  #btn-signup {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  #btn-signup:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+  .footer {
+    margin-top: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <span class="logo">⚡</span>
+  <h1>DSA Mastery Tracker</h1>
+  <p class="tagline">Track problems · Analyze solutions<br>Master algorithms · Stay consistent</p>
+
+  <div class="actions">
+    <button id="btn-signin" onclick="handleSignIn()">Sign In</button>
+    <button id="btn-signup" onclick="handleSignUp()">Create Account</button>
+  </div>
+
+  <p class="footer">DSA Tracker &middot; Personal Edition</p>
+</div>
+
+<script>
+  const PK     = document.querySelector('meta[name="clerk-publishable-key"]')?.content || '';
+  const DOMAIN = document.querySelector('meta[name="clerk-domain"]')?.content || '';
+
+  let _clerkPromise = null;
+
+  function loadClerk() {
+    if (_clerkPromise) return _clerkPromise;
+    _clerkPromise = new Promise((resolve, reject) => {
+      if (!PK || PK.startsWith('REPLACE')) { resolve(null); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+      s.setAttribute('data-clerk-publishable-key', PK);
+      s.crossOrigin = 'anonymous';
+      s.onload = async () => {
+        const clerk = window.Clerk;
+        await clerk.load();
+        if (clerk.user) { window.location.replace('/'); return; }
+        resolve(clerk);
+      };
+      s.onerror = () => reject(new Error('Failed to load Clerk'));
+      document.head.appendChild(s);
+    });
+    return _clerkPromise;
+  }
+
+  // Eagerly load Clerk in background so buttons respond instantly
+  loadClerk().catch(() => {});
+
+  async function handleSignIn() {
+    const btn = document.getElementById('btn-signin');
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    try {
+      const clerk = await loadClerk();
+      if (clerk) clerk.redirectToSignIn({ redirectUrl: window.location.origin + '/' });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  async function handleSignUp() {
+    const btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    try {
+      const clerk = await loadClerk();
+      if (clerk) clerk.redirectToSignUp({ redirectUrl: window.location.origin + '/' });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+  }
+</script>
+</body>
+</html>

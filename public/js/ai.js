@@ -253,7 +253,6 @@ export const AI = {
       return data.data;
 
     } catch (err) {
-      console.error(err);
       if (window.showToast) window.showToast(`⚠ AI Error: ${err.message}`, 'error');
       return null;
     }

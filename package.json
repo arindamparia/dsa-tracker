@@ -6,6 +6,7 @@
     "dev": "netlify dev"
   },
   "dependencies": {
+    "@clerk/backend": "^3.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "resend": "^6.9.4"
   },

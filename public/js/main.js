@@ -6,8 +6,9 @@
  *  2. Expose functions to `window` for inline onclick/oninput handlers
  *     (required because ES modules are not global by default)
  *  3. Register keyboard shortcuts
- *  4. Kick off the boot sequence
+ *  4. Kick off the boot sequence (after Clerk auth)
  */
+import { initAuth, getToken, getUserEmail, getUserName } from './auth.js'; // getToken used by fetch interceptor below
 import { boot, bootFresh, RefreshModal } from './data.js';
 import { state } from './state.js';
 import { toggleSection, preloadSection } from './render.js';
@@ -150,6 +151,23 @@ document.addEventListener('goal-changed', () => {
   import('./stats.js').then(m => m.updateStats());
 });
 
+// ── Global fetch interceptor — append Clerk Bearer token ──────────
+// Intercepts all /.netlify/functions/ calls and adds Authorization header.
+// Clerk auto-refreshes tokens; getToken() always returns a valid JWT.
+(function () {
+  const _fetch = window.fetch;
+  window.fetch = async function (url, options = {}) {
+    if (typeof url === "string" && url.startsWith("/.netlify/functions/")) {
+      const token = await getToken();
+      if (token) {
+        options = { ...options };
+        options.headers = { ...options.headers, Authorization: `Bearer ${token}` };
+      }
+    }
+    return _fetch.call(this, url, options);
+  };
+})();
+
 // ── Boot ──────────────────────────────────────────────────────────
 initStopwatch();
 initReveal();
@@ -157,10 +175,26 @@ initMotivation();
 initToggles();
 initTheme();
 DailyGoal.init();
-boot().then(() => {
-  // SRS needs questions to be loaded first
-  SRS.init();
-  CompanyFilter.init();
-  // Populate company count label (panel starts collapsed)
-  CompanyStats.render();
-});
+
+// Auth must complete before API calls are made
+(async () => {
+  const authed = await initAuth();
+  if (!authed) return; // Clerk is redirecting to welcome page
+
+  document.documentElement.style.visibility = '';
+
+  // Show user info in header once authenticated
+  const email = getUserEmail();
+  const name  = getUserName();
+  const metaEl = document.getElementById('hdr-user-meta');
+  if (metaEl && email) {
+    metaEl.textContent = name || email;
+    metaEl.title = email;
+  }
+
+  boot().then(() => {
+    SRS.init();
+    CompanyFilter.init();
+    CompanyStats.render();
+  });
+})();

@@ -213,8 +213,7 @@ export const SimilarProblems = {
             similar_problems: pickedLCs
           })
         });
-      } catch (err) {
-        console.error('Failed to save similar problems to DB:', err);
+      } catch {
       }
     }
   }

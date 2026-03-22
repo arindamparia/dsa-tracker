@@ -1,13 +1,13 @@
 /**
  * Logout confirmation modal.
- * On confirm: clears localStorage cache, then navigates to /logout
- * which the Netlify edge function handles by clearing the auth cookie
- * and redirecting back to the login page.
+ * On confirm: clears localStorage cache, then signs out via Clerk.
+ * Clerk clears the session cookie; after signOut() the page reloads
+ * and Clerk JS redirects to the sign-in page automatically.
  */
 import { Cache } from './cache.js';
+import { signOut } from './auth.js';
 
-const OVERLAY_ID  = 'logout-modal';
-const LOGOUT_PATH = '/logout';
+const OVERLAY_ID = 'logout-modal';
 
 export const Logout = {
   open() {
@@ -22,8 +22,8 @@ export const Logout = {
     if (e.target === document.getElementById(OVERLAY_ID)) this.close();
   },
 
-  confirm() {
-    Cache.clear();                      // invalidate localStorage cache
-    window.location.href = LOGOUT_PATH; // edge fn clears cookie → redirects to /
+  async confirm() {
+    Cache.clear();   // clear localStorage cache
+    await signOut(); // Clerk signs out + reloads → redirect to sign-in
   },
 };

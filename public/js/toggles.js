@@ -35,8 +35,7 @@ export function initToggles() {
         state.hideCompanies = parsed.hideCompanies !== false; // default hidden
       }
     }
-  } catch (err) {
-    console.error('Failed to parse toggle cache', err);
+  } catch {
   }
 
   // Apply state to DOM initially

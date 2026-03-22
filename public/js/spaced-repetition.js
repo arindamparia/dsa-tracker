@@ -92,8 +92,7 @@ export const SRS = {
         srs_interval_index: q.srs_interval_index,
         srs_last_reviewed_at: q.srs_last_reviewed_at
       }),
-    }).catch(err => {
-      console.error('Failed to save SRS interval to DB', err);
+    }).catch(() => {
     });
   },
 

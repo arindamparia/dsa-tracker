@@ -11,6 +11,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@clerk/backend@^3.2.2",
         "npm:@neondatabase/serverless@^1.0.2",
         "npm:netlify-cli@^24.3.0",
         "npm:resend@^6.9.4"

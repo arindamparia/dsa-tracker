@@ -1,14 +1,18 @@
 import { getDb } from "./db.mjs";
+import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 
 const CORS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method not allowed" }) };
+
+  try { await getAuthEmail(event); }
+  catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
   try {
     const { lc_number, similar_problems } = JSON.parse(event.body || "{}");
@@ -26,7 +30,6 @@ export const handler = async (event) => {
 
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true }) };
   } catch (err) {
-    console.error("update-question error:", err.message, err.stack);
     return { statusCode: 500, headers: CORS, body: JSON.stringify({ ok: false, error: err.message }) };
   }
 };
