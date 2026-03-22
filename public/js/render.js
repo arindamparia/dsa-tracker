@@ -2,7 +2,30 @@
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { updateStats } from './stats.js';
-import { applyFilters } from './filters.js';
+import { applyFilters, applyFiltersToSection } from './filters.js';
+
+/** Escape a string for safe insertion into HTML text content or attributes. */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── Module-level company count map (rebuilt once per render()) ────────────
+let _companyCountMap = null;
+function getCompanyCountMap() {
+  if (_companyCountMap) return _companyCountMap;
+  _companyCountMap = new Map();
+  state.questions.forEach(q =>
+    (q.companies_asked || []).forEach(c =>
+      _companyCountMap.set(c, (_companyCountMap.get(c) || 0) + 1)
+    )
+  );
+  return _companyCountMap;
+}
 import { buildAIReviewHTML } from './ai.js';
 
 const SKELETON_ROW = `
@@ -74,6 +97,7 @@ export function renderSkeletonSections(count = 7) {
 }
 
 export function render() {
+  _companyCountMap = null; // invalidate cache on full re-render
   const container = document.getElementById('sections');
   container.innerHTML = '';
   const sections = groupBySections(state.questions);
@@ -148,28 +172,30 @@ export function buildRow(q, si) {
   }
 
   const tags     = Array.isArray(q.tags) ? q.tags : [];
-  const tagHtml  = tags.map(t => `<span class="tag-pill">${t}</span>`).join('');
+  const tagHtml  = tags.map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join('');
 
   // Company pills — sorted by total question count desc (same order as filter dropdown)
+  // Uses pre-computed map (getCompanyCountMap) to avoid O(N) rebuild per row.
   const COMPANY_VISIBLE = 4;
   const companiesRaw = Array.isArray(q.companies_asked) ? q.companies_asked : [];
-  const companyCountMap = new Map();
-  state.questions.forEach(q2 => (q2.companies_asked || []).forEach(c => companyCountMap.set(c, (companyCountMap.get(c) || 0) + 1)));
+  const companyCountMap = getCompanyCountMap();
   const companies = [...companiesRaw].sort((a, b) => (companyCountMap.get(b) || 0) - (companyCountMap.get(a) || 0));
   let companyHtml = '';
   if (companies.length > 0) {
     const visible = companies.slice(0, COMPANY_VISIBLE);
     const hidden  = companies.slice(COMPANY_VISIBLE);
+    // Use data-company attributes instead of inline onclick to prevent XSS.
+    // Clicks handled by delegated listener at bottom of this file.
     const visiblePills = visible.map(c => {
-      const safe = c.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `<span class="company-pill" onclick="CompanyFilter.select('${safe}')" title="Filter by ${c}">${c}</span>`;
+      const esc = escapeHtml(c);
+      return `<span class="company-pill" data-company="${esc}" title="Filter by ${esc}">${esc}</span>`;
     }).join('');
     const hiddenPills = hidden.map(c => {
-      const safe = c.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `<span class="company-pill cp-hidden" onclick="CompanyFilter.select('${safe}')" title="Filter by ${c}">${c}</span>`;
+      const esc = escapeHtml(c);
+      return `<span class="company-pill cp-hidden" data-company="${esc}" title="Filter by ${esc}">${esc}</span>`;
     }).join('');
     const moreBtn = hidden.length > 0
-      ? `<span class="company-pill-more" onclick="event.stopPropagation();CompanyFilter.toggleMore(${q.lc_number})">+${hidden.length} more</span>`
+      ? `<span class="company-pill-more" data-lc="${q.lc_number}">+${hidden.length} more</span>`
       : '';
     companyHtml = `<span class="company-pills-wrap" id="cpw-${q.lc_number}">${visiblePills}${hiddenPills}${moreBtn}</span>`;
   }
@@ -178,6 +204,13 @@ export function buildRow(q, si) {
   const todayBadge = tr.classList.contains('solved-today')
     ? '<span class="today-badge">TODAY</span>' : '';
 
+  // Escape all DB-sourced strings before embedding into innerHTML.
+  const safeName       = escapeHtml(q.name);
+  const safeTopic      = escapeHtml(q.topic);
+  const safeDifficulty = escapeHtml(q.difficulty);
+  // URL: server validates http/https; escape for attribute safety.
+  const safeUrl = (q.url || '').match(/^https?:\/\//) ? escapeHtml(q.url) : '#';
+
   tr.innerHTML = `
     <td class="check-cell">
       <div class="custom-check ${q.is_done ? 'checked' : ''}" id="chk-${q.lc_number}"
@@ -185,14 +218,14 @@ export function buildRow(q, si) {
     </td>
     <td class="prob-name">
       <span class="review-star ${q.needs_review ? 'active' : ''}" onclick="toggleReview(${q.lc_number}, this)" title="Needs Review">★</span>
-      <a href="${q.url}" target="_blank" rel="noopener" style="display:inline-block">${q.name}</a>${todayBadge}
-      <span class="topic-tag">${q.topic}</span>
+      <a href="${safeUrl}" target="_blank" rel="noopener" style="display:inline-block">${safeName}</a>${todayBadge}
+      <span class="topic-tag">${safeTopic}</span>
       <button class="similar-btn" id="sim-btn-${q.lc_number}" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
       <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
       ${companyHtml ? `<br>${companyHtml}` : ''}
     </td>
-    <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${q.difficulty}</span></td>
+    <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${safeDifficulty}</span></td>
     <td class="sol-cell">
       <div class="sol-cell-wrap">
         <div class="sol-actions-row">
@@ -322,11 +355,27 @@ function doRender(si, tbody) {
     });
     window.MockInterview._markInterviewRows();
   }
-  applyFilters({ preserveOpen: true });
+  // Only re-filter the newly rendered section — avoids full DOM scan of all sections.
+  applyFiltersToSection(si);
 }
 
 document.addEventListener('force-render-section', (e) => {
   renderSection(e.detail, true);
+});
+
+// ── Company pill click delegation ─────────────────────────────────────────
+// Replaces inline onclick handlers to prevent XSS from DB-sourced company names.
+document.addEventListener('click', (e) => {
+  const pill = e.target.closest('.company-pill[data-company]');
+  if (pill) {
+    window.CompanyFilter?.select(pill.dataset.company);
+    return;
+  }
+  const more = e.target.closest('.company-pill-more[data-lc]');
+  if (more) {
+    e.stopPropagation();
+    window.CompanyFilter?.toggleMore(parseInt(more.dataset.lc, 10));
+  }
 });
 
 /**

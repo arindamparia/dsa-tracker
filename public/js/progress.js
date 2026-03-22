@@ -114,14 +114,22 @@ export function debounceSave(lc, el) {
 export async function persistSolution(lc, value) {
   const q = state.questions.find(x => x.lc_number === lc);
   if (!q) return;
+
+  // Cancel any previous in-flight save for this question (race condition fix).
+  // The AbortError is caught below and silently ignored.
+  state.inflightSaves[lc]?.abort();
+  const controller = new AbortController();
+  state.inflightSaves[lc] = controller;
+
   try {
     const res = await fetch('/.netlify/functions/update-progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        lc_number: lc, 
-        is_done: q.is_done || false, 
-        solution: value, 
+      signal: controller.signal,
+      body: JSON.stringify({
+        lc_number: lc,
+        is_done: q.is_done || false,
+        solution: value,
         notes: q.notes || '',
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
@@ -132,11 +140,13 @@ export async function persistSolution(lc, value) {
         srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
+    delete state.inflightSaves[lc];
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     Cache.updateEntry(lc, { solution: value });
     showToast('Solution saved ✓', 'success');
   } catch (err) {
+    if (err.name === 'AbortError') return; // silently discard superseded request
     showToast('⚠ Save failed: ' + err.message, 'error');
   }
 }
@@ -154,14 +164,21 @@ export function debounceNotesSave(lc, el) {
 export async function persistNotes(lc, value) {
   const q = state.questions.find(x => x.lc_number === lc);
   if (!q) return;
+
+  // Cancel any previous in-flight notes save for this question.
+  state.inflightNotes[lc]?.abort();
+  const controller = new AbortController();
+  state.inflightNotes[lc] = controller;
+
   try {
     const res = await fetch('/.netlify/functions/update-progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        lc_number: lc, 
-        is_done: q.is_done || false, 
-        solution: q.solution || '', 
+      signal: controller.signal,
+      body: JSON.stringify({
+        lc_number: lc,
+        is_done: q.is_done || false,
+        solution: q.solution || '',
         notes: value,
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
@@ -172,11 +189,13 @@ export async function persistNotes(lc, value) {
         srs_last_reviewed_at: q.srs_last_reviewed_at || null
       }),
     });
+    delete state.inflightNotes[lc];
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     Cache.updateEntry(lc, { notes: value });
     showToast('Notes saved ✓', 'success');
   } catch (err) {
+    if (err.name === 'AbortError') return; // silently discard superseded request
     showToast('⚠ Save failed: ' + err.message, 'error');
   }
 }
@@ -258,6 +277,23 @@ export async function saveComplexity(lc) {
     showToast('⚠ Complexity save failed: ' + err.message, 'error');
   }
 }
+
+// ── beforeunload: flush pending saves to localStorage cache ──────────────
+// If the user closes the tab while a debounce timer is pending,
+// the server save is lost but we still persist the latest value to cache
+// so the next page load reflects the user's most recent edits.
+window.addEventListener('beforeunload', () => {
+  Object.entries(state.saveTimers).forEach(([lc, timer]) => {
+    clearTimeout(timer);
+    const q = state.questions.find(x => x.lc_number === parseInt(lc, 10));
+    if (q?.solution !== undefined) Cache.updateEntry(q.lc_number, { solution: q.solution });
+  });
+  Object.entries(state.notesTimers).forEach(([lc, timer]) => {
+    clearTimeout(timer);
+    const q = state.questions.find(x => x.lc_number === parseInt(lc, 10));
+    if (q?.notes !== undefined) Cache.updateEntry(q.lc_number, { notes: q.notes });
+  });
+});
 
 export async function saveAIAnalysis(lc, aiAnalysis) {
   const q = state.questions.find(x => x.lc_number === lc);

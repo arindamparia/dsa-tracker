@@ -1,11 +1,6 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
-
-const CORS = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+import { CORS_HEADERS as CORS } from "./cors.mjs";
 
 /** Lightweight endpoint — returns only the current user's profile fields. */
 export const handler = async (event) => {

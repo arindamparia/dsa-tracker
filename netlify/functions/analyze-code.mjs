@@ -1,7 +1,7 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
-
-const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, Authorization" };
+import { CORS_HEADERS as CORS } from "./cors.mjs";
+import { checkAIRateLimit } from "./rate-limit.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -13,13 +13,24 @@ export const handler = async (event) => {
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY environment variable is missing.' }) };
+    // Never reveal implementation details — return generic service error
+    return { statusCode: 503, headers: CORS, body: JSON.stringify({ error: 'AI service temporarily unavailable.' }) };
   }
 
   try {
     const { action, title, code } = JSON.parse(event.body);
     if (!action || !title) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing action or title' }) };
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing action or title' }) };
+    }
+
+    // ── Rate limiting — max 10 AI calls per user per minute ──────────────
+    try {
+      const allowed = await checkAIRateLimit(userEmail);
+      if (!allowed) {
+        return { statusCode: 429, headers: CORS, body: JSON.stringify({ ok: false, error: 'rate_limited', message: 'Too many requests. Please wait a moment and try again.' }) };
+      }
+    } catch {
+      // If rate-limit check fails (DB issue), allow the request through
     }
 
     // ── Subscription check (analyze only; hints are free & shared) ──
@@ -46,7 +57,7 @@ export const handler = async (event) => {
         { role: 'user', content: `Can I get a hint for ${title}?` }
       ];
     } else if (action === 'analyze') {
-      if (!code) return { statusCode: 400, body: JSON.stringify({ error: 'Code is required for analysis' }) };
+      if (!code) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Code is required for analysis' }) };
 
       messages = [
         {
@@ -86,7 +97,7 @@ Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n)
         { role: 'user', content: code }
       ];
     } else {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Invalid action' }) };
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Invalid action' }) };
     }
 
     const requestBody = { model: 'gpt-5.4-mini', messages };
@@ -102,25 +113,32 @@ Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n)
     });
 
     if (!response.ok) {
-      await response.text();
-      return { statusCode: response.status, body: JSON.stringify({ error: 'OpenAI API request failed' }) };
+      const errBody = await response.text();
+      console.error('OpenAI error:', response.status, errBody);
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service returned an error. Please try again.' }) };
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    // Null-safe access — guard against unexpected OpenAI response shapes
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) {
+      console.error('Unexpected OpenAI response shape:', JSON.stringify(data));
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'Unexpected response from AI service.' }) };
+    }
 
     if (action === 'analyze') {
       try {
         const parsed = JSON.parse(content);
-        return { statusCode: 200, body: JSON.stringify({ ok: true, data: parsed }) };
+        return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: parsed }) };
       } catch {
-        return { statusCode: 500, body: JSON.stringify({ error: 'Failed to parse JSON from OpenAI' }) };
+        return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI returned malformed data. Please try again.' }) };
       }
     } else {
-      return { statusCode: 200, body: JSON.stringify({ ok: true, data: content }) };
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: content }) };
     }
 
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Internal server error' }) };
+    console.error('analyze-code error:', err);
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error' }) };
   }
 };

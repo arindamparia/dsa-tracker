@@ -27,11 +27,32 @@ function getSectionStats() {
   return sections;
 }
 
+/** Draw text with automatic 2-line word-wrap if it exceeds maxW. */
+function drawWrappedLabel(ctx, text, lx, ly, maxW) {
+  if (ctx.measureText(text).width <= maxW) {
+    ctx.fillText(text, lx, ly);
+    return;
+  }
+  // Find the best split point
+  const words = text.split(' ');
+  let line1 = words[0], line2 = words.slice(1).join(' ');
+  for (let i = words.length - 1; i >= 1; i--) {
+    const candidate = words.slice(0, i).join(' ');
+    if (ctx.measureText(candidate).width <= maxW) {
+      line1 = candidate;
+      line2 = words.slice(i).join(' ');
+      break;
+    }
+  }
+  ctx.fillText(line1, lx, ly - 7);
+  ctx.fillText(line2, lx, ly + 7);
+}
+
 function drawRadar(sections) {
   const canvas = document.getElementById('mastery-canvas');
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
-  const size = Math.min(canvas.parentElement.offsetWidth, 500);
+  const size = Math.min(canvas.parentElement.offsetWidth - 16, 640);
   canvas.width  = size * dpr;
   canvas.height = size * dpr;
   canvas.style.width  = size + 'px';
@@ -42,7 +63,7 @@ function drawRadar(sections) {
 
   const cx = size / 2;
   const cy = size / 2;
-  const radius = size * 0.38;
+  const radius = size * 0.30;
   const n = sections.length;
 
   if (n < 3) {
@@ -120,25 +141,35 @@ function drawRadar(sections) {
     ctx.fillStyle = '#7c6af7';
     ctx.fill();
 
-    // Label
-    const labelR = radius + 18;
+    // Label — positioned outside the radar, with 2-line word-wrap
+    const labelR = radius + 28;
     const lx = cx + labelR * Math.cos(angle);
     const ly = cy + labelR * Math.sin(angle);
-    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.font = '10.5px "JetBrains Mono", monospace';
     ctx.fillStyle = '#9898b0';
 
-    // Text alignment based on position
-    if (Math.abs(Math.cos(angle)) < 0.15) {
+    // Text alignment based on angular position
+    const cosA = Math.cos(angle);
+    if (Math.abs(cosA) < 0.15) {
       ctx.textAlign = 'center';
-    } else if (Math.cos(angle) > 0) {
+    } else if (cosA > 0) {
       ctx.textAlign = 'left';
     } else {
       ctx.textAlign = 'right';
     }
     ctx.textBaseline = Math.sin(angle) > 0.3 ? 'top' : Math.sin(angle) < -0.3 ? 'bottom' : 'middle';
 
-    const label = sections[i].name.length > 14 ? sections[i].name.slice(0, 13) + '…' : sections[i].name;
-    ctx.fillText(label, lx, ly);
+    // Compute available width from label anchor to canvas edge
+    let availW;
+    if (Math.abs(cosA) < 0.15) {
+      availW = size * 0.85;
+    } else if (cosA > 0) {
+      availW = size - lx - 4;  // left-aligned: space to right edge
+    } else {
+      availW = lx - 4;          // right-aligned: space to left edge
+    }
+
+    drawWrappedLabel(ctx, sections[i].name, lx, ly, Math.max(availW, 50));
   }
 }
 

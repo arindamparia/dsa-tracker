@@ -68,7 +68,7 @@ body.focus-active .focus-btn { background: var(--accent-glow); border-color: rgb
 
 .focus-topic-item {
   display: flex; align-items: center; gap: 8px;
-  padding: 14px 14px; border-radius: 8px;
+  padding: 20px 14px; border-radius: 8px;
   background: var(--surface); border: 1px solid var(--border);
   cursor: pointer; transition: all 0.2s;
   font-family: 'JetBrains Mono', monospace;

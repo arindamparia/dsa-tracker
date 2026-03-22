@@ -1,11 +1,6 @@
 import { getDb, initSchema } from "./db.mjs";
 import { getAuthInfo, unauthorized } from "./clerk-auth.mjs";
-
-const CORS = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+import { CORS_HEADERS as CORS } from "./cors.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };

@@ -12,6 +12,9 @@ export const state = {
   statusFilter: 'all', // 'all' | 'done' | 'undone'
   saveTimers:   {},    // debounce handles for solution, keyed by lc_number
   notesTimers:  {},    // debounce handles for notes, keyed by lc_number
+  inflightSaves: {},   // AbortControllers for in-flight solution saves, keyed by lc_number
+  inflightNotes: {},   // AbortControllers for in-flight notes saves, keyed by lc_number
+  searchIndex:  null,  // Map<lc_number, string> built by buildSearchIndex() for fast search
   hideTags:     true, // toggled by toggleTags()
   hideSolution: true, // toggled by toggleSolution()
   hideNotes:    false, // toggled by toggleNotes()

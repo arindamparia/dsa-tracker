@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { Cache, UserCache } from './cache.js';
 import { render, renderSkeletonSections } from './render.js';
 import { showToast } from './toast.js';
+import { buildSearchIndex } from './filters.js';
 
 function applyUserProfile(data) {
   state.isSubscribed     = data.is_subscribed     ?? false;
@@ -32,18 +33,20 @@ export async function refreshUserSettings() {
   } catch {}
 }
 
-export async function boot() {
+export async function boot(onReady) {
   const cachedProfile = UserCache.get();
   if (cachedProfile) applyUserProfile(cachedProfile); // applies name/reminders for quick UI
 
   const cached = Cache.get();
   if (cached) {
     state.questions = cached;
+    buildSearchIndex();
     render();
+    onReady?.(); // reveal page now — content is ready
     // Always fetch security-sensitive values (is_subscribed, user_role) fresh from server
     await refreshUserSettings();
   } else {
-    await bootFresh();
+    await bootFresh(onReady);
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && !UserCache.get()) {
@@ -52,14 +55,16 @@ export async function boot() {
   });
 }
 
-export async function bootFresh() {
+export async function bootFresh(onReady) {
   renderSkeletonSections();
+  onReady?.(); // reveal page with skeletons — data arrives shortly
   try {
     const res = await fetch('/.netlify/functions/get-questions', { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     state.questions = data.questions;
+    buildSearchIndex();
     applyUserProfile(data);
     Cache.set(state.questions);
     // Only cache non-sensitive preferences — never store is_subscribed or user_role

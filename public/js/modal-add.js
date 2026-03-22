@@ -47,8 +47,13 @@ export const AddQuestionModal = {
       errEl.textContent = 'All required fields (*) must be filled.';
       errEl.classList.add('show'); return;
     }
-    if (!url.startsWith('http')) {
-      errEl.textContent = 'URL must start with http(s)://';
+    // Validate URL using the URL constructor (throws on invalid input)
+    try {
+      const parsed = new URL(url);
+      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('bad scheme');
+      if (url.length > 500) throw new Error('too long');
+    } catch {
+      errEl.textContent = 'Please enter a valid URL starting with https://';
       errEl.classList.add('show'); return;
     }
 

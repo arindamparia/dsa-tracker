@@ -1,24 +1,35 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
-
-const CORS = { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Content-Type, Authorization" };
+import { CORS_HEADERS as CORS } from "./cors.mjs";
+import { checkAIRateLimit } from "./rate-limit.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
 
-  try { await getAuthEmail(event); }
+  let userEmail;
+  try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY environment variable is missing.' }) };
+    return { statusCode: 503, headers: CORS, body: JSON.stringify({ error: 'AI service temporarily unavailable.' }) };
+  }
+
+  // ── Rate limiting — max 10 AI calls per user per minute ──────────────
+  try {
+    const allowed = await checkAIRateLimit(userEmail);
+    if (!allowed) {
+      return { statusCode: 429, headers: CORS, body: JSON.stringify({ ok: false, error: 'rate_limited', message: 'Too many requests. Please wait a moment and try again.' }) };
+    }
+  } catch {
+    // If rate-limit check fails (DB issue), allow the request through
   }
 
   try {
     const { source, candidates } = JSON.parse(event.body);
 
     if (!source || !candidates || !candidates.length) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Missing source problem or candidates list' }) };
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing source problem or candidates list' }) };
     }
 
     const candidateList = candidates.map((c, i) =>
@@ -57,21 +68,28 @@ Respond ONLY with a JSON object: { "picks": [i, j, k] } where each value is a 0-
     });
 
     if (!response.ok) {
-      await response.text();
-      return { statusCode: response.status, body: JSON.stringify({ error: 'OpenAI API request failed' }) };
+      const errBody = await response.text();
+      console.error('OpenAI error:', response.status, errBody);
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service returned an error. Please try again.' }) };
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    // Null-safe access — guard against unexpected OpenAI response shapes
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) {
+      console.error('Unexpected OpenAI response shape:', JSON.stringify(data));
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'Unexpected response from AI service.' }) };
+    }
 
     try {
       const parsed = JSON.parse(content);
-      return { statusCode: 200, body: JSON.stringify({ ok: true, data: parsed }) };
+      return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: parsed }) };
     } catch {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Failed to parse JSON from OpenAI' }) };
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI returned malformed data. Please try again.' }) };
     }
 
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Internal server error' }) };
+    console.error('rank-similar-problems error:', err);
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error' }) };
   }
 };

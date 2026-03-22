@@ -24,6 +24,30 @@ body::before {
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+/* ── PAGE LOADER OVERLAY ── */
+/* Covers the page during auth + initial render, preventing any flash or double-paint. */
+#page-loader {
+  position: fixed; inset: 0; z-index: 99999;
+  background: var(--bg);
+  transition: opacity 0.3s ease;
+}
+/* Animated progress bar across the top */
+#page-loader::before {
+  content: '';
+  position: absolute; top: 0; left: 0; height: 2px;
+  background: var(--accent);
+  animation: loader-bar 1.6s ease-in-out infinite;
+}
+@keyframes loader-bar {
+  0%   { left: -40%; width: 40%; }
+  60%  { left: 60%;  width: 40%; }
+  100% { left: 110%; width: 40%; }
+}
+#page-loader.page-loader-ready {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ── UPDATE BANNER ── */
 #update-banner {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
@@ -87,6 +111,7 @@ body::before {
 ::view-transition-new(root) {
   animation-duration: 0.3s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
 }
 
 ::view-transition-old(root) {

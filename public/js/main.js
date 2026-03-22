@@ -184,9 +184,7 @@ DailyGoal.init();
   const authed = await initAuth();
   if (!authed) return; // Clerk is redirecting to welcome page
 
-  document.documentElement.style.visibility = '';
-
-  // Show user info in header once authenticated
+  // Set up header/watermark before page is revealed
   const email = getUserEmail();
   const name  = getUserName();
   const metaEl = document.getElementById('hdr-user-meta');
@@ -195,28 +193,45 @@ DailyGoal.init();
     metaEl.title = email;
   }
 
-  // Watermark with user email to deter content theft
+  // Watermark with user email to deter content theft.
+  // Email is XML-escaped before embedding into SVG to prevent injection.
   const wmEl = document.getElementById('watermark');
   if (wmEl && email) {
+    const safeEmail = email
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
     const svg = encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260">` +
       `<text x="300" y="130" text-anchor="middle" dominant-baseline="middle" ` +
       `font-family="monospace" font-size="13" fill="#000000" ` +
-      `transform="rotate(-25,300,130)">${email}</text></svg>`
+      `transform="rotate(-25,300,130)">${safeEmail}</text></svg>`
     );
     wmEl.style.backgroundImage = `url("data:image/svg+xml,${svg}")`;
   }
 
-  boot().then(() => {
-    // Show Add Question button only for ADMIN users
-    if (state.userRole === 'ADMIN') {
-      document.getElementById('btn-add-question')?.style.setProperty('display', '');
+  // Reveal the page only after initial content is in the DOM (no blank flash).
+  // The overlay (#page-loader) covers the page during auth+render, then fades out.
+  const revealPage = () => {
+    const loader = document.getElementById('page-loader');
+    if (loader) {
+      loader.classList.add('page-loader-ready');
+      loader.addEventListener('transitionend', () => loader.remove(), { once: true });
     }
-    SRS.init();
-    CompanyFilter.init();
-    CompanyStats.render();
+  };
 
-    // Restore mock interview session if one was active before page refresh
-    if (restoreSession()) window.MockInterview.resume();
-  });
+  await boot(revealPage);
+
+  // Post-boot: non-critical features that run after content is visible
+  if (state.userRole === 'ADMIN') {
+    document.getElementById('btn-add-question')?.style.setProperty('display', '');
+  }
+  SRS.init();
+  CompanyFilter.init();
+  CompanyStats.render();
+
+  // Restore mock interview session if one was active before page refresh
+  if (restoreSession()) window.MockInterview.resume();
 })();

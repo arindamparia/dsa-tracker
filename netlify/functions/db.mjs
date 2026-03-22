@@ -107,4 +107,27 @@ export async function initSchema(sql) {
     `;
   } catch (e) {
   }
+
+  // ── Performance indexes ──────────────────────────────────────────────────
+  try {
+    await sql`CREATE INDEX IF NOT EXISTS idx_progress_user_email ON progress(user_email)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_progress_lc_user ON progress(lc_number, user_email)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_questions_section_order ON questions(section_order, lc_number)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
+  } catch (e) { /* ignore — indexes may already exist */ }
+
+  // ── AI rate-limiting table ───────────────────────────────────────────────
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS ai_rate_limits (
+        user_email   TEXT        NOT NULL,
+        window_start TIMESTAMPTZ NOT NULL,
+        count        INTEGER     NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_email, window_start)
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_rate_limits_user ON ai_rate_limits(user_email)`;
+    // Purge windows older than 1 hour to keep the table lean
+    await sql`DELETE FROM ai_rate_limits WHERE window_start < NOW() - INTERVAL '1 hour'`;
+  } catch (e) { /* ignore */ }
 }

@@ -160,13 +160,17 @@ export const SimilarProblems = {
       return;
     }
 
+    // Build O(1) lookup maps once — used by all three cache layers below
+    const candidateMap = new Map(candidates.map(c => [c.question.lc_number, c]));
+    const stateMap     = new Map(state.questions.map(x => [x.lc_number, x]));
+
     // Helper: re-hydrate LC numbers → candidate objects
     const hydrate = (lcArr) => lcArr
       .map(cachedLc => {
-        const match = candidates.find(c => c.question.lc_number === cachedLc);
+        const match = candidateMap.get(cachedLc);
         if (match) return match;
-        const stateMatch = state.questions.find(x => x.lc_number === cachedLc);
-        return stateMatch ? { question: stateMatch } : null;
+        const sq = stateMap.get(cachedLc);
+        return sq ? { question: sq } : null;
       })
       .filter(Boolean);
 

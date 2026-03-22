@@ -85,18 +85,25 @@ export const HintCache = {
   },
 };
 
+// Module-level parsed cache — avoids re-parsing JSON on every filter/search call.
+// Invalidated on set(), updateEntry(), and clear().
+let _memCache = null;
+
 export const Cache = {
   get() {
     try {
+      if (_memCache) return _memCache; // return in-memory copy — no I/O needed
       const ts = parseInt(localStorage.getItem(TS_KEY) || '0', 10);
       if (Date.now() - ts > TTL) return null; // expired
       const raw = localStorage.getItem(KEY);
-      return raw ? JSON.parse(raw) : null;
+      _memCache = raw ? JSON.parse(raw) : null;
+      return _memCache;
     } catch { return null; }
   },
 
   set(questions) {
     try {
+      _memCache = questions; // update in-memory copy immediately
       localStorage.setItem(KEY, JSON.stringify(questions));
       localStorage.setItem(TS_KEY, String(Date.now()));
     } catch {} // storage full — silently skip
@@ -104,6 +111,12 @@ export const Cache = {
 
   updateEntry(lc_number, patch) {
     try {
+      // Update in-memory copy first (zero-cost fast path)
+      if (_memCache) {
+        const idx = _memCache.findIndex(q => q.lc_number === lc_number);
+        if (idx !== -1) _memCache[idx] = { ..._memCache[idx], ...patch };
+      }
+      // Persist to localStorage
       const raw = localStorage.getItem(KEY);
       if (!raw) return;
       const questions = JSON.parse(raw);
@@ -116,6 +129,7 @@ export const Cache = {
   },
 
   clear() {
+    _memCache = null;
     localStorage.removeItem(KEY);
     localStorage.removeItem(TS_KEY);
   },

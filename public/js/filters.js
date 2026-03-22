@@ -2,6 +2,71 @@
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 
+// ── Pre-computed search index ─────────────────────────────────────────────
+// Built once after questions load; avoids rebuilding the haystack on every keystroke.
+export function buildSearchIndex() {
+  state.searchIndex = new Map(
+    state.questions.map(q => [
+      q.lc_number,
+      `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')} ${(q.companies_asked || []).join(' ')}`.toLowerCase()
+    ])
+  );
+}
+
+/** Returns the pre-computed search haystack for q, with lazy fallback. */
+function getSearchHaystack(q) {
+  return state.searchIndex?.get(q.lc_number) ??
+    `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')} ${(q.companies_asked || []).join(' ')}`.toLowerCase();
+}
+
+// ── Per-section filter (used by doRender to avoid full re-scan) ───────────
+/**
+ * Applies current filters only to the rows in section `si`.
+ * Updates that section's count badge.
+ * Called from doRender() instead of full applyFilters() so that lazily
+ * rendering one section never re-scans every other section.
+ */
+export function applyFiltersToSection(si) {
+  const search   = document.getElementById('search')?.value.toLowerCase().trim() || '';
+  const sections = groupBySections(state.questions);
+  const sec      = sections[si];
+  if (!sec) return;
+
+  const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all' || state.companyFilter !== null;
+  let visibleCount = 0;
+  const total = sec.questions.length;
+
+  sec.questions.forEach(q => {
+    let show = true;
+    if (state.diffFilter !== 'all' && q.difficulty !== state.diffFilter) show = false;
+    if (state.statusFilter === 'done'   && !q.is_done)      show = false;
+    if (state.statusFilter === 'undone' &&  q.is_done)      show = false;
+    if (state.statusFilter === 'review' && !q.needs_review) show = false;
+    if (state.companyFilter !== null) {
+      if (!(q.companies_asked || []).includes(state.companyFilter)) show = false;
+    }
+    if (search && !getSearchHaystack(q).includes(search)) show = false;
+
+    if (show) visibleCount++;
+    const tr = document.getElementById(`row-${q.lc_number}`);
+    if (tr) tr.classList.toggle('filtered-out', !show);
+  });
+
+  // Update section count badge
+  const scEl = document.getElementById(`sc-${si}`);
+  if (scEl) {
+    if (isFiltered) {
+      scEl.textContent = `${visibleCount}/${total}`;
+      scEl.classList.toggle('sc-filtered', visibleCount > 0);
+      scEl.classList.toggle('sc-empty',    visibleCount === 0);
+    } else {
+      const doneCnt = sec.questions.filter(q => q.is_done).length;
+      scEl.textContent = `${doneCnt}/${total}`;
+      scEl.classList.remove('sc-filtered', 'sc-empty');
+    }
+  }
+}
+
 export function setDiffFilter(f, btn) {
   smoothTransition(() => {
     // Clicking an active filter again resets to 'all'
@@ -67,10 +132,7 @@ export function applyFilters(options = {}) {
       if (state.companyFilter !== null) {
         if (!(q.companies_asked || []).includes(state.companyFilter)) show = false;
       }
-      if (search) {
-        const haystack = `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')} ${(q.companies_asked || []).join(' ')}`.toLowerCase();
-        if (!haystack.includes(search)) show = false;
-      }
+      if (search && !getSearchHaystack(q).includes(search)) show = false;
 
       if (show) { anyVisible = true; visibleCount++; }
 
