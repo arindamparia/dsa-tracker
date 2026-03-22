@@ -187,8 +187,8 @@
   padding: 10px 8px;
   outline: none;
   cursor: pointer;
-  flex: 0 0 200px;
-  max-width: 200px;
+  flex: 0 0 140px;
+  max-width: 140px;
   transition: border-color 0.15s;
 }
 .us-phone-code:focus { border-color: var(--accent); }
