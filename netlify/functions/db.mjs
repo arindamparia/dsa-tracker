@@ -51,6 +51,7 @@ export async function initSchema(sql) {
   try {
     await sql`ALTER TABLE questions ADD COLUMN IF NOT EXISTS similar_problems INTEGER[] DEFAULT NULL`;
     await sql`ALTER TABLE questions ADD COLUMN IF NOT EXISTS companies_asked TEXT[] DEFAULT '{}'`;
+    await sql`ALTER TABLE questions ADD COLUMN IF NOT EXISTS hint TEXT DEFAULT NULL`;
   } catch (e) {
     if (!e.message.includes("already exists")) {
     }

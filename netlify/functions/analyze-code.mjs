@@ -11,21 +11,6 @@ export const handler = async (event) => {
   try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
-  // ── Subscription check ─────────────────────────────────────────
-  try {
-    const sql = getDb();
-    const [row] = await sql`SELECT is_subscribed FROM users WHERE email = ${userEmail}`;
-    if (!row?.is_subscribed) {
-      return {
-        statusCode: 403,
-        headers: CORS,
-        body: JSON.stringify({ ok: false, error: 'subscription_required' }),
-      };
-    }
-  } catch {
-    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error' }) };
-  }
-
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (!OPENAI_API_KEY) {
     return { statusCode: 500, body: JSON.stringify({ error: 'OPENAI_API_KEY environment variable is missing.' }) };
@@ -35,6 +20,19 @@ export const handler = async (event) => {
     const { action, title, code } = JSON.parse(event.body);
     if (!action || !title) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Missing action or title' }) };
+    }
+
+    // ── Subscription check (analyze only; hints are free & shared) ──
+    if (action === 'analyze') {
+      try {
+        const sql = getDb();
+        const [row] = await sql`SELECT is_subscribed FROM users WHERE email = ${userEmail}`;
+        if (!row?.is_subscribed) {
+          return { statusCode: 403, headers: CORS, body: JSON.stringify({ ok: false, error: 'subscription_required' }) };
+        }
+      } catch {
+        return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error' }) };
+      }
     }
 
     let messages = [];

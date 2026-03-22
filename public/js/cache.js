@@ -34,6 +34,57 @@ export const UserCache = {
   },
 };
 
+// ── Similar problems cache (persists until logout) ────────────────
+const SIMILAR_KEY = 'dsa_similar_v2'; // { [lc_number]: [lc1, lc2, lc3] }
+
+export const SimilarCache = {
+  get(lc) {
+    try {
+      const raw = localStorage.getItem(SIMILAR_KEY);
+      const val = raw ? JSON.parse(raw)[String(lc)] : null;
+      return Array.isArray(val) && val.length > 0 ? val : null;
+    } catch { return null; }
+  },
+
+  set(lc, pickedLCs) {
+    try {
+      const raw = localStorage.getItem(SIMILAR_KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      map[String(lc)] = pickedLCs;
+      localStorage.setItem(SIMILAR_KEY, JSON.stringify(map));
+    } catch {}
+  },
+
+  clear() {
+    localStorage.removeItem(SIMILAR_KEY);
+  },
+};
+
+// ── Hint cache (persists until hard refresh / logout) ────────────
+const HINT_KEY = 'dsa_hints_v1'; // { [lc_number]: hintStr }
+
+export const HintCache = {
+  get(lc) {
+    try {
+      const raw = localStorage.getItem(HINT_KEY);
+      return raw ? (JSON.parse(raw)[String(lc)] || null) : null;
+    } catch { return null; }
+  },
+
+  set(lc, hintStr) {
+    try {
+      const raw = localStorage.getItem(HINT_KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      map[String(lc)] = hintStr;
+      localStorage.setItem(HINT_KEY, JSON.stringify(map));
+    } catch {}
+  },
+
+  clear() {
+    localStorage.removeItem(HINT_KEY);
+  },
+};
+
 export const Cache = {
   get() {
     try {

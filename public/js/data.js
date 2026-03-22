@@ -20,13 +20,12 @@ export async function refreshUserSettings() {
     const data = await res.json();
     if (!data.ok) return;
     applyUserProfile(data);
+    // Only cache non-sensitive preferences — never store is_subscribed or user_role
     UserCache.set({
-      is_subscribed:     data.is_subscribed,
       reminders_enabled: data.reminders_enabled,
       reminder_email:    data.reminder_email,
       user_name:         data.user_name,
       user_phone:        data.user_phone,
-      user_role:         data.user_role,
     });
     const metaEl = document.getElementById('hdr-user-meta');
     if (metaEl && state.userName) metaEl.textContent = state.userName;
@@ -35,13 +34,14 @@ export async function refreshUserSettings() {
 
 export async function boot() {
   const cachedProfile = UserCache.get();
-  if (cachedProfile) applyUserProfile(cachedProfile);
+  if (cachedProfile) applyUserProfile(cachedProfile); // applies name/reminders for quick UI
 
   const cached = Cache.get();
   if (cached) {
     state.questions = cached;
     render();
-    if (!cachedProfile) await refreshUserSettings();
+    // Always fetch security-sensitive values (is_subscribed, user_role) fresh from server
+    await refreshUserSettings();
   } else {
     await bootFresh();
   }
@@ -62,13 +62,12 @@ export async function bootFresh() {
     state.questions = data.questions;
     applyUserProfile(data);
     Cache.set(state.questions);
+    // Only cache non-sensitive preferences — never store is_subscribed or user_role
     UserCache.set({
-      is_subscribed:     data.is_subscribed,
       reminders_enabled: data.reminders_enabled,
       reminder_email:    data.reminder_email,
       user_name:         data.user_name,
       user_phone:        data.user_phone,
-      user_role:         data.user_role,
     });
     render();
   } catch (err) {

@@ -56,6 +56,7 @@ export const handler = async (event) => {
         p.srs_last_reviewed_at              AS srs_last_reviewed_at,
         q.similar_problems                  AS similar_problems,
         COALESCE(q.companies_asked, '{}')   AS companies_asked,
+        q.hint                              AS hint,
         p.updated_at                        AS updated_at,
         p.solved_at                         AS solved_at
       FROM questions q

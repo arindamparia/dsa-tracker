@@ -7,9 +7,9 @@
  *   If results > 3  → ask LLM to pick the best 3 by true algorithmic pattern similarity.
  */
 import { state } from './state.js';
+import { SimilarCache, Cache } from './cache.js';
 
 const SIMILAR_LIMIT = 5; // max candidates fed to heuristic before LLM kicks in
-const CACHE_KEY_PREFIX = 'dsa_similar_v1_';
 
 function heuristicSimilar(question, allQuestions) {
   const srcTopic = (question.topic || '').toLowerCase();
@@ -160,61 +160,64 @@ export const SimilarProblems = {
       return;
     }
 
-    // Check DB cache first
-    const cachedIndices = q.similar_problems;
-    if (Array.isArray(cachedIndices) && cachedIndices.length > 0) {
-      // Re-hydrate the full objects from the candidate list (or state if they fell out of top 5)
-      const finalCandidates = cachedIndices
-        .map(cachedLc => {
-          const match = candidates.find(c => c.question.lc_number === cachedLc);
-          if (match) return match;
-          // If not in current heuristic top 5, grab from state
-          const stateMatch = state.questions.find(x => x.lc_number === cachedLc);
-          return stateMatch ? { question: stateMatch } : null;
-        })
-        .filter(Boolean);
-        
-      if (finalCandidates.length > 0) {
-        const tray = createTray(lc, finalCandidates);
+    // Helper: re-hydrate LC numbers → candidate objects
+    const hydrate = (lcArr) => lcArr
+      .map(cachedLc => {
+        const match = candidates.find(c => c.question.lc_number === cachedLc);
+        if (match) return match;
+        const stateMatch = state.questions.find(x => x.lc_number === cachedLc);
+        return stateMatch ? { question: stateMatch } : null;
+      })
+      .filter(Boolean);
+
+    // Layer 1: localStorage
+    const lsHit = SimilarCache.get(lc);
+    if (lsHit) {
+      const hydratedLs = hydrate(lsHit);
+      if (hydratedLs.length > 0) {
+        const tray = createTray(lc, hydratedLs);
         row.after(tray);
-        requestAnimationFrame(() => {
-          tray.classList.add('open');
-          if (btn) btn.disabled = false;
-        });
+        requestAnimationFrame(() => { tray.classList.add('open'); if (btn) btn.disabled = false; });
         return;
       }
     }
 
-    // >3 results and no cache — show loading state while LLM picks best 3
+    // Layer 2: DB (via state.questions, loaded from DB on fresh fetch)
+    const dbHit = q.similar_problems;
+    if (Array.isArray(dbHit) && dbHit.length > 0) {
+      const hydratedDb = hydrate(dbHit);
+      if (hydratedDb.length > 0) {
+        SimilarCache.set(lc, dbHit); // backfill localStorage
+        const tray = createTray(lc, hydratedDb);
+        row.after(tray);
+        requestAnimationFrame(() => { tray.classList.add('open'); if (btn) btn.disabled = false; });
+        return;
+      }
+    }
+
+    // Layer 3: LLM
     const loadingTray = createTray(lc, [], true);
     row.after(loadingTray);
     requestAnimationFrame(() => loadingTray.classList.add('open'));
 
     const llmPicks = await rankWithLLM(q, candidates);
-
     const finalCandidates = llmPicks ?? candidates.slice(0, 3);
-    
-    // Swap HTML immediately to avoid animation jitter and tray collapse
+
     const resultTray = createTray(lc, finalCandidates);
     loadingTray.innerHTML = resultTray.innerHTML;
     if (btn) btn.disabled = false;
 
     if (llmPicks) {
-      // Cache successful LLM results to DB in the QUESTIONS table
       const pickedLCs = finalCandidates.map(c => c.question.lc_number);
-      q.similar_problems = pickedLCs;
-      
-      try {
-        await fetch('/.netlify/functions/update-question', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lc_number: q.lc_number,
-            similar_problems: pickedLCs
-          })
-        });
-      } catch {
-      }
+      // Save to all layers
+      SimilarCache.set(lc, pickedLCs);                              // localStorage
+      Cache.updateEntry(q.lc_number, { similar_problems: pickedLCs }); // main cache
+      q.similar_problems = pickedLCs;                               // in-memory state
+      fetch('/.netlify/functions/update-question', {                // DB (shared)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lc_number: q.lc_number, similar_problems: pickedLCs }),
+      }).catch(() => {});
     }
   }
 };

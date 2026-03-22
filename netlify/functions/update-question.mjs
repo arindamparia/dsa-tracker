@@ -15,15 +15,23 @@ export const handler = async (event) => {
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
   try {
-    const { lc_number, similar_problems } = JSON.parse(event.body || "{}");
+    const { lc_number, similar_problems, hint } = JSON.parse(event.body || "{}");
     if (!lc_number) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "lc_number required" }) };
 
     const sql = getDb();
-    
+
     if (similar_problems !== undefined) {
       await sql`
-        UPDATE questions 
+        UPDATE questions
         SET similar_problems = ${similar_problems}
+        WHERE lc_number = ${lc_number}
+      `;
+    }
+
+    if (hint !== undefined) {
+      await sql`
+        UPDATE questions
+        SET hint = ${hint}
         WHERE lc_number = ${lc_number}
       `;
     }

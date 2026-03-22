@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import { saveComplexity, saveAIAnalysis } from './progress.js';
+import { HintCache, Cache } from './cache.js';
 
 /**
  * Normalizes AI-returned complexity strings to exactly match our accepted option values:
@@ -233,7 +234,7 @@ export const AI = {
   },
 
   async fetchAI(action, lc_number, code = '') {
-    if (!state.isSubscribed) { this._notSubscribedToast(); return null; }
+    if (!state.isSubscribed && action !== 'hint') { this._notSubscribedToast(); return null; }
 
     const q = state.questions.find(x => String(x.lc_number) === String(lc_number));
     if (!q) {
@@ -268,7 +269,37 @@ export const AI = {
     }
   },
 
+  _showHintBox(lc, hintStr) {
+    const existing = document.getElementById(`ai-hint-box-${lc}`);
+    if (existing) existing.remove();
+    const probTd = document.querySelector(`#row-${lc} .prob-name`);
+    if (!probTd) return;
+    const hintDiv = document.createElement('div');
+    hintDiv.id = `ai-hint-box-${lc}`;
+    hintDiv.className = 'ai-hint-box';
+    hintDiv.innerHTML = `<strong>💡 AI Hint:</strong> ${hintStr}`;
+    probTd.appendChild(hintDiv);
+  },
+
   async getHint(lc) {
+    // Toggle off if already visible
+    const existingBox = document.getElementById(`ai-hint-box-${lc}`);
+    if (existingBox) { existingBox.remove(); return; }
+
+    const q = state.questions.find(q => String(q.lc_number) === String(lc));
+
+    // Layer 1: localStorage
+    const cached = HintCache.get(lc);
+    if (cached) { this._showHintBox(lc, cached); return; }
+
+    // Layer 2: DB (via state, loaded from DB on fresh fetch)
+    if (q?.hint) {
+      HintCache.set(lc, q.hint); // backfill localStorage for next time
+      this._showHintBox(lc, q.hint);
+      return;
+    }
+
+    // Layer 3: LLM
     const hintBtn = document.getElementById(`ai-hint-btn-${lc}`);
     let originalText = '';
     if (hintBtn) {
@@ -278,11 +309,8 @@ export const AI = {
       hintBtn.classList.add('loading');
     }
 
-    const currentHint = document.getElementById(`ai-hint-box-${lc}`);
-    if (currentHint) currentHint.remove();
-
     const hintStr = await this.fetchAI('hint', lc);
-    
+
     if (hintBtn) {
       hintBtn.disabled = false;
       hintBtn.innerHTML = originalText;
@@ -291,15 +319,17 @@ export const AI = {
 
     if (!hintStr) return;
 
-    // Display under the problem name
-    const probTd = document.querySelector(`#row-${lc} .prob-name`);
-    if (probTd) {
-      const hintDiv = document.createElement('div');
-      hintDiv.id = `ai-hint-box-${lc}`;
-      hintDiv.className = 'ai-hint-box';
-      hintDiv.innerHTML = `<strong>💡 AI Hint:</strong> ${hintStr}`;
-      probTd.appendChild(hintDiv);
-    }
+    this._showHintBox(lc, hintStr);
+
+    // Save to all layers
+    HintCache.set(lc, hintStr);                    // localStorage
+    Cache.updateEntry(Number(lc), { hint: hintStr }); // main questions cache
+    if (q) q.hint = hintStr;                        // in-memory state
+    fetch('/.netlify/functions/update-question', {   // DB (shared)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lc_number: lc, hint: hintStr }),
+    }).catch(() => {});
   },
 
   async analyze(lc) {

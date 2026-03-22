@@ -171,14 +171,12 @@ export const UserSettings = {
       state.remindersEnabled = enabled;
       state.reminderEmail    = remEmail || null;
 
-      // Persist to localStorage cache
+      // Only cache non-sensitive preferences — never store is_subscribed or user_role
       UserCache.set({
-        is_subscribed:     state.isSubscribed,
         reminders_enabled: enabled,
         reminder_email:    remEmail || null,
         user_name:         rawName  || null,
         user_phone:        phone,
-        user_role:         state.userRole,
       });
 
       // Refresh header display name if it changed

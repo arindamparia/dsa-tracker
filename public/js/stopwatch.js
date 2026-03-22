@@ -11,13 +11,35 @@ export function initStopwatch() {
   document.getElementById('sw-start').addEventListener('click', () => { if (!isLocked) toggleStopwatch() });
   document.getElementById('sw-reset').addEventListener('click', () => { if (!isLocked) resetStopwatch() });
   document.getElementById('sw-mode').addEventListener('click', () => { if (!isLocked) toggleMode() });
-  
-  const display = document.getElementById('sw-display');
-  display.addEventListener('click', () => {
-    if (isPomodoro && !timerInterval) {
-      PomodoroModal.open();
+
+  // Minimize button
+  document.getElementById('sw-minimize').addEventListener('click', () => toggleMinimize());
+
+  // Click the minimized pill to restore
+  document.getElementById('timer-hang').addEventListener('click', (e) => {
+    const hang = document.getElementById('timer-hang');
+    if (hang.classList.contains('minimized') && e.target === document.getElementById('sw-display')) {
+      toggleMinimize();
     }
   });
+
+  // Restore minimized state from localStorage
+  if (localStorage.getItem('dsa_timer_minimized') === '1') {
+    document.getElementById('timer-hang').classList.add('minimized');
+  }
+
+  const display = document.getElementById('sw-display');
+  display.addEventListener('click', () => {
+    const hang = document.getElementById('timer-hang');
+    if (hang.classList.contains('minimized')) return; // handled above
+    if (isPomodoro && !timerInterval) PomodoroModal.open();
+  });
+}
+
+function toggleMinimize() {
+  const hang = document.getElementById('timer-hang');
+  const minimized = hang.classList.toggle('minimized');
+  localStorage.setItem('dsa_timer_minimized', minimized ? '1' : '0');
 }
 
 export const PomodoroModal = {
