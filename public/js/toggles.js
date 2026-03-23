@@ -5,6 +5,7 @@
  */
 import { state } from './state.js';
 import { smoothTransition } from './utils.js';
+import { animate } from './motion.js';
 
 // Cache keys and 24-hour expiration threshold
 const TOGGLE_CACHE_KEY = 'dsa_toggles';
@@ -104,8 +105,7 @@ export function initTheme() {
 export function toggleTheme() {
   const btn = document.getElementById('toggle-theme');
   if (btn) {
-    btn.classList.add('theme-fab-spin');
-    btn.addEventListener('animationend', () => btn.classList.remove('theme-fab-spin'), { once: true });
+    animate(btn, { rotate: [0, 200, 360], scale: [1, 0.82, 1] }, { duration: 0.5, easing: [0.4, 0, 0.2, 1] });
   }
 
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -119,8 +119,13 @@ export function toggleTheme() {
     }
   };
 
-  if (!document.startViewTransition) {
+  if (!document.startViewTransition || window.innerWidth <= 768) {
+    document.documentElement.classList.add('theme-fading');
     switchTheme();
+    // Double-rAF ensures the fading class is painted before removal
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.documentElement.classList.remove('theme-fading');
+    }));
     return;
   }
 

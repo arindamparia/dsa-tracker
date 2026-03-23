@@ -1,3 +1,5 @@
+import { animate } from './motion.js';
+
 const quotes = [
   // ── Atomic Habits – James Clear ──
   { text: "You do not rise to the level of your goals. You fall to the level of your systems.", author: "James Clear — Atomic Habits" },
@@ -72,14 +74,12 @@ function pickQuote() {
 function renderQuote(quoteObj) {
   const el = document.getElementById('motivation-text');
   if (!el) return;
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(6px)';
-  setTimeout(() => {
-    el.innerHTML = `"${quoteObj.text}" <br><span class="quote-author">— ${quoteObj.author}</span>`;
-    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    el.style.opacity = '1';
-    el.style.transform = 'translateY(0)';
-  }, 200);
+
+  animate(el, { opacity: 0, y: 6 }, { duration: 0.2, easing: 'ease-in' })
+    .finished.then(() => {
+      el.innerHTML = `"${quoteObj.text}" <br><span class="quote-author">— ${quoteObj.author}</span>`;
+      animate(el, { opacity: [0, 1], y: [6, 0] }, { duration: 0.4, easing: 'ease-out' });
+    });
 }
 
 export function initMotivation() {
@@ -90,10 +90,7 @@ export function initMotivation() {
   if (btn) {
     btn.addEventListener('click', () => {
       renderQuote(pickQuote());
-      // brief spin animation on the icon
-      btn.classList.remove('spin');
-      void btn.offsetWidth;
-      btn.classList.add('spin');
+      animate(btn, { rotate: [0, 360] }, { duration: 0.45, easing: [0.4, 0, 0.2, 1] });
     });
   }
 }

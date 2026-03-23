@@ -69,7 +69,6 @@ h1 {
 #motivation-text {
   font-style: italic;
   flex: 1;
-  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .quote-author {
@@ -104,12 +103,6 @@ h1 {
   transform: rotate(30deg);
 }
 #quote-shuffle-btn:active { transform: rotate(180deg) scale(0.9); }
-
-@keyframes spinOnce {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-#quote-shuffle-btn.spin { animation: spinOnce 0.45s cubic-bezier(0.4,0,0.2,1); }
 
 /* ── HIDE TIMER ON MOBILE ── */
 @media (max-width: 768px) {

@@ -2,6 +2,7 @@
  * Version Check — polls HEAD /index.html every 5 min.
  * When Netlify redeploys, the ETag changes → shows refresh banner.
  */
+import { animate } from './motion.js';
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let currentEtag = null;
@@ -32,9 +33,13 @@ function showUpdateBanner() {
     <button class="update-banner-close" onclick="this.closest('#update-banner').remove()" aria-label="Dismiss">✕</button>
   `;
   document.body.appendChild(banner);
-
-  // animate in
-  requestAnimationFrame(() => banner.classList.add('update-banner-show'));
+  const isMobile = window.innerWidth <= 600;
+  animate(banner,
+    { opacity: [0, 1], transform: isMobile
+        ? ['translateY(80px)', 'translateY(0)']
+        : ['translateX(-50%) translateY(80px)', 'translateX(-50%) translateY(0)'] },
+    { duration: 0.35, easing: [0.175, 0.885, 0.32, 1.275] }
+  );
 }
 
 async function checkVersion() {

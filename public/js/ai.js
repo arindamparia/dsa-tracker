@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { saveComplexity, saveAIAnalysis } from './progress.js';
 import { HintCache, Cache } from './cache.js';
 import { handleError } from './errors.js';
+import { animate } from './motion.js';
 
 /**
  * Normalizes AI-returned complexity strings to exactly match our accepted option values:
@@ -280,6 +281,7 @@ export const AI = {
     hintDiv.className = 'ai-hint-box';
     hintDiv.innerHTML = `<strong>💡 AI Hint:</strong> ${hintStr}`;
     probTd.appendChild(hintDiv);
+    animate(hintDiv, { opacity: [0, 1], y: [-8, 0] }, { duration: 0.3 });
   },
 
   async getHint(lc) {
@@ -462,6 +464,8 @@ export const AI = {
         : `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${feedbackPayload}</div>`;
 
       contentDiv.style.display = 'block';
+      const animTarget = contentDiv.querySelector('.ai-rich-fb, .ai-fb-box, .air-card');
+      if (animTarget) animate(animTarget, { opacity: [0, 1], y: [-8, 0] }, { duration: 0.3 });
       document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`)?.classList.add('open');
     }
   },

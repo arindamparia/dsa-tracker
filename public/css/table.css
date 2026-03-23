@@ -2,7 +2,7 @@
 .q-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .q-table tbody tr {
   border-bottom: 1px solid var(--border);
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 0.15s;
   position: relative;
 }
 .q-table tbody tr:last-child { border-bottom: none; }
@@ -36,23 +36,17 @@
 /* ── CHECKBOX ── */
 .check-cell  { width: 40px; }
 .custom-check {
-  width: 20px; height: 20px; border: 2px solid var(--border2); border-radius: 6px;
+  width: 17px; height: 17px; border: 2px solid var(--border2); border-radius: 5px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; flex-shrink: 0;
+  transition: transform 0.2s, border-color 0.2s, background-color 0.2s; flex-shrink: 0;
+  /* 44px minimum touch target via padding (WCAG 2.5.5) */
+  padding: 12px; box-sizing: content-box; margin: -12px; margin-top: -8px;
 }
 .custom-check:hover { border-color: var(--easy); transform: scale(1.1); }
 .custom-check.checked {
   background: var(--easy); border-color: var(--easy);
-  animation: checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
-.custom-check.checked::after { content: '✓'; color: #000; font-size: 12px; font-weight: 700; }
-.custom-check.saving { border-color: var(--accent); animation: pulse-border 0.6s ease; }
-
-@keyframes checkPop {
-  0%   { transform: scale(0.8); }
-  60%  { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
+.custom-check.checked::after { content: '✓'; color: #000; font-size: 11px; font-weight: 700; }
 
 /* ── CELLS ── */
 .prob-name   { width: 35%; }   /* fixed share */
@@ -80,7 +74,8 @@ body.notes-hidden.solution-hidden td.spacer-cell, body.notes-hidden.solution-hid
   position: absolute; top: 6px; right: 6px;
   background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
   padding: 4px 6px; font-size: 10px; color: var(--text-muted); cursor: pointer;
-  transition: all 0.2s; opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s; opacity: 0;
+  min-width: 36px; min-height: 36px; display: flex; align-items: center; justify-content: center;
 }
 .sol-cell-wrap:hover .expand-btn { opacity: 1; }
 .expand-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -267,7 +262,7 @@ tr.filtered-out { display: none; }
   font-size: 13px;
   color: var(--text-dim);
   line-height: 1.5;
-  animation: fadeInDown 0.3s ease;
+
 }
 
 .ai-hint-box strong, .ai-fb-box strong {
@@ -370,7 +365,7 @@ tr.filtered-out { display: none; }
   border-radius: 8px;
   padding: 16px;
   margin-top: 10px;
-  animation: fadeInDown 0.3s ease;
+
   font-family: 'Syne', sans-serif;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
@@ -451,7 +446,7 @@ tr.filtered-out { display: none; }
   margin-top: 10px;
   font-family: 'Syne', sans-serif;
   font-size: 13px;
-  animation: fadeInDown 0.3s ease;
+
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
 

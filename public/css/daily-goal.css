@@ -71,15 +71,6 @@
 }
 
 /* ── Full-page celebration banner ───────────────────────────── */
-@keyframes bannerSlideIn {
-  from { transform: translateX(110%); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
-}
-@keyframes bannerSlideOut {
-  from { transform: translateX(0);    opacity: 1; }
-  to   { transform: translateX(110%); opacity: 0; }
-}
-
 .goal-banner {
   position: fixed; bottom: 28px; right: 28px;
   z-index: 10000;
@@ -89,12 +80,10 @@
   font-size: 13px; line-height: 1.4;
   max-width: 380px;
   backdrop-filter: blur(16px);
-  animation: bannerSlideIn 0.45s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+  transform: translateZ(0);
   box-shadow: 0 8px 32px var(--shadow-lg);
   user-select: none;
-}
-.goal-banner-hide {
-  animation: bannerSlideOut 0.4s ease-in forwards;
+  opacity: 0;
 }
 .goal-banner-met {
   background: rgba(var(--easy-rgb),0.12);
@@ -134,7 +123,7 @@
   width: 40px; height: 40px; border-radius: 10px;
   background: var(--surface3); border: 1px solid var(--border);
   color: var(--text); font-size: 20px; font-weight: 700;
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer; transition: transform 0.15s, border-color 0.15s, color 0.15s;
   font-family: 'JetBrains Mono', monospace;
 }
 .goal-step-btn:hover {
@@ -160,19 +149,10 @@
 }
 
 /* ── Center-page motivational caption ───────────────────────────── */
-@keyframes gccIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.78); }
-  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-@keyframes gccOut {
-  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  to   { opacity: 0; transform: translate(-50%, -50%) scale(0.88); }
-}
-
 .goal-center-caption {
   position: fixed;
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%) scale(0.78);
+  transform: translate(-50%, -50%);
   z-index: 10001;
   min-width: 300px; max-width: 460px; width: 90vw;
   padding: 36px 40px 30px;
@@ -191,12 +171,6 @@
   background: rgba(var(--orange-rgb),0.1);
   border: 1.5px solid rgba(var(--orange-rgb),0.5);
   box-shadow: 0 0 80px rgba(var(--orange-rgb),0.18), 0 24px 64px rgba(0,0,0,0.6);
-}
-.goal-center-caption.gcc-show {
-  animation: gccIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
-}
-.goal-center-caption.gcc-hide {
-  animation: gccOut 0.55s ease-in forwards;
 }
 
 .gcc-icon {

@@ -88,7 +88,7 @@ export const PomodoroModal = {
       };
     });
 
-    if (minsEl) minsEl.focus({ preventScroll: true });
+    if (minsEl) setTimeout(() => minsEl.focus({ preventScroll: true }), 50);
   },
   close() {
     document.getElementById('pomodoro-modal').classList.remove('open');

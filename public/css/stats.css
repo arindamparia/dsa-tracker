@@ -5,7 +5,7 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px 18px;
-  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  transition: border-color 0.25s, transform 0.25s;
 }
 .stat-card:hover {
   border-color: var(--border2);
@@ -63,23 +63,6 @@
 
 [data-theme="light"] .stat-card:hover {
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-
-/* Scroll-reveal: cards start invisible, JS adds .revealed */
-.stat-card.reveal-ready {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.25s, box-shadow 0.25s;
-}
-.stat-card.reveal-ready.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-/* Hover still works after reveal */
-.stat-card.reveal-ready.revealed:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-  border-color: var(--border2);
 }
 
 /* Base states: dim unless active */

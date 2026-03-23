@@ -3,9 +3,8 @@
   position: fixed; bottom: 24px; right: 24px;
   background: var(--surface3); border: 1px solid var(--border2); border-radius: 10px;
   padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
-  z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none;
+  z-index: 999; opacity: 0; transform: translateY(10px); pointer-events: none;
 }
-#toast.show    { opacity: 1; transform: translateY(0); }
 #toast.error   { border-color: rgba(var(--hard-rgb), 0.4);  color: var(--hard); }
 #toast.success { border-color: rgba(var(--easy-rgb), 0.4);  color: var(--easy); }
 

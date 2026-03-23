@@ -14,9 +14,11 @@ body::before {
 @keyframes blink       { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes shimmer     { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 @keyframes dots        { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
-@keyframes pulse-border{ 0%,100%{border-color:var(--border2)} 50%{border-color:var(--accent)} }
 @keyframes bouncePoint { 0%,100%{transform:translateX(0)} 50%{transform:translateX(8px)} }
 @keyframes fadeInOut   { 0%{opacity:0;transform:translateY(-50%) scale(0.85)} 12%{opacity:1;transform:translateY(-50%) scale(1)} 80%{opacity:1} 100%{opacity:0} }
+
+/* ── FOCUS INDICATORS (keyboard only) ── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
@@ -29,28 +31,25 @@ body::before {
 #page-loader {
   position: fixed; inset: 0; z-index: 99999;
   background: var(--bg);
-  transition: opacity 0.3s ease;
 }
 /* Animated progress bar across the top */
 #page-loader::before {
   content: '';
-  position: absolute; top: 0; left: 0; height: 2px;
+  position: absolute; top: 0; left: 0; width: 40%; height: 2px;
   background: var(--accent);
+  will-change: transform;
   animation: loader-bar 1.6s ease-in-out infinite;
 }
 @keyframes loader-bar {
-  0%   { left: -40%; width: 40%; }
-  60%  { left: 60%;  width: 40%; }
-  100% { left: 110%; width: 40%; }
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(150%); }
+  100% { transform: translateX(275%); }
 }
-#page-loader.page-loader-ready {
-  opacity: 0;
-  pointer-events: none;
-}
+
 
 /* ── UPDATE BANNER ── */
 #update-banner {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   z-index: 99999;
   display: flex; align-items: center; gap: 10px;
   background: var(--surface-blur2); backdrop-filter: blur(16px);
@@ -58,10 +57,9 @@ body::before {
   border-radius: 12px; padding: 10px 14px;
   font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
   box-shadow: 0 8px 32px var(--shadow-lg), 0 0 0 1px rgba(var(--accent-rgb), 0.12);
-  opacity: 0; transition: opacity 0.3s, transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+  opacity: 0;
   white-space: nowrap;
 }
-#update-banner.update-banner-show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .update-banner-icon { font-size: 16px; flex-shrink: 0; }
 .update-banner-text { color: var(--text-dim); }
 .update-banner-btn {
@@ -79,8 +77,7 @@ body::before {
 }
 .update-banner-close:hover { color: var(--text); }
 @media (max-width: 600px) {
-  #update-banner { left: 12px; right: 12px; transform: translateY(80px); bottom: 16px; white-space: normal; }
-  #update-banner.update-banner-show { transform: translateY(0); }
+  #update-banner { left: 12px; right: 12px; transform: none; bottom: 16px; white-space: normal; }
 }
 
 /* ── WATERMARK ── */
@@ -109,6 +106,11 @@ body::before {
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: 1; }
   .wrapper { padding: 0 16px 60px; }
+}
+
+/* ── THEME FADE FALLBACK (mobile / no View Transition API) ── */
+html.theme-fading * {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease !important;
 }
 
 /* ── VIEW TRANSITIONS API ── */

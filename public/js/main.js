@@ -8,6 +8,7 @@
  *  3. Register keyboard shortcuts
  *  4. Kick off the boot sequence (after Clerk auth)
  */
+import { animate } from './motion.js';
 import { initAuth, getToken, getUserEmail, getUserName } from './auth.js'; // getToken used by fetch interceptor below
 import { boot, bootFresh, RefreshModal } from './data.js';
 import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
@@ -286,16 +287,11 @@ DailyGoal.init();
 
   // Reveal the page only after initial content is in the DOM (no blank flash).
   // The overlay (#page-loader) covers the page during auth+render, then fades out.
-  const revealPage = () => {
+  const revealPage = async () => {
     const loader = document.getElementById('page-loader');
     if (loader) {
-      loader.classList.add('page-loader-ready');
-      // Guarantee DOM removal even if transitionend never fires (e.g. tab hidden
-      // during transition leaves it in the DOM with opacity:0, causing compositor
-      // layer flashes when switching back to the window).
-      const remove = () => loader.remove();
-      loader.addEventListener('transitionend', remove, { once: true });
-      setTimeout(remove, 500); // 300ms transition + 200ms buffer
+      await animate(loader, { opacity: 0 }, { duration: 0.3, easing: 'ease-out' }).finished;
+      loader.remove();
     }
   };
 

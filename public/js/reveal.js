@@ -1,29 +1,23 @@
 /**
  * Scroll-reveal: stat cards fade+slide up as they enter the viewport.
- * Uses IntersectionObserver — zero scroll jank, purely additive.
+ * Uses Motion.dev inView — zero scroll jank, purely additive.
  */
+import { animate, inView, stagger } from './motion.js';
+
 export function initReveal() {
   const cards = document.querySelectorAll('.stat-card');
-  if (!cards.length || !('IntersectionObserver' in window)) return;
+  if (!cards.length) return;
 
-  // Mark cards ready (starts them invisible via CSS)
-  cards.forEach((card, i) => {
-    card.classList.add('reveal-ready');
-    // Stagger delay via inline style so each card pops in sequence
-    card.style.transitionDelay = `${i * 55}ms`;
-  });
+  // Start cards invisible
+  cards.forEach(card => { card.style.opacity = '0'; card.style.transform = 'translateY(16px)'; });
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-          observer.unobserve(entry.target); // fire once
-        }
-      });
-    },
-    { threshold: 0.15 }
-  );
+  const container = cards[0].closest('.stats-board') || cards[0].closest('.top-stats') || cards[0].parentElement;
 
-  cards.forEach((card) => observer.observe(card));
+  inView(container, () => {
+    animate(
+      cards,
+      { opacity: [0, 1], y: [16, 0] },
+      { duration: 0.45, easing: 'ease-out', delay: stagger(0.055) }
+    );
+  }, { amount: 0.15 });
 }

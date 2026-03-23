@@ -15,6 +15,7 @@
  */
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
+import { animate, spring } from './motion.js';
 
 // ── SRS due check ────────────────────────────────────────────────
 const SRS_INTERVALS_DAYS = [1, 3, 7, 14, 30];
@@ -220,7 +221,8 @@ export const SmartQueue = {
             let tracking = true;
             function track() {
               if (!tracking) return;
-              pointer.style.top = (tr.getBoundingClientRect().top + tr.getBoundingClientRect().height / 2) + 'px';
+              const rect = tr.getBoundingClientRect();
+              pointer.style.top = (rect.top + rect.height / 2) + 'px';
               requestAnimationFrame(track);
             }
             requestAnimationFrame(track);
@@ -253,13 +255,18 @@ export const SmartQueue = {
       <button class="ssc-dismiss" onclick="SmartQueue._dismissCard()">✕</button>
     `;
     window._sscQ = q;
-    card.classList.add('ssc-show');
+    animate(card,
+      { opacity: [0, 1], y: ['120%', '0%'] },
+      { duration: 0.35, easing: spring({ stiffness: 300, damping: 25 }) }
+    );
     this._suggestionTimer = setTimeout(() => this._dismissCard(), 8000);
   },
 
   _dismissCard() {
     const card = document.getElementById('smart-suggestion-card');
-    if (card) card.classList.remove('ssc-show');
+    if (!card) return;
+    animate(card, { opacity: 0, y: '120%' }, { duration: 0.3, easing: 'ease-in' })
+      .finished.then(() => card.remove());
   },
 };
 

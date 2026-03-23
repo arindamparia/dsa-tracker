@@ -36,7 +36,7 @@
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px;
   font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--text-muted); cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
   white-space: nowrap;
 }
 .filter-btn:hover { border-color: var(--border2); color: var(--text); transform: translateY(-1px); }
@@ -64,12 +64,6 @@
 }
 
 /* ── THEME FAB (floating sun/moon button, bottom-right) ── */
-@keyframes theme-fab-spin {
-  from { transform: rotate(0deg) scale(1); }
-  40%  { transform: rotate(200deg) scale(0.82); }
-  to   { transform: rotate(360deg) scale(1); }
-}
-
 .theme-fab {
   position: fixed;
   bottom: 28px;
@@ -108,8 +102,6 @@
 
 .theme-fab:hover  { transform: scale(1.13) rotate(18deg); }
 .theme-fab:active { transform: scale(0.93); }
-.theme-fab.theme-fab-spin { animation: theme-fab-spin 0.5s cubic-bezier(0.4,0,0.2,1); }
-
 /* Light mode: deep indigo moon */
 [data-theme="light"] .theme-fab {
   color: #fff;

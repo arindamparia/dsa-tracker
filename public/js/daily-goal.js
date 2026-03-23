@@ -5,6 +5,8 @@
  * Page refresh does NOT re-trigger (baseline is set silently on first update).
  * Unchecking then re-checking DOES re-trigger (in-memory crossing detection).
  */
+import { animate, spring } from './motion.js';
+
 const GOAL_KEY = 'dsa_daily_goal';
 
 function loadGoal() {
@@ -107,18 +109,24 @@ function showCenterCaption(extra) {
   `;
   document.body.appendChild(div);
 
-  // Force reflow to trigger CSS animation
-  div.getBoundingClientRect();
-  div.classList.add('gcc-show');
+  // Animate in with spring (centering handled by CSS translate, we animate scale+opacity)
+  animate(div,
+    { opacity: [0, 1], scale: [0.78, 1] },
+    { duration: 0.5, easing: spring({ stiffness: 280, damping: 22 }) }
+  );
 
-  setTimeout(() => {
-    div.classList.remove('gcc-show');
-    div.classList.add('gcc-hide');
-    setTimeout(() => div.remove(), 600);
+  setTimeout(async () => {
+    await animate(div, { opacity: 0, scale: 0.88 }, { duration: 0.55, easing: 'ease-in' }).finished;
+    div.remove();
   }, 3500);
 }
 
 // ── Corner banner ─────────────────────────────────────────────────────────────
+
+function dismissBanner(banner) {
+  animate(banner, { opacity: 0, x: '110%' }, { duration: 0.4, easing: 'ease-in' })
+    .finished.then(() => banner.remove());
+}
 
 function showGoalBanner(extra) {
   document.getElementById('goal-banner')?.remove();
@@ -128,15 +136,20 @@ function showGoalBanner(extra) {
   banner.innerHTML = extra > 0
     ? `<span class="goal-banner-icon">🔥</span>
        <span class="goal-banner-text">Goal crushed! <strong>+${extra} bonus</strong> problem${extra > 1 ? 's' : ''}!</span>
-       <button class="goal-banner-close" onclick="document.getElementById('goal-banner')?.remove()">✕</button>`
+       <button class="goal-banner-close">✕</button>`
     : `<span class="goal-banner-icon">🎯</span>
        <span class="goal-banner-text">Daily goal reached! <strong>Keep going!</strong></span>
-       <button class="goal-banner-close" onclick="document.getElementById('goal-banner')?.remove()">✕</button>`;
+       <button class="goal-banner-close">✕</button>`;
   document.body.appendChild(banner);
-  setTimeout(() => {
-    banner.classList.add('goal-banner-hide');
-    setTimeout(() => banner.remove(), 500);
-  }, 6000);
+
+  banner.querySelector('.goal-banner-close').addEventListener('click', () => dismissBanner(banner));
+
+  animate(banner,
+    { opacity: [0, 1], x: ['110%', '0%'] },
+    { duration: 0.45, easing: [0.175, 0.885, 0.32, 1.275] }
+  );
+
+  setTimeout(() => dismissBanner(banner), 6000);
 }
 
 // ── Ring SVG ──────────────────────────────────────────────────────────────────

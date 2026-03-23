@@ -2,6 +2,7 @@
  * Hard Problem Celebration — "Boss Defeated" ⚔️
  * Fires when a Hard difficulty problem is marked as solved.
  */
+import { animate, spring } from './motion.js';
 
 const HARD_QUOTES = [
   { q: 'The harder the battle, the sweeter the victory.',           attr: '— Les Brown' },
@@ -16,23 +17,18 @@ const HARD_QUOTES = [
 
 // ── Screen flash ──────────────────────────────────────────────────────────────
 
-function doScreenFlash() {
+async function doScreenFlash() {
   const flash = document.createElement('div');
   flash.id = 'hard-flash';
   flash.style.cssText = `
     position: fixed; inset: 0; z-index: 9998; pointer-events: none;
     background: radial-gradient(ellipse at center, rgba(255,100,0,0.18) 0%, rgba(180,0,0,0.1) 60%, transparent 100%);
-    opacity: 0; transition: opacity 0.18s ease-in;
+    opacity: 0;
   `;
   document.body.appendChild(flash);
-  requestAnimationFrame(() => {
-    flash.style.opacity = '1';
-    setTimeout(() => {
-      flash.style.transition = 'opacity 0.5s ease-out';
-      flash.style.opacity = '0';
-      setTimeout(() => flash.remove(), 520);
-    }, 220);
-  });
+  await animate(flash, { opacity: [0, 1] }, { duration: 0.18, easing: 'ease-in' }).finished;
+  await animate(flash, { opacity: 0 }, { duration: 0.5, easing: 'ease-out' }).finished;
+  flash.remove();
 }
 
 // ── Ember particles ───────────────────────────────────────────────────────────
@@ -113,20 +109,20 @@ function showHardModal(problemName) {
     <div class="hm-attr">${attr}</div>
   `;
   document.body.appendChild(div);
-  div.getBoundingClientRect(); // force reflow
-  div.classList.add('hm-show');
 
-  setTimeout(() => {
-    div.classList.remove('hm-show');
-    div.classList.add('hm-hide');
-    setTimeout(() => {
-      div.remove();
-      window._isHardCelebrationActive = false;
-      if (window._pendingDailyGoalCelebration) {
-        window._pendingDailyGoalCelebration();
-        window._pendingDailyGoalCelebration = null;
-      }
-    }, 600);
+  animate(div,
+    { opacity: [0, 1], scale: [0.75, 1] },
+    { duration: 0.5, easing: spring({ stiffness: 300, damping: 20 }) }
+  );
+
+  setTimeout(async () => {
+    await animate(div, { opacity: 0, scale: 0.88 }, { duration: 0.55, easing: 'ease-in' }).finished;
+    div.remove();
+    window._isHardCelebrationActive = false;
+    if (window._pendingDailyGoalCelebration) {
+      window._pendingDailyGoalCelebration();
+      window._pendingDailyGoalCelebration = null;
+    }
   }, 4500);
 }
 
