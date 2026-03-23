@@ -12,14 +12,16 @@
 <script>(function(){
   if(localStorage.getItem('dsa_theme')==='light'){document.documentElement.setAttribute('data-theme','light');}
   // BFCache: when the browser stores this page in the back-forward cache,
-  // re-insert the loader overlay so the snapshot is dark (not stale data).
-  window.addEventListener('pagehide', function(e) {
-    if (!e.persisted) return;
+  // re-insert the loader overlay so the snapshot is dark (not stale data),
+  // and also prevents "paint hold" flickering on regular refresh.
+  var showLoader = function() {
     var el = document.getElementById('page-loader');
     if (!el) { el = document.createElement('div'); el.id = 'page-loader'; document.body.prepend(el); }
     el.removeAttribute('class');
     el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--bg,#0a0a0f);opacity:1;transition:none;';
-  });
+  };
+  window.addEventListener('pagehide', showLoader);
+  window.addEventListener('beforeunload', showLoader);
 })();</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />

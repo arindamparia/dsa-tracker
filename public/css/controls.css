@@ -83,31 +83,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+  /* Only transform on GPU — box-shadow removed from transition (not composited) */
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  will-change: transform;
+  touch-action: manipulation;           /* removes 300ms tap delay on mobile */
+  -webkit-tap-highlight-color: transparent;
 
   /* Dark mode default: golden sun */
   background: radial-gradient(circle at 35% 35%, #ffe066, #f8b500);
   color: #3a2800;
   box-shadow: 0 0 0 1px rgba(248,181,0,0.3), 0 4px 18px rgba(248,181,0,0.45), 0 2px 8px rgba(0,0,0,0.35);
 }
-.theme-fab:hover {
-  transform: scale(1.13) rotate(18deg);
-  box-shadow: 0 0 0 1px rgba(248,181,0,0.5), 0 6px 28px rgba(248,181,0,0.6), 0 2px 10px rgba(0,0,0,0.4);
+/* Pseudo-element holds the light-mode gradient and crossfades on theme switch */
+.theme-fab::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #8b7fff, #5044c9);
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
+[data-theme="light"] .theme-fab::after { opacity: 1; }
+
+.theme-fab:hover  { transform: scale(1.13) rotate(18deg); }
 .theme-fab:active { transform: scale(0.93); }
 .theme-fab.theme-fab-spin { animation: theme-fab-spin 0.5s cubic-bezier(0.4,0,0.2,1); }
 
 /* Light mode: deep indigo moon */
 [data-theme="light"] .theme-fab {
-  background: radial-gradient(circle at 35% 30%, #8b7fff, #5044c9);
   color: #fff;
   box-shadow: 0 0 0 1px rgba(124,106,247,0.35), 0 4px 18px rgba(124,106,247,0.5), 0 2px 8px rgba(0,0,0,0.2);
 }
-[data-theme="light"] .theme-fab:hover {
-  box-shadow: 0 0 0 1px rgba(124,106,247,0.55), 0 6px 28px rgba(124,106,247,0.65), 0 2px 10px rgba(0,0,0,0.2);
-}
 
-/* Icon visibility: CSS drives which icon shows, no JS needed */
+/* Icons must sit above the ::after gradient layer */
+.theme-fab .icon-moon,
+.theme-fab .icon-sun  { position: relative; z-index: 1; }
 .theme-fab .icon-moon { display: none; }
 .theme-fab .icon-sun  { display: block; }
 [data-theme="light"] .theme-fab .icon-moon { display: block; }

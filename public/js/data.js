@@ -4,6 +4,7 @@ import { Cache, UserCache } from './cache.js';
 import { render, renderSkeletonSections } from './render.js';
 import { showToast } from './toast.js';
 import { buildSearchIndex } from './filters.js';
+import { smoothTransition } from './utils.js';
 
 function applyUserProfile(data) {
   state.isSubscribed     = data.is_subscribed     ?? false;
@@ -51,18 +52,24 @@ export async function boot(onReady) {
     buildSearchIndex();
     // Show skeleton immediately, reveal the page, then wait for fresh user settings
     // before painting the actual data. User sees: skeleton → data (single transition).
-    renderSkeletonSections();
-    onReady?.();
+    smoothTransition(() => {
+      renderSkeletonSections();
+      onReady?.();
+    });
     await refreshUserSettings();
-    render();
+    if (state.questions.length) {
+      smoothTransition(() => render());
+    }
   } else {
     await bootFresh(onReady);
   }
 }
 
 export async function bootFresh(onReady) {
-  renderSkeletonSections();
-  onReady?.(); // reveal page with skeletons — data arrives shortly
+  smoothTransition(() => {
+    renderSkeletonSections();
+    onReady?.(); // reveal page with skeletons — data arrives shortly
+  });
   try {
     const res = await fetch('/.netlify/functions/get-questions', { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -79,7 +86,7 @@ export async function bootFresh(onReady) {
       user_name:         data.user_name,
       user_phone:        data.user_phone,
     });
-    render();
+    smoothTransition(() => render());
   } catch (err) {
     document.getElementById('sections').innerHTML =
       `<div class="error-msg">⚠ Something went wrong. Please check your connection and try again.<br><br>

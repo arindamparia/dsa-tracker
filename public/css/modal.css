@@ -2,13 +2,18 @@
 .modal-overlay {
   position: fixed; inset: 0; background: var(--overlay-bg); backdrop-filter: blur(4px);
   z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;
-  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s ease;
+  /* Pre-promote to GPU compositing layer so backdrop-filter is ready on first frame,
+     preventing the init flash that occurs when the layer is created mid-transition. */
+  will-change: opacity;
+  transform: translateZ(0);
 }
 .modal-overlay.open { opacity: 1; pointer-events: auto; }
 .modal {
   background: var(--surface); border: 1px solid var(--border2); border-radius: 16px;
   padding: 32px; width: 100%; max-width: 540px;
-  transform: translateY(20px); transition: transform 0.25s;
+  transform: translateY(16px); transition: transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94);
   max-height: 90vh; overflow-y: auto;
 }
 .modal-overlay.open .modal { transform: translateY(0); }

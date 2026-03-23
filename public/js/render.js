@@ -330,9 +330,9 @@ export function renderSection(si, sync = false) {
     </tr>
   `).join('');
 
-  // Let browser paint skeleton, then render actual rows
+  // Let browser paint skeleton, then render actual rows with a cross-fade
   setTimeout(() => {
-    doRender(si, tbody);
+    smoothTransition(() => doRender(si, tbody));
   }, 40);
 }
 

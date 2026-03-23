@@ -102,17 +102,59 @@ export function initTheme() {
 }
 
 export function toggleTheme() {
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  if (isLight) {
-    document.documentElement.removeAttribute('data-theme');
-    localStorage.setItem(THEME_KEY, 'dark');
-  } else {
-    document.documentElement.setAttribute('data-theme', 'light');
-    localStorage.setItem(THEME_KEY, 'light');
-  }
   const btn = document.getElementById('toggle-theme');
   if (btn) {
     btn.classList.add('theme-fab-spin');
     btn.addEventListener('animationend', () => btn.classList.remove('theme-fab-spin'), { once: true });
   }
+
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const switchTheme = () => {
+    if (isLight) {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem(THEME_KEY, 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem(THEME_KEY, 'light');
+    }
+  };
+
+  if (!document.startViewTransition) {
+    switchTheme();
+    return;
+  }
+
+  const rect = btn?.getBoundingClientRect();
+  const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+  const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+  const endRadius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y)
+  );
+
+  document.documentElement.classList.add('theme-transition');
+  const transition = document.startViewTransition(switchTheme);
+
+  transition.ready.then(() => {
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`
+        ]
+      },
+      {
+        duration: 500,
+        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        pseudoElement: '::view-transition-new(root)'
+      }
+    );
+  });
+
+  transition.finished.then(() => {
+    document.documentElement.classList.remove('theme-transition');
+  }).catch(() => {
+    // Prevent leaving class if transition is skipped
+    document.documentElement.classList.remove('theme-transition');
+  });
 }

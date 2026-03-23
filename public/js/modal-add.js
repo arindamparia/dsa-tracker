@@ -9,7 +9,7 @@ const OVERLAY_ID = 'modal';
 export const AddQuestionModal = {
   open() {
     document.getElementById(OVERLAY_ID).classList.add('open');
-    document.getElementById('f-lc').focus();
+    setTimeout(() => document.getElementById('f-lc').focus(), 50);
   },
 
   close() {
