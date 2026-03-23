@@ -259,7 +259,7 @@ export const DailyGoal = {
     const input = document.getElementById('goal-input');
     if (input) input.value = this._goal || 3;
     document.getElementById('goal-editor-modal').classList.add('open');
-    setTimeout(() => input?.focus(), 50);
+    setTimeout(() => input?.focus({ preventScroll: true }), 50);
   },
 
   closeEditor() {

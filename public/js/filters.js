@@ -99,7 +99,7 @@ export function clearSearch() {
   const el = document.getElementById('search');
   el.value = '';
   applyFilters();
-  el.focus();
+  el.focus({ preventScroll: true });
 }
 window.clearSearch = clearSearch;
 

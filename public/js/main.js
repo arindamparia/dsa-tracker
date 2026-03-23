@@ -137,7 +137,7 @@ document.addEventListener('keydown', e => {
   // s or / → focus search
   if (e.key === 's' || e.key === '/') {
     e.preventDefault();
-    document.getElementById('search')?.focus();
+    document.getElementById('search')?.focus({ preventScroll: true });
   }
   // r → smart pick
   if (e.key === 'r') { pickRandom(); }

@@ -104,10 +104,12 @@ export const RefreshModal = {
   handleOverlayClick(e) {
     if (e.target === document.getElementById('refresh-modal')) this.close();
   },
-  async confirm() {
+  confirm() {
     this.close();
     Cache.clear();
-    await bootFresh();
-    showToast('Questions updated ✓', 'success');
+    setTimeout(async () => {
+      await bootFresh();
+      showToast('Questions updated ✓', 'success');
+    }, 250);
   }
 };

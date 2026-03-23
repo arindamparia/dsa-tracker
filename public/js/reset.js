@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { render } from './render.js';
 import { showToast } from './toast.js';
 import { handleError } from './errors.js';
+import { smoothTransition } from './utils.js';
 
 export const ResetModal = {
   open() {
@@ -11,7 +12,7 @@ export const ResetModal = {
     if (input) input.value = '';
     if (btn)   btn.disabled = true;
     document.getElementById('reset-modal').classList.add('open');
-    setTimeout(() => input?.focus(), 50);
+    setTimeout(() => input?.focus({ preventScroll: true }), 50);
   },
 
   close() {
@@ -31,9 +32,11 @@ export const ResetModal = {
     // Hide modal directly
     this.close();
     
-    // Optimistically clear UI
-    state.questions.forEach(q => { q.is_done = false; q.solution = ''; q.notes = ''; });
-    render();
+    // Optimistically clear UI after modal closes
+    setTimeout(() => {
+      state.questions.forEach(q => { q.is_done = false; q.solution = ''; q.notes = ''; });
+      smoothTransition(() => render());
+    }, 250);
 
     // Persist each reset in parallel
     const promises = state.questions.map(q =>

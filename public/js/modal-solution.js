@@ -17,7 +17,7 @@ export const SolutionModal = {
 
     // Open modal
     document.getElementById('solution-modal').classList.add('open');
-    setTimeout(() => document.getElementById('f-sol-text').focus(), 50);
+    setTimeout(() => document.getElementById('f-sol-text').focus({ preventScroll: true }), 50);
   },
 
   close() {
