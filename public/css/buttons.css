@@ -39,6 +39,19 @@
 }
 .btn-action:active { transform: translateY(0) scale(0.97); box-shadow: none; }
 
+.btn-settings {
+  background: rgba(var(--accent-rgb), 0.15); border: 1px solid rgba(var(--accent-rgb), 0.4); border-radius: 8px; padding: 10px 18px;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text);
+  cursor: pointer; transition: transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s; white-space: nowrap;
+}
+.btn-settings:hover {
+  background: rgba(var(--accent-rgb), 0.25);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
+}
+.btn-settings:active { transform: translateY(0) scale(0.97); box-shadow: none; }
+
 .btn-action-danger {
   color: var(--hard); border-color: rgba(var(--hard-rgb), 0.3);
 }

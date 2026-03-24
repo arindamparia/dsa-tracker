@@ -56,33 +56,103 @@ export function applyFiltersToSection(si) {
   }
 }
 
-export function setDiffFilter(f, btn) {
-  smoothTransition(() => {
-    if (btn.classList.contains('active') && f !== 'all') {
-      f = 'all';
-      btn = document.querySelector('[data-group="diff"][data-filter="all"]');
-    }
-    state.diffFilter = f;
-    document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    animate(btn, { scale: [0.9, 1] }, { type: "spring", stiffness: 500, damping: 18 });
-    applyFilters();
-  });
+export function toggleCustomDropdown(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.filter-dropdown.open').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
 }
+window.toggleCustomDropdown = toggleCustomDropdown;
 
-export function setStatusFilter(f, btn) {
-  smoothTransition(() => {
-    if (btn.classList.contains('active') && f !== 'all') {
-      f = 'all';
-      btn = document.querySelector('[data-group="status"][data-filter="all"]');
-    }
-    state.statusFilter = f;
-    document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    animate(btn, { scale: [0.9, 1] }, { type: "spring", stiffness: 500, damping: 18 });
-    applyFilters();
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.filter-dropdown-wrap')) {
+    document.querySelectorAll('.filter-dropdown.open').forEach(d => d.classList.remove('open'));
+  }
+});
+
+export function setDiffFilterFocus(e) {
+  e.stopPropagation();
+  toggleCustomDropdown('diff-dropdown');
+}
+window.setDiffFilterFocus = setDiffFilterFocus;
+
+export function setStatusFilterFocus(e) {
+  e.stopPropagation();
+  toggleCustomDropdown('status-dropdown');
+}
+window.setStatusFilterFocus = setStatusFilterFocus;
+
+export function updateDiffUI(f) {
+  const wrapper = document.getElementById('diff-dropdown-wrap');
+  if (!wrapper) return;
+  const btn = wrapper.querySelector('.dropdown-btn');
+  const label = document.getElementById('diff-filter-label');
+  
+  if (btn) {
+    btn.className = 'filter-btn dropdown-btn active';
+    if (f === 'Easy') btn.classList.add('easy');
+    else if (f === 'Medium') btn.classList.add('medium');
+    else if (f === 'Hard') btn.classList.add('hard');
+  }
+  
+  if (label) label.textContent = f === 'all' ? 'Difficulty: All' : `Diff: ${f}`;
+  
+  wrapper.querySelectorAll('.filter-list-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.val === f);
   });
 }
+window.updateDiffUI = updateDiffUI;
+
+export function updateStatusUI(f) {
+  const wrapper = document.getElementById('status-dropdown-wrap');
+  if (!wrapper) return;
+  const btn = wrapper.querySelector('.dropdown-btn');
+  const label = document.getElementById('status-filter-label');
+  
+  if (btn) {
+    btn.className = 'filter-btn dropdown-btn active';
+    if (f === 'done') btn.classList.add('done-filter');
+    else if (f === 'review') btn.classList.add('review-filter');
+  }
+  
+  const labels = {
+    'all': 'Status: All',
+    'done': 'Status: Done',
+    'undone': 'Status: Undone',
+    'review': 'Status: Review'
+  };
+  if (label) label.textContent = labels[f] || 'Status: All';
+  
+  wrapper.querySelectorAll('.filter-list-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.val === f);
+  });
+}
+window.updateStatusUI = updateStatusUI;
+
+export function setDiffFilter(f) {
+  smoothTransition(() => {
+    state.diffFilter = f;
+    updateDiffUI(f);
+    const btn = document.getElementById('diff-filter-btn');
+    if (btn) animate(btn, { scale: [0.93, 1] }, { type: "spring", stiffness: 500, damping: 18 });
+    applyFilters();
+    document.getElementById('diff-dropdown')?.classList.remove('open');
+  });
+}
+window.setDiffFilter = setDiffFilter;
+
+export function setStatusFilter(f) {
+  smoothTransition(() => {
+    state.statusFilter = f;
+    updateStatusUI(f);
+    const btn = document.getElementById('status-filter-btn');
+    if (btn) animate(btn, { scale: [0.93, 1] }, { type: "spring", stiffness: 500, damping: 18 });
+    applyFilters();
+    document.getElementById('status-dropdown')?.classList.remove('open');
+  });
+}
+window.setStatusFilter = setStatusFilter;
 
 export function clearSearch() {
   const el = document.getElementById('search');
@@ -185,10 +255,18 @@ export function pickRandom() {
   state.diffFilter   = 'all';
   state.statusFilter = 'all';
   state.companyFilter = null;
-  document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
-  document.querySelector('[data-group="diff"][data-filter="all"]')?.classList.add('active');
-  document.querySelector('[data-group="status"][data-filter="all"]')?.classList.add('active');
+  const diffSelect = document.getElementById('diff-select');
+  if (diffSelect) {
+    diffSelect.value = 'all';
+    diffSelect.className = 'filter-btn filter-select active';
+  }
+  const statusSelect = document.getElementById('status-select');
+  if (statusSelect) {
+    statusSelect.value = 'all';
+    statusSelect.className = 'filter-btn filter-select active';
+  }
+  if (window.updateDiffUI) window.updateDiffUI('all');
+  if (window.updateStatusUI) window.updateStatusUI('all');
   const cfLabel = document.getElementById('company-filter-label');
   if (cfLabel) cfLabel.textContent = '🏢 Company';
   document.getElementById('company-filter-btn')?.classList.remove('active');

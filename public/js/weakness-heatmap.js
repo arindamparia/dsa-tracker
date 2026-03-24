@@ -111,8 +111,7 @@ export const WeaknessHeatmap = {
 
     // Pre-set the difficulty filter so focus session only shows that difficulty
     state.diffFilter = difficulty;
-    document.querySelectorAll('[data-group="diff"]').forEach(b =>
-      b.classList.toggle('active', b.dataset.filter === difficulty));
+    if (window.updateDiffUI) window.updateDiffUI(difficulty);
 
     // Force-render the target section if not yet lazy-loaded
     const sections = groupBySections(state.questions);

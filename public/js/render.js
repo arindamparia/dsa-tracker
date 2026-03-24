@@ -261,6 +261,11 @@ export function toggleSection(si) {
     if (isNowCollapsed) {
       clicked.classList.remove('collapsed');
       renderSection(si);
+    } else {
+      // When closing, instantly correct scroll position so the View Transition smoothly crossfades
+      const controlsH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--controls-h')) || 126;
+      const y = clicked.getBoundingClientRect().top + window.scrollY - controlsH;
+      window.scrollTo({ top: y, behavior: 'auto' });
     }
   });
 

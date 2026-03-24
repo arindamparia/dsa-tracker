@@ -1,14 +1,39 @@
 /* reset & base */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { overflow-x: hidden; }
-body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; max-width: 100vw; }
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 40px 40px; opacity: 0.25; pointer-events: none; z-index: 0;
-  transform: translateZ(0); will-change: transform;
+html { overflow-x: clip; }
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: clip;
+  position: relative;
+  z-index: 0;
 }
-.wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; overflow-x: clip; }
+
+/* Fixed Background Image Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: var(--bg-image);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+  transform: scale(1.2) translateY(-5vh); /* enlarges and pushes the image higher up the screen */
+  opacity: var(--bg-opacity);
+  mix-blend-mode: var(--bg-blend);
+  z-index: -1;
+  pointer-events: none;
+}
+html.hide-theme-bg body::before {
+  display: none !important;
+}
+.wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
 
 /* keyframes */
 @keyframes blink       { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -41,6 +66,13 @@ body::before {
   0%   { transform: translateX(-100%); }
   60%  { transform: translateX(150%); }
   100% { transform: translateX(275%); }
+}
+
+:root {
+  /* The path to the downloaded image */
+  --bg-image: url('../images/bg.png');
+  --bg-opacity: 0.15;
+  --bg-blend: normal;
 }
 
 /* update banner */

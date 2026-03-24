@@ -11,6 +11,9 @@
 <meta name="clerk-domain" content="https://improved-grackle-55.clerk.accounts.dev" />
 <script>(function(){
   if(localStorage.getItem('dsa_theme')==='light'){document.documentElement.setAttribute('data-theme','light');}
+  var hideBg = localStorage.getItem('dsa_hide_bg');
+  if(hideBg === null && window.innerWidth <= 768) { hideBg = '1'; }
+  if(hideBg === '1'){document.documentElement.classList.add('hide-theme-bg');}
   // BFCache: when the browser stores this page in the back-forward cache,
   // re-insert the loader overlay so the snapshot is dark (not stale data),
   // and also prevents "paint hold" flickering on regular refresh.
@@ -83,7 +86,7 @@
         <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
         <button class="btn-action" onclick="RefreshModal.open()" title="Sync latest questions">↺ Hard Refresh</button>
         <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
-        <button class="btn-action" onclick="UserSettings.open()" title="Profile &amp; Settings">⚙ Settings</button>
+        <button class="btn-settings" onclick="UserSettings.open()" title="Profile &amp; Settings">⚙ Settings</button>
         <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
@@ -209,11 +212,48 @@
       <input type="text" class="search-box" id="search" placeholder="Search by name, LC#, topic..." oninput="applyFilters()" />
       <button class="search-clear-btn hidden" id="search-clear-btn" onclick="clearSearch()" title="Clear search">×</button>
     </div>
-    <button class="btn-secondary" id="random-btn" onclick="pickRandom()" style="margin-right: 12px;" title="Smart pick: priority-scored unsolved problem [R]">🧬 Smart Pick</button>
+
+    <!-- Difficulty filter dropdown -->
+    <div class="filter-group">
+      <div class="filter-dropdown-wrap" id="diff-dropdown-wrap">
+        <button class="filter-btn dropdown-btn active" id="diff-filter-btn" onclick="toggleCustomDropdown('diff-dropdown')">
+          <span id="diff-filter-label">Difficulty: All</span>
+        </button>
+        <div class="filter-dropdown" id="diff-dropdown">
+          <div class="filter-list">
+            <div class="filter-list-item active" data-val="all" onclick="setDiffFilter('all')">All</div>
+            <div class="filter-list-item easy" data-val="Easy" onclick="setDiffFilter('Easy')">Easy</div>
+            <div class="filter-list-item medium" data-val="Medium" onclick="setDiffFilter('Medium')">Medium</div>
+            <div class="filter-list-item hard" data-val="Hard" onclick="setDiffFilter('Hard')">Hard</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status filter dropdown -->
+    <div class="filter-group">
+      <div class="filter-dropdown-wrap" id="status-dropdown-wrap">
+        <button class="filter-btn dropdown-btn active" id="status-filter-btn" onclick="toggleCustomDropdown('status-dropdown')">
+          <span id="status-filter-label">Status: All</span>
+        </button>
+        <div class="filter-dropdown" id="status-dropdown">
+          <div class="filter-list">
+            <div class="filter-list-item active" data-val="all" onclick="setStatusFilter('all')">All</div>
+            <div class="filter-list-item done-item" data-val="done" onclick="setStatusFilter('done')">✓ Done</div>
+            <div class="filter-list-item undone-item" data-val="undone" onclick="setStatusFilter('undone')">◻ Undone</div>
+            <div class="filter-list-item review-item" data-val="review" onclick="setStatusFilter('review')">★ Review</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <button class="btn-secondary" id="random-btn" onclick="pickRandom()" style="margin-right: 4px;" title="Smart pick: priority-scored unsolved problem [R]">🧬 Smart Pick</button>
 
     <!-- Company filter dropdown -->
     <div class="company-filter-wrap" id="company-filter-wrap" style="margin-right:8px">
-      <button class="filter-btn company-active" id="company-filter-btn" onclick="CompanyFilter.toggle()">
+      <button class="filter-btn company-active dropdown-btn" id="company-filter-btn" onclick="CompanyFilter.toggle()">
         <span id="company-filter-label">🏢 Company</span>
       </button>
       <button class="company-clear-x hidden" id="company-clear-btn" onclick="CompanyFilter.clear()" title="Clear company filter">×</button>
@@ -225,20 +265,6 @@
       </div>
     </div>
 
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <button class="filter-btn active" data-group="diff" data-filter="all" onclick="setDiffFilter('all',this)">All</button>
-      <button class="filter-btn easy" data-group="diff" data-filter="Easy" onclick="setDiffFilter('Easy',this)">Easy</button>
-      <button class="filter-btn medium" data-group="diff" data-filter="Medium" onclick="setDiffFilter('Medium',this)">Medium</button>
-      <button class="filter-btn hard" data-group="diff" data-filter="Hard" onclick="setDiffFilter('Hard',this)">Hard</button>
-    </div>
-    <div class="filter-divider"></div>
-    <div class="filter-group">
-      <button class="filter-btn active" data-group="status" data-filter="all" onclick="setStatusFilter('all',this)">All</button>
-      <button class="filter-btn done-filter" data-group="status" data-filter="done" onclick="setStatusFilter('done',this)">✓ Done</button>
-      <button class="filter-btn" data-group="status" data-filter="undone" onclick="setStatusFilter('undone',this)">◻ Undone</button>
-      <button class="filter-btn review-filter" data-group="status" data-filter="review" onclick="setStatusFilter('review',this)">★ Review</button>
-    </div>
     <div class="filter-divider view-toggles"></div>
     <div class="filter-group view-toggles">
       <button class="filter-btn view-toggle" id="toggle-tags" onclick="toggleTags(this)">⊞ Topics & Tags</button>
@@ -359,6 +385,14 @@
         <label class="us-label">Daily Email Reminders</label>
         <label class="us-switch">
           <input id="us-reminders-toggle" type="checkbox" onchange="UserSettings.onReminderToggle()" />
+          <span class="us-slider"></span>
+        </label>
+      </div>
+
+      <div class="us-field-group us-toggle-row">
+        <label class="us-label">Show Background Artwork</label>
+        <label class="us-switch">
+          <input id="us-bg-toggle" type="checkbox" onchange="UserSettings.onThemeBgToggle()" />
           <span class="us-slider"></span>
         </label>
       </div>

@@ -106,6 +106,13 @@ export const UserSettings = {
       toggleEl.checked = state.remindersEnabled;
       document.getElementById('us-reminder-email-row')?.classList.toggle('hidden', !state.remindersEnabled);
     }
+    
+    const bgToggleEl = document.getElementById('us-bg-toggle');
+    if (bgToggleEl) {
+      let hideBgState = localStorage.getItem('dsa_hide_bg');
+      if (hideBgState === null && window.innerWidth <= 768) hideBgState = '1';
+      bgToggleEl.checked = hideBgState !== '1';
+    }
 
     modal.classList.add('open');
   },
@@ -124,6 +131,17 @@ export const UserSettings = {
     if (emailRow) emailRow.classList.toggle('hidden', !checked);
   },
 
+  onThemeBgToggle() {
+    const checked = document.getElementById('us-bg-toggle')?.checked;
+    if (checked) {
+      document.documentElement.classList.remove('hide-theme-bg');
+      localStorage.setItem('dsa_hide_bg', '0');
+    } else {
+      document.documentElement.classList.add('hide-theme-bg');
+      localStorage.setItem('dsa_hide_bg', '1');
+    }
+  },
+
   async save() {
     const nameEl     = document.getElementById('us-name');
     const codeEl     = document.getElementById('us-phone-code');
@@ -137,6 +155,12 @@ export const UserSettings = {
     const rawNum     = sanitizeNumber(numEl?.value || '');
     const enabled    = toggleEl?.checked ?? false;
     const remEmail   = emailEl?.value.trim() || '';
+    const phone      = rawNum ? `${rawCode} ${rawNum}` : null;
+
+    const nameChanged = rawName !== (state.userName || '');
+    const phoneChanged = phone !== (state.userPhone || null);
+    const enabledChanged = enabled !== !!state.remindersEnabled;
+    const emailChanged = remEmail !== (state.reminderEmail || '');
 
     // validation
     if (rawName.length > 80) {
@@ -152,7 +176,10 @@ export const UserSettings = {
       showToast('Enter a valid reminder email address.', 'error'); return;
     }
 
-    const phone = rawNum ? `${rawCode} ${rawNum}` : null;
+    if (!nameChanged && !phoneChanged && !enabledChanged && !emailChanged) {
+      this.close();
+      return;
+    }
 
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
 

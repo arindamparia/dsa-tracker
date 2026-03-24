@@ -106,4 +106,8 @@
   --overlay-bg:    rgba(0,0,0,0.45);
   --surface-blur:  rgba(240,240,248,0.96);
   --surface-blur2: rgba(245,245,252,0.92);
+
+  /* background image overlay */
+  --bg-opacity: 0.12;
+  --bg-blend: normal;
 }

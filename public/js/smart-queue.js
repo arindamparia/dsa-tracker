@@ -172,10 +172,8 @@ export const SmartQueue = {
       // Clear all filters so the row is visible
       state.diffFilter   = 'all';
       state.statusFilter = 'all';
-      document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
-      document.querySelector('[data-group="diff"][data-filter="all"]')?.classList.add('active');
-      document.querySelector('[data-group="status"][data-filter="all"]')?.classList.add('active');
+      if (window.updateDiffUI) window.updateDiffUI('all');
+      if (window.updateStatusUI) window.updateStatusUI('all');
 
       // Apply filters then expand the section
       import('./filters.js').then(m => {
