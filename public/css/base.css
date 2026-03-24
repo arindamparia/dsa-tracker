@@ -24,12 +24,18 @@ body::before {
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;
-  transform: scale(1.2) translateY(-5vh); /* enlarges and pushes the image higher up the screen */
-  opacity: var(--bg-opacity);
+  transform: scale(1.2) translateY(-5vh) translateZ(0); /* pushes image higher and forces hardware acceleration */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  opacity: 0; /* Starts hidden until JS lazily loads it */
   mix-blend-mode: var(--bg-blend);
   z-index: -1;
   pointer-events: none;
   transition: opacity 0.8s ease;
+}
+html.bg-loaded body::before {
+  opacity: var(--bg-opacity, 0.15);
 }
 html.hide-theme-bg body::before {
   display: none !important;
@@ -72,7 +78,6 @@ html.hide-theme-bg body::before {
 :root {
   /* The path to the downloaded image - injected lazily by JS */
   --bg-image: none;
-  --bg-opacity: 0;
   --bg-blend: normal;
 }
 

@@ -136,6 +136,19 @@ export const UserSettings = {
     if (checked) {
       document.documentElement.classList.remove('hide-theme-bg');
       localStorage.setItem('dsa_hide_bg', '0');
+      
+      // If the image was skipped during main page load (e.g. mobile default), lazily inject it now
+      const root = document.documentElement;
+      if (!root.style.getPropertyValue('--bg-image')) {
+        const img = new Image();
+        img.onload = () => {
+          root.style.setProperty('--bg-image', "url('/images/bg.png')");
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            root.classList.add('bg-loaded');
+          }));
+        };
+        img.src = '/images/bg.png';
+      }
     } else {
       document.documentElement.classList.add('hide-theme-bg');
       localStorage.setItem('dsa_hide_bg', '1');

@@ -285,11 +285,9 @@ AmbientSound.init();
       const root = document.documentElement;
       // Set image first (opacity is still 0 from CSS default)
       root.style.setProperty('--bg-image', "url('/images/bg.png')");
-      // Kick off the fade-in on the next paint
+      // Kick off the fade-in on the next paint via CSS class
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          root.style.setProperty('--bg-opacity', '0.15');
-        });
+        requestAnimationFrame(() => root.classList.add('bg-loaded'));
       });
     };
     img.src = '/images/bg.png';
