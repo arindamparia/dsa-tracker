@@ -36,7 +36,7 @@ async function loadClerk() {
   if (!loaded || !window.Clerk) throw new Error("Failed to load Clerk JS from all sources");
 
   const clerk = window.Clerk;
-  await clerk.load();
+  await clerk.load({ touchSession: false });
   window._clerk = clerk;
   return clerk;
 }
