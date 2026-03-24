@@ -1,4 +1,4 @@
-/* ── Smart Suggestion Card (Feature 12) ──────────────────────── */
+/* smart suggestion card (feature 12) */
 #smart-suggestion-card {
   position: fixed; bottom: 24px; right: 24px;
   background: var(--surface2); border: 1px solid var(--accent);
@@ -39,7 +39,7 @@
 }
 .ssc-dismiss:hover { color: var(--text); }
 
-/* ── Smart Pick highlight ───────────────────────────────────────── */
+/* smart pick highlight */
 @keyframes smartPulse {
   0%   { box-shadow: inset 3px 0 0 var(--accent); background: rgba(var(--accent-rgb),0.12); }
   50%  { box-shadow: inset 3px 0 0 var(--accent); background: rgba(var(--accent-rgb),0.06); }

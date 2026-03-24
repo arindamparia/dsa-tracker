@@ -1,4 +1,4 @@
-/* ── SPACED REPETITION REVIEW QUEUE ── */
+/* spaced repetition review queue */
 
 #review-queue { margin-bottom: 0; transition: margin 0.3s; }
 #review-queue.has-items { margin-bottom: 28px; }

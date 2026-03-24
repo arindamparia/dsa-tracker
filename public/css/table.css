@@ -1,4 +1,4 @@
-/* ── QUESTION TABLE ── */
+/* question table */
 .q-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .q-table tbody tr {
   border-bottom: 1px solid var(--border);
@@ -33,7 +33,7 @@
 }
 .q-table td { padding: 12px 14px; vertical-align: top; }
 
-/* ── CHECKBOX ── */
+/* checkbox */
 .check-cell  { width: 40px; }
 .custom-check {
   width: 17px; height: 17px; border: 2px solid var(--border2); border-radius: 5px;
@@ -47,11 +47,9 @@
 }
 .custom-check.checked::after { content: '✓'; color: #000; font-size: 11px; font-weight: 700; }
 
-/* ── CELLS ── */
-.prob-name   { width: 35%; }   /* fixed share */
-.diff-cell   { width: 90px; }  /* fixed, never changes */
-/* Sol and notes will automatically take equal share of remaining space because there are no widths */
-/* Both hidden: spacer fills, diff stays next to prob */
+/* cells */
+.prob-name   { width: 35%; }
+.diff-cell   { width: 90px; }
 td.spacer-cell, col.spacer-cell { width: 0 !important; padding: 0 !important; border: none !important; }
 body.notes-hidden.solution-hidden td.spacer-cell, body.notes-hidden.solution-hidden col.spacer-cell { width: auto !important; }
 .prob-name a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; display: block; margin-bottom: 3px; }
@@ -67,7 +65,7 @@ body.notes-hidden.solution-hidden td.spacer-cell, body.notes-hidden.solution-hid
 .diff-badge.medium { background: var(--medium-bg); color: var(--medium); border: 1px solid rgba(var(--medium-rgb),0.2); }
 .diff-badge.hard   { background: var(--hard-bg);   color: var(--hard);   border: 1px solid rgba(var(--hard-rgb),0.2); }
 
-/* ── SOLUTION BOX ── */
+/* solution box */
 .sol-cell-wrap { position: relative; }
 .expand-btn {
   position: absolute; top: 6px; right: 6px;
@@ -85,18 +83,18 @@ body.notes-hidden.solution-hidden td.spacer-cell, body.notes-hidden.solution-hid
 [data-theme="light"] .sol-box:focus { background: var(--surface2); }
 .sol-box.has-content { border-color: rgba(var(--easy-rgb),0.3); background: rgba(var(--easy-rgb),0.03); }
 
-/* ── NOTES BOX ── */
+/* notes box */
 .notes-box  { width: 100%; min-height: 70px; background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); resize: vertical; outline: none; line-height: 1.6; transition: border-color 0.2s, background 0.2s; }
 .notes-box::placeholder { color: var(--text-muted); font-size: 11px; }
 .notes-box:focus       { border-color: rgba(var(--accent-rgb),0.5); background: #1a1a25; }
 [data-theme="light"] .notes-box:focus { background: var(--surface2); }
 .notes-box.has-content { border-color: rgba(var(--accent-rgb),0.3); background: rgba(var(--accent-rgb),0.03); }
 
-/* ── VIEW TOGGLES ── */
+/* view toggles */
 body.tags-hidden     .tag-pills-wrap { display: none !important; }
 body.topic-hidden    .topic-tag      { display: none !important; }
 
-/* Keep column count preserved to prevent table-layout: fixed colspan collapse */
+/* keep column count preserved to prevent table-layout: fixed colspan collapse */
 body.solution-hidden span.sol-cell { display: none !important; }
 body.solution-hidden td.sol-cell, body.solution-hidden col.sol-cell { width: 0 !important; padding: 0 !important; border: none !important; overflow: hidden !important; }
 body.solution-hidden td.sol-cell > * { display: none !important; }
@@ -107,7 +105,7 @@ body.notes-hidden    td.notes-cell > * { display: none !important; }
 
 tr.filtered-out { display: none; }
 
-/* ── REVIEW STAR & COMPLEXITY ── */
+/* review star & complexity */
 .review-star {
   display: inline-block; cursor: pointer; color: var(--border2);
   margin-right: 6px; font-size: 14px; transition: color 0.2s, transform 0.2s;
@@ -125,7 +123,7 @@ tr.filtered-out { display: none; }
 }
 .complexity-select:focus { border-color: rgba(var(--accent-rgb),0.5); color: var(--text); }
 
-/* ── MOBILE ── */
+/* mobile */
 @media (max-width: 768px) {
   span.sol-cell, span.notes-cell { display: none !important; }
   td.sol-cell, col.sol-cell, td.notes-cell, col.notes-cell { width: 0 !important; padding: 0 !important; border: none !important; overflow: hidden !important; }
@@ -136,7 +134,7 @@ tr.filtered-out { display: none; }
   .similar-item-name { max-width: none; }
 }
 
-/* ── SIMILAR PROBLEMS ── */
+/* similar problems */
 .similar-btn {
   font-family: 'JetBrains Mono', monospace; font-size: 9px;
   background: var(--surface2); color: var(--text-muted);
@@ -214,7 +212,7 @@ tr.filtered-out { display: none; }
   display: flex; align-items: center; gap: 6px;
 }
 
-/* ── AI STYLES ── */
+/* ai styles */
 .sol-actions-row {
   display: flex;
   align-items: center;
@@ -323,7 +321,7 @@ tr.filtered-out { display: none; }
   margin-top: 6px;
 }
 
-/* ── SKELETON LOADING UI ── */
+/* skeleton loading */
 .skeleton-row td {
   padding: 16px 14px;
 }
@@ -347,14 +345,14 @@ tr.filtered-out { display: none; }
 .skeleton-badge    { width: 60px; height: 20px; border-radius: 12px; }
 .skeleton-textarea { width: 100%; height: 60px; border-radius: 8px; }
 
-/* ── SKELETON SECTION HEADER ── */
+/* skeleton section header */
 .skeleton-section .section-header { cursor: default; pointer-events: none; }
 .skeleton-section-num   { width: 28px; height: 20px; border-radius: 5px; flex-shrink: 0; }
 .skeleton-section-title { height: 16px; border-radius: 5px; }
 .skeleton-section-count { width: 44px; height: 12px; border-radius: 4px; }
 .skeleton-section .section-col-headers { opacity: 0.35; pointer-events: none; }
 
-/* ── RICH AI FEEDBACK RE-SKIN ── */
+/* rich ai feedback card */
 .ai-rich-fb {
   display: flex;
   flex-direction: column;
@@ -376,7 +374,7 @@ tr.filtered-out { display: none; }
 }
 
 .approach-section .ai-rich-title {
-  color: #a87ffb; /* slightly lighter accent purple */
+  color: #a87ffb;
 }
 .efficiency-section .ai-rich-title {
   color: var(--accent);
@@ -436,7 +434,7 @@ tr.filtered-out { display: none; }
   background: rgba(6, 214, 160, 0.1);
 }
 
-/* ── NEW AI REVIEW CARD (.air-*) ── */
+/* ai review card (.air-*) */
 .air-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -449,7 +447,7 @@ tr.filtered-out { display: none; }
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
 }
 
-/* Header: chips + thumbs */
+/* header: chips + thumbs */
 .air-header {
   display: flex;
   align-items: center;
@@ -475,20 +473,20 @@ tr.filtered-out { display: none; }
 }
 .air-thumb:hover { background: rgba(255,255,255,0.06); transform: scale(1.15); }
 
-/* Summary bar */
+/* summary bar */
 .air-summary {
   font-size: 13px; font-weight: 600;
   color: var(--accent); line-height: 1.45;
   margin-bottom: 10px;
 }
 
-/* Divider */
+/* divider */
 .air-divider {
   height: 1px; background: var(--border);
   margin: 10px 0;
 }
 
-/* Sections */
+/* sections */
 .air-section { display: flex; flex-direction: column; gap: 6px; }
 
 .air-stitle {
@@ -496,11 +494,11 @@ tr.filtered-out { display: none; }
   font-size: 13px; font-weight: 700;
   margin-bottom: 4px;
 }
-.air-stitle-approach { color: #a87ffb; }  /* slightly lighter accent */
+.air-stitle-approach { color: #a87ffb; }
 .air-stitle-eff      { color: var(--accent); }
 .air-stitle-style    { color: var(--text-dim); }
 
-/* Rows */
+/* rows */
 .air-row {
   display: flex; align-items: baseline;
   gap: 8px; font-size: 12.5px; line-height: 1.45;
@@ -529,7 +527,7 @@ tr.filtered-out { display: none; }
   background: rgba(var(--easy-rgb),0.08);
 }
 
-/* Efficiency section: Time / Space tabs */
+/* efficiency section: time / space tabs */
 .air-eff-tabs {
   display: flex; gap: 6px; margin-bottom: 6px;
 }
@@ -550,7 +548,7 @@ tr.filtered-out { display: none; }
 }
 .air-eff-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 
-/* Complexity graph */
+/* complexity graph */
 .air-graph-wrap {
   flex-shrink: 0; width: 108px;
   display: flex; flex-direction: column;
@@ -565,7 +563,7 @@ tr.filtered-out { display: none; }
 }
 .air-graph-svg { width: 102px; height: 66px; display: block; }
 
-/* Star rating */
+/* star rating */
 .air-stars {
   font-size: 14px; color: var(--medium);
   letter-spacing: 1px;

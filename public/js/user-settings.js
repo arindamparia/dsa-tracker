@@ -4,7 +4,7 @@ import { showToast } from './toast.js';
 import { getUserEmail } from './auth.js';
 import { handleError } from './errors.js';
 
-// ── Country code list (flag emoji + name + dial code) ──────────────
+// country code list (flag emoji + name + dial code)
 const COUNTRIES = [
   { flag: '🇮🇳', name: 'India',      code: '+91'  },
   { flag: '🇺🇸', name: 'USA',        code: '+1'   },
@@ -138,7 +138,7 @@ export const UserSettings = {
     const enabled    = toggleEl?.checked ?? false;
     const remEmail   = emailEl?.value.trim() || '';
 
-    // ── Validation ──────────────────────────────────────────────
+    // validation
     if (rawName.length > 80) {
       showToast('Name must be 80 characters or less.', 'error'); return;
     }

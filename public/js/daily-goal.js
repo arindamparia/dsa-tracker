@@ -16,8 +16,7 @@ function saveGoal(n) {
   try { localStorage.setItem(GOAL_KEY, String(n)); } catch {}
 }
 
-// ── Motivational captions ─────────────────────────────────────────────────────
-
+// motivational captions
 const CAPTIONS = [
   { h: 'Daily Goal Reached! 🎯', sub: '"Every action you take is a vote for the type of person you wish to become." — James Clear, Atomic Habits' },
   { h: 'Goal Crushed! 🔥',       sub: '"Enthusiasm is common. Endurance is rare." — Angela Duckworth, Grit' },
@@ -27,8 +26,7 @@ const CAPTIONS = [
   { h: 'Unstoppable! 💪',        sub: '"We all have the ability to come from nothing to something." — David Goggins, Can\'t Hurt Me' },
 ];
 
-// ── Confetti engine ───────────────────────────────────────────────────────────
-
+// confetti engine
 const CONFETTI_COLORS = [
   '#06d6a0','#00b4d8','#f72585','#ffd166','#a8dadc',
   '#ffffff','#7b2ff7','#ff9f1c','#2ec4b6'
@@ -92,8 +90,7 @@ function spawnConfetti() {
   draw();
 }
 
-// ── Center-page motivational caption ─────────────────────────────────────────
-
+// center-page motivational caption
 function showCenterCaption(extra) {
   document.getElementById('goal-center-caption')?.remove();
 
@@ -121,8 +118,7 @@ function showCenterCaption(extra) {
   }, 3500);
 }
 
-// ── Corner banner ─────────────────────────────────────────────────────────────
-
+// corner banner
 function dismissBanner(banner) {
   animate(banner, { opacity: 0, x: 400 }, { duration: 0.4, easing: 'ease-in' })
     .finished.then(() => banner.remove());
@@ -152,8 +148,7 @@ function showGoalBanner(extra) {
   setTimeout(() => dismissBanner(banner), 6000);
 }
 
-// ── Ring SVG ──────────────────────────────────────────────────────────────────
-
+// ring svg
 function buildRingSVG(pct, extra) {
   const r = 28;
   const circumference = 2 * Math.PI * r;
@@ -178,8 +173,7 @@ function buildRingSVG(pct, extra) {
     </svg>`;
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
-
+// main export
 export const DailyGoal = {
   _goal: 3,
   /**

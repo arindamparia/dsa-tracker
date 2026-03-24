@@ -1,4 +1,4 @@
-/* ── STAT CARDS ── */
+/* stat cards */
 .stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
 .stat-card {
   background: var(--surface);
@@ -20,7 +20,7 @@
 .stat-value.hard   { color: var(--hard); }
 .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
 
-/* ── OVERALL PROGRESS BAR ── */
+/* overall progress bar */
 .global-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
 .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -39,7 +39,7 @@
   to   { transform: translateX(100%); opacity: 0; }
 }
 
-/* ── TOP STATS (Today & Streak) ── */
+/* top stats (today & streak) */
 .top-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -107,7 +107,7 @@
   background: var(--surface3);
 }
 
-/* ── Loading skeleton for stat cards ── */
+/* loading skeleton for stat cards */
 /* Applied while body.loading — removed by updateStats() when real data arrives */
 body.loading .stat-value,
 body.loading .stat-sub {

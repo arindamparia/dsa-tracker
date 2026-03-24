@@ -31,7 +31,7 @@ function formatDuration(ms) {
   return `${sec}s`;
 }
 
-// ── Prep session state (module-level) ────────────────────────────
+// prep session state (module-level)
 let prepSessionCompany   = null;
 let prepSessionStartTime = null;
 let prepSessionSnapshot  = new Map(); // lc_number → is_done at session start
@@ -44,7 +44,7 @@ export const CompanyFilter = {
     return buildCompanyMap();
   },
 
-  // ── Filter dropdown ────────────────────────────────────────────
+  // filter dropdown
   toggle() {
     if (prepSessionCompany) {
       if (window.showToast) window.showToast('Exit prep mode before changing company.', 'error');
@@ -151,7 +151,7 @@ export const CompanyFilter = {
     applyFilters();
   },
 
-  // ── Prep mode picker ───────────────────────────────────────────
+  // prep mode picker
   openPicker() {
     if (prepSessionCompany) {
       // Already in a prep session — end it first
@@ -202,7 +202,7 @@ export const CompanyFilter = {
     }).join('');
   },
 
-  // ── Prep session ──────────────────────────────────────────────
+  // prep session
   startPrep(company) {
     const target = company || state.companyFilter;
     if (!target) return;
@@ -321,7 +321,7 @@ export const CompanyFilter = {
     document.getElementById('company-prep-summary-modal')?.classList.remove('open');
   },
 
-  // ── Readiness confirm modal ────────────────────────────────────
+  // readiness confirm modal
   confirmReadiness(company, done, total, labelText) {
     if (prepSessionCompany) {
       if (window.showToast) window.showToast('Exit prep mode before switching company.', 'error');

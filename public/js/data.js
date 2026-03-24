@@ -1,4 +1,3 @@
-/** Data fetching — boot from cache or API, hard refresh. */
 import { state } from './state.js';
 import { Cache, UserCache } from './cache.js';
 import { render, renderSkeletonSections } from './render.js';
@@ -22,7 +21,6 @@ export async function refreshUserSettings() {
     const data = await res.json();
     if (!data.ok) return;
     applyUserProfile(data);
-    // Only cache non-sensitive preferences — never store is_subscribed or user_role
     UserCache.set({
       reminders_enabled: data.reminders_enabled,
       reminder_email:    data.reminder_email,
@@ -34,8 +32,6 @@ export async function refreshUserSettings() {
   } catch {}
 }
 
-// Refresh user settings when the tab regains visibility after the UserCache expires.
-// Registered once at module load — not inside boot() to avoid duplicate listeners.
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && !UserCache.get()) {
     refreshUserSettings();
@@ -44,14 +40,12 @@ document.addEventListener('visibilitychange', () => {
 
 export async function boot(onReady) {
   const cachedProfile = UserCache.get();
-  if (cachedProfile) applyUserProfile(cachedProfile); // applies name/reminders for quick UI
+  if (cachedProfile) applyUserProfile(cachedProfile);
 
   const cached = Cache.get();
   if (cached) {
     state.questions = cached;
     buildSearchIndex();
-    // Show skeleton immediately, reveal the page, then wait for fresh user settings
-    // before painting the actual data. User sees: skeleton → data (single transition).
     smoothTransition(() => {
       renderSkeletonSections();
       onReady?.();
@@ -68,7 +62,7 @@ export async function boot(onReady) {
 export async function bootFresh(onReady) {
   smoothTransition(() => {
     renderSkeletonSections();
-    onReady?.(); // reveal page with skeletons — data arrives shortly
+    onReady?.();
   });
   try {
     const res = await fetch('/.netlify/functions/get-questions', { cache: 'no-store' });
@@ -79,7 +73,6 @@ export async function bootFresh(onReady) {
     buildSearchIndex();
     applyUserProfile(data);
     Cache.set(state.questions);
-    // Only cache non-sensitive preferences — never store is_subscribed or user_role
     UserCache.set({
       reminders_enabled: data.reminders_enabled,
       reminder_email:    data.reminder_email,

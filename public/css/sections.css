@@ -1,4 +1,4 @@
-/* ── COLLAPSIBLE SECTIONS ── */
+/* collapsible sections */
 .section {
   margin-bottom: 8px;
   border: 1px solid var(--border);
@@ -8,7 +8,7 @@
 }
 .section:hover { border-color: var(--border2); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
 
-/* ── STICKY WRAPPER — section title + column headers stick together ── */
+/* sticky wrapper — section title + column headers stick together */
 .section-sticky {
   position: sticky; top: var(--controls-h, 72px); z-index: 20;
   background: var(--surface);
@@ -18,7 +18,7 @@
 }
 .section.collapsed .section-sticky { border-radius: 14px; }
 
-/* ── SECTION HEADER (title row) ── */
+/* section header (title row) */
 .section-header {
   display: flex; align-items: center; gap: 14px; padding: 16px 20px;
   cursor: pointer; user-select: none; transition: background 0.15s, box-shadow 0.25s;
@@ -53,7 +53,7 @@
 .section:hover .chevron { color: var(--accent); }
 .section.collapsed .chevron { transform: rotate(-90deg); }
 
-/* ── COLUMN HEADER ROW ── */
+/* column header row */
 .section-col-headers {
   display: table;
   width: 100%;
@@ -87,7 +87,7 @@ body.notes-hidden.solution-hidden .th-spacer     { display: table-cell; width: a
   .th-check, .th-problem, .th-diff, .th-col { padding: 8px 10px; }
 }
 
-/* ── SECTION BODY (collapsible) ── */
+/* section body (collapsible) */
 /* Use grid-template-rows trick for true-height smooth animation */
 .section-body {
   display: grid;

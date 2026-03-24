@@ -2,7 +2,7 @@
    COMPANY FEATURES — Filter · Stats · Pills · Prep
    ══════════════════════════════════════════════ */
 
-/* ── Company Filter Button & Dropdown ──────── */
+/* company filter button & dropdown */
 .company-filter-wrap {
   position: relative;
   display: inline-flex;
@@ -119,7 +119,7 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ── Company Prep Mode — hide non-essential UI (mirrors focus-mode.css) ── */
+/* company prep mode — hide non-essential ui (mirrors focus-mode.css) */
 body.company-prep-active header,
 body.company-prep-active .study-tools-bar,
 body.company-prep-active .motivation-box,
@@ -131,7 +131,7 @@ body.company-prep-active #random-btn,
 body.company-prep-active #company-clear-btn,
 body.company-prep-active .company-stats-section { display: none !important; }
 
-/* ── Company Readiness Stats Panel ──────────── */
+/* company readiness stats panel */
 .company-stats-section {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -233,7 +233,7 @@ body.company-prep-active .company-stats-section { display: none !important; }
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ── Company stats pagination ── */
+/* company stats pagination */
 .cs-pagination { margin-top: 12px; }
 .cs-pg-row {
   display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -261,7 +261,7 @@ body.company-prep-active .company-stats-section { display: none !important; }
   color: var(--text-muted); font-size: 10px; font-weight: 400;
 }
 
-/* ── Readiness Confirm Modal ── */
+/* readiness confirm modal */
 .crc-company {
   font-size: 20px; font-weight: 700; color: var(--text);
   font-family: 'Syne', sans-serif; margin-bottom: 8px;
@@ -281,7 +281,7 @@ body.company-prep-active .company-stats-section { display: none !important; }
   display: flex; gap: 10px; justify-content: center;
 }
 
-/* ── Company Pills on Rows ───────────────────── */
+/* company pills on rows */
 .company-pills-wrap {
   display: inline-flex;
   flex-wrap: wrap;

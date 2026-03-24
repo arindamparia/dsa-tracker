@@ -19,7 +19,7 @@ export function initTimerNudge() {
 
   body.style.animation = 'none';
 
-  // ── Tuning ────────────────────────────────────────────────────────────────
+  // tuning
   const OMEGA_SQ   = 1.20;   // natural frequency²
   const DAMPING    = 1.65;   // slightly underdamped: gentle spring-back
   const MAX_TILT   = 0.18;   // ~10° max lean
@@ -32,7 +32,7 @@ export function initTimerNudge() {
   const bodyWidth  = body.getBoundingClientRect().width;
   const ROPE_LEVER = Math.max(bodyWidth / 2 - 28, 10); // fallback 10 if not yet painted
 
-  // ── State ─────────────────────────────────────────────────────────────────
+  // state
   let theta   = 0;
   let omega   = 0;
   let cursorX = null;
@@ -43,7 +43,7 @@ export function initTimerNudge() {
   let rafId   = null;
   let lastTs  = null;
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // helpers
   function applyRopes(th) {
     // When leaning RIGHT (th > 0): left anchor drops → left rope LONGER
     //                              right anchor rises → right rope SHORTER
@@ -62,7 +62,7 @@ export function initTimerNudge() {
     rafId  = requestAnimationFrame(tick);
   }
 
-  // ── Physics loop ──────────────────────────────────────────────────────────
+  // physics loop
   function tick(ts) {
     const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 0.016;
     lastTs = ts;
@@ -124,7 +124,7 @@ export function initTimerNudge() {
     rafId = requestAnimationFrame(tick);
   }
 
-  // ── Mouse ─────────────────────────────────────────────────────────────────
+  // mouse
   body.addEventListener('mouseenter', () => {
     isNear = true;
     startLoop();
@@ -141,7 +141,7 @@ export function initTimerNudge() {
     cursorY = e.clientY;
   });
 
-  // ── Touch ─────────────────────────────────────────────────────────────────
+  // touch
   body.addEventListener('touchstart', e => {
     prevX   = cursorX;   prevY   = cursorY;
     cursorX = e.touches[0].clientX;

@@ -15,8 +15,7 @@ const HARD_QUOTES = [
   { q: 'The expert in anything was once a beginner.',               attr: '— Helen Hayes' },
 ];
 
-// ── Screen flash ──────────────────────────────────────────────────────────────
-
+// screen flash
 async function doScreenFlash() {
   const flash = document.createElement('div');
   flash.id = 'hard-flash';
@@ -31,8 +30,7 @@ async function doScreenFlash() {
   flash.remove();
 }
 
-// ── Ember particles ───────────────────────────────────────────────────────────
-
+// ember particles
 const EMBER_COLORS = ['#ff6b35','#ff9f1c','#ffd166','#ff4444','#ffaa00','#fff0a0'];
 let _emberRAF = null;
 
@@ -90,8 +88,7 @@ function spawnEmbers() {
   draw();
 }
 
-// ── Center modal ──────────────────────────────────────────────────────────────
-
+// center modal
 function showHardModal(problemName) {
   document.getElementById('hard-modal')?.remove();
 
@@ -126,8 +123,7 @@ function showHardModal(problemName) {
   }, 4500);
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
-
+// public api
 export const HardCelebration = {
   fire(problemName) {
     window._isHardCelebrationActive = true;

@@ -1,11 +1,9 @@
-/** DOM construction — sections, rows, section dropdown. */
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { updateStats } from './stats.js';
 import { applyFilters, applyFiltersToSection } from './filters.js';
 import { animate, stagger } from './motion.js';
 
-/** Escape a string for safe insertion into HTML text content or attributes. */
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -15,7 +13,6 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// ── Module-level company count map (rebuilt once per render()) ────────────
 let _companyCountMap = null;
 function getCompanyCountMap() {
   if (_companyCountMap) return _companyCountMap;
@@ -62,14 +59,13 @@ const COL_HEADERS_HTML = `
     <span class="th-spacer"></span>
   </div>`;
 
-// Width variations so skeleton sections don't look identical
 const TITLE_WIDTHS = [140, 180, 110, 160, 130, 170, 120];
 
 export function renderSkeletonSections(count = 7) {
   const container = document.getElementById('sections');
   container.innerHTML = '';
   for (let i = 0; i < count; i++) {
-    const isOpen = i < 2; // first 2 sections are open showing rows
+    const isOpen = i < 2;
     const el = document.createElement('div');
     el.className = `section skeleton-section${isOpen ? '' : ' collapsed'}`;
     el.innerHTML = `
@@ -98,7 +94,7 @@ export function renderSkeletonSections(count = 7) {
 }
 
 export function render() {
-  _companyCountMap = null; // invalidate cache on full re-render
+  _companyCountMap = null;
   const container = document.getElementById('sections');
   container.innerHTML = '';
   const sections = groupBySections(state.questions);
@@ -166,7 +162,6 @@ export function buildRow(q, si) {
   tr.dataset.lc    = String(q.lc_number);
   tr.dataset.si    = si;
   if (q.is_done) tr.classList.add('done-row');
-  // Solved-today highlight: bright left border if marked done today
   if (q.solved_at) {
     const today = new Date().toDateString();
     if (new Date(q.solved_at).toDateString() === today) tr.classList.add('solved-today');
@@ -175,8 +170,6 @@ export function buildRow(q, si) {
   const tags     = Array.isArray(q.tags) ? q.tags : [];
   const tagHtml  = tags.map(t => `<span class="tag-pill">${escapeHtml(t)}</span>`).join('');
 
-  // Company pills — sorted by total question count desc (same order as filter dropdown)
-  // Uses pre-computed map (getCompanyCountMap) to avoid O(N) rebuild per row.
   const COMPANY_VISIBLE = 4;
   const companiesRaw = Array.isArray(q.companies_asked) ? q.companies_asked : [];
   const companyCountMap = getCompanyCountMap();
@@ -185,8 +178,6 @@ export function buildRow(q, si) {
   if (companies.length > 0) {
     const visible = companies.slice(0, COMPANY_VISIBLE);
     const hidden  = companies.slice(COMPANY_VISIBLE);
-    // Use data-company attributes instead of inline onclick to prevent XSS.
-    // Clicks handled by delegated listener at bottom of this file.
     const visiblePills = visible.map(c => {
       const esc = escapeHtml(c);
       return `<span class="company-pill" data-company="${esc}" title="Filter by ${esc}">${esc}</span>`;
@@ -205,11 +196,9 @@ export function buildRow(q, si) {
   const todayBadge = tr.classList.contains('solved-today')
     ? '<span class="today-badge">TODAY</span>' : '';
 
-  // Escape all DB-sourced strings before embedding into innerHTML.
   const safeName       = escapeHtml(q.name);
   const safeTopic      = escapeHtml(q.topic);
   const safeDifficulty = escapeHtml(q.difficulty);
-  // URL: server validates http/https; escape for attribute safety.
   const safeUrl = (q.url || '').match(/^https?:\/\//) ? escapeHtml(q.url) : '#';
 
   tr.innerHTML = `
@@ -231,7 +220,7 @@ export function buildRow(q, si) {
       <div class="sol-cell-wrap">
         <div class="sol-actions-row">
           <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
-          <button class="ai-btn ai-analyze-btn" id="ai-analyze-btn-${q.lc_number}" onclick="AI.analyze(${q.lc_number})" title="Analyze Complexity & Quality">🤖 Analyze Code</button>
+          <button class="ai-btn ai-analyze-btn" id="ai-analyze-btn-${q.lc_number}" onclick="AI.analyze(${q.lc_number})" title="Analyze Complexity &amp; Quality">🤖 Analyze Code</button>
         </div>
         <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
           placeholder="Paste or write solution code..."
@@ -264,22 +253,17 @@ export function buildRow(q, si) {
 }
 
 export function toggleSection(si) {
-  // Read BEFORE the transition — smoothTransition callback has its own scope
   const clicked = document.getElementById(`sec-${si}`);
   const isNowCollapsed = clicked.classList.contains('collapsed');
 
   smoothTransition(() => {
-    // Close all sections first (accordion behaviour)
     document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
-
-    // If it was collapsed, open it; if it was already open, leave it closed
     if (isNowCollapsed) {
       clicked.classList.remove('collapsed');
       renderSection(si);
     }
   });
 
-  // Scroll into view after animation completes (grid transition = 0.38s)
   if (isNowCollapsed) {
     setTimeout(() => {
       const el = document.getElementById(`sec-${si}`);
@@ -287,36 +271,32 @@ export function toggleSection(si) {
       const controlsH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--controls-h')) || 126;
       const y = el.getBoundingClientRect().top + window.scrollY - controlsH;
       window.scrollTo({ top: y, behavior: 'smooth' });
-    }, 420); // slightly longer than the 0.38s grid transition
+    }, 420);
   }
 }
 
 export function preloadSection(si) {
-  if (window.MockInterview?.isActive()) return; // block during interview
+  if (window.MockInterview?.isActive()) return;
   const tbody = document.getElementById(`tbody-${si}`);
   if (!tbody || tbody.dataset.loaded !== 'false') return;
 
   tbody.dataset.loaded = 'loading';
-  // Yield to main thread to keep hover ultra-smooth, then build DOM quietly
   setTimeout(() => { doRender(si, tbody); }, 10);
 }
 
 export function renderSection(si, sync = false) {
   const tbody = document.getElementById(`tbody-${si}`);
   if (!tbody) return;
-  // sync (force-render): proceed unless already fully rendered
-  // async (lazy): only proceed if not yet started
   if (sync  && tbody.dataset.loaded === 'true')  return;
   if (!sync && tbody.dataset.loaded !== 'false') return;
 
   tbody.dataset.loaded = 'loading';
 
   if (sync) {
-     doRender(si, tbody, true); // sync = filter/force path — skip stagger
+     doRender(si, tbody, true);
      return;
   }
 
-  // Show skeleton
   tbody.innerHTML = Array(3).fill(`
     <tr class="skeleton-row">
       <td class="check-cell"><div class="skeleton-box skeleton-check"></div></td>
@@ -331,7 +311,6 @@ export function renderSection(si, sync = false) {
     </tr>
   `).join('');
 
-  // Let browser paint skeleton, then render actual rows with a cross-fade
   setTimeout(() => {
     smoothTransition(() => doRender(si, tbody));
   }, 40);
@@ -348,7 +327,6 @@ function doRender(si, tbody, skipStagger = false) {
   tbody.innerHTML = '';
   tbody.appendChild(frag);
   tbody.dataset.loaded = 'true';
-  // Disable AI buttons during mock interview
   if (window.MockInterview?.isActive()) {
     tbody.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
       b.disabled = true;
@@ -356,10 +334,8 @@ function doRender(si, tbody, skipStagger = false) {
     });
     window.MockInterview._markInterviewRows();
   }
-  // Only re-filter the newly rendered section — avoids full DOM scan of all sections.
   applyFiltersToSection(si);
 
-  // Stagger-animate rows when opening a section (skip for filter/sync paths)
   if (!skipStagger && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const rows = tbody.querySelectorAll('tr:not(.filtered-out)');
     if (rows.length > 0 && rows.length <= 40) {
@@ -369,11 +345,9 @@ function doRender(si, tbody, skipStagger = false) {
 }
 
 document.addEventListener('force-render-section', (e) => {
-  renderSection(e.detail, true); // sync path — skipStagger handled inside renderSection
+  renderSection(e.detail, true);
 });
 
-// ── Company pill click delegation ─────────────────────────────────────────
-// Replaces inline onclick handlers to prevent XSS from DB-sourced company names.
 document.addEventListener('click', (e) => {
   const pill = e.target.closest('.company-pill[data-company]');
   if (pill) {
@@ -387,10 +361,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-/**
- * Populates the "Section" dropdown in the Add Question modal.
- * Lives here because it depends on state.questions + groupBySections.
- */
 export function populateSectionDropdown() {
   const sel      = document.getElementById('f-section');
   const existing = new Set([...sel.options].map(o => o.value).filter(Boolean));
@@ -405,8 +375,8 @@ export function populateSectionDropdown() {
 
 function buildComplexityOptions(selected) {
   const opts = [
-    'O(1)', 'O(log n)', 'O(sqrt(n))', 'O(log(m+n))', 'O(n)', 
-    'O(n log n)', 'O(n log m)', 'O(n+m)', 'O(m * n)', 'O(V+E)', 
+    'O(1)', 'O(log n)', 'O(sqrt(n))', 'O(log(m+n))', 'O(n)',
+    'O(n log n)', 'O(n log m)', 'O(n+m)', 'O(m * n)', 'O(V+E)',
     'O(n²)', 'O(n³)', 'O(2^n)', 'O(2^n * n²)', 'O(n!)', 'O(n^n)'
   ];
   if (selected && !opts.includes(selected)) {
@@ -427,7 +397,7 @@ function renderAIAnalysisHTML(lc, payload) {
 
   const contentHtml = isRich
     ? buildAIReviewHTML(lc, data)
-    : `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${payload}</div>`;
+    : `<div class="ai-fb-box"><strong>🤖 Approach &amp; Edge Cases:</strong> ${payload}</div>`;
 
   return `
     <div class="ai-fb-container" id="ai-fb-container-${lc}">

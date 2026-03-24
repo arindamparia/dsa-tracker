@@ -15,21 +15,17 @@ export async function toggleCheck(lc, _si) {
   if (!q) return;
   const newDone = !q.is_done;
   q.is_done = newDone;
-  
-  if (newDone) {
-    q.solved_at = new Date().toISOString();
-  } else {
-    q.solved_at = null; // Removed from today metrics
-  }
+  q.solved_at = newDone ? new Date().toISOString() : null;
 
   const chk = document.getElementById(`chk-${lc}`);
   chk.classList.toggle('checked', newDone);
   if (newDone) {
     try { animate(chk, { scale: [0.8, 1] }, { type: "spring", stiffness: 400, damping: 15 }); } catch {}
   }
+
   const rowEl = document.getElementById(`row-${lc}`);
   rowEl.classList.toggle('done-row', newDone);
-  // Solved-today badge: add/remove live without re-render
+
   if (newDone) {
     rowEl.classList.add('solved-today');
     const nameLink = rowEl.querySelector('.prob-name a');
@@ -45,7 +41,7 @@ export async function toggleCheck(lc, _si) {
   }
 
   if (newDone && q.difficulty === 'Hard') {
-    HardCelebration.fire(q.name); // Sets active flag so Daily Goal waits if it also triggers
+    HardCelebration.fire(q.name);
   }
 
   updateStats();
@@ -58,10 +54,10 @@ export async function toggleCheck(lc, _si) {
     const res = await fetch('/.netlify/functions/update-progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        lc_number: lc, 
-        is_done: newDone, 
-        solution: q.solution || '', 
+      body: JSON.stringify({
+        lc_number: lc,
+        is_done: newDone,
+        solution: q.solution || '',
         notes: q.notes || '',
         needs_review: q.needs_review || false,
         time_complexity: q.time_complexity || '',
@@ -75,14 +71,12 @@ export async function toggleCheck(lc, _si) {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
     Cache.updateEntry(lc, { is_done: newDone, solved_at: q.solved_at });
-    // Suggest next problem after marking solved
     if (newDone) {
       window.SmartQueue?.onSolved(lc);
       setTimeout(() => window.SmartQueue?.suggestNext(q), 1200);
     }
   } catch (err) {
     handleError(err, "Couldn't save. Please try again.");
-    // rollback
     q.is_done = !newDone;
     chk.classList.toggle('checked', !newDone);
     document.getElementById(`row-${lc}`).classList.toggle('done-row', !newDone);
@@ -90,17 +84,14 @@ export async function toggleCheck(lc, _si) {
   }
 }
 
-// ── Solution ──────────────────────────────────────────────────────
-
 export function debounceSave(lc, el) {
   const code = el.value.trim();
   el.classList.toggle('has-content', code.length > 0);
-  
+
   if (code.length > 0) {
     const codeHeuristicBase = /[{}[\]();=><+\-*/]/;
     const codeKeywords = /\b(class|public|private|def|return|int|std|vector|string|void|if|for|while|const|let|var|function)\b/;
     if (!(codeHeuristicBase.test(code) && codeKeywords.test(code))) {
-      // Show an error and prevent saving, keeping the local value stranded until fixed
       showToast('⚠ Cannot save: Text does not look like valid code.', 'error');
       clearTimeout(state.saveTimers[lc]);
       return;
@@ -118,8 +109,6 @@ export async function persistSolution(lc, value) {
   const q = state.questions.find(x => x.lc_number === lc);
   if (!q) return;
 
-  // Cancel any previous in-flight save for this question (race condition fix).
-  // The AbortError is caught below and silently ignored.
   state.inflightSaves[lc]?.abort();
   const controller = new AbortController();
   state.inflightSaves[lc] = controller;
@@ -153,8 +142,6 @@ export async function persistSolution(lc, value) {
   }
 }
 
-// ── Notes ─────────────────────────────────────────────────────────
-
 export function debounceNotesSave(lc, el) {
   el.classList.toggle('has-content', el.value.length > 0);
   const q = state.questions.find(x => x.lc_number === lc);
@@ -167,7 +154,6 @@ export async function persistNotes(lc, value) {
   const q = state.questions.find(x => x.lc_number === lc);
   if (!q) return;
 
-  // Cancel any previous in-flight notes save for this question.
   state.inflightNotes[lc]?.abort();
   const controller = new AbortController();
   state.inflightNotes[lc] = controller;
@@ -201,23 +187,21 @@ export async function persistNotes(lc, value) {
   }
 }
 
-// ── Review & Complexity ──────────────────────────────────────────
-
 export async function toggleReview(lc, el) {
   const q = state.questions.find(x => x.lc_number === lc);
   if (!q) return;
   const newReview = !q.needs_review;
   q.needs_review = newReview;
   el.classList.toggle('active', newReview);
-  
+
   try {
     const res = await fetch('/.netlify/functions/update-progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        lc_number: lc, 
-        is_done: q.is_done || false, 
-        solution: q.solution || '', 
+      body: JSON.stringify({
+        lc_number: lc,
+        is_done: q.is_done || false,
+        solution: q.solution || '',
         notes: q.notes || '',
         needs_review: newReview,
         time_complexity: q.time_complexity || '',
@@ -245,7 +229,6 @@ export async function saveComplexity(lc) {
   const row = document.getElementById(`row-${lc}`);
   const timeSelect = row.querySelector('.complexity-select[data-type="time"]');
   const spaceSelect = row.querySelector('.complexity-select[data-type="space"]');
-  
   const tVal = timeSelect ? timeSelect.value : '';
   const sVal = spaceSelect ? spaceSelect.value : '';
 
@@ -256,10 +239,10 @@ export async function saveComplexity(lc) {
     const res = await fetch('/.netlify/functions/update-progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        lc_number: lc, 
-        is_done: q.is_done || false, 
-        solution: q.solution || '', 
+      body: JSON.stringify({
+        lc_number: lc,
+        is_done: q.is_done || false,
+        solution: q.solution || '',
         notes: q.notes || '',
         needs_review: q.needs_review || false,
         time_complexity: tVal,
@@ -279,10 +262,7 @@ export async function saveComplexity(lc) {
   }
 }
 
-// ── beforeunload: flush pending saves to localStorage cache ──────────────
-// If the user closes the tab while a debounce timer is pending,
-// the server save is lost but we still persist the latest value to cache
-// so the next page load reflects the user's most recent edits.
+// Flush pending debounced saves to cache on tab close
 window.addEventListener('beforeunload', () => {
   Object.entries(state.saveTimers).forEach(([lc, timer]) => {
     clearTimeout(timer);
@@ -322,7 +302,6 @@ export async function saveAIAnalysis(lc, aiAnalysis) {
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
-    // Persist to localStorage so page reload shows the analysis without a re-run
     Cache.updateEntry(lc, { ai_analysis: aiAnalysis });
   } catch (err) {
     handleError(err, "Couldn't save AI analysis.");

@@ -79,8 +79,7 @@ export function normalizeComplexity(raw) {
   return custom;
 }
 
-// ── Shared HTML builder (also imported by render.js for page-load rendering) ──
-
+// shared html builder (also imported by render.js for page-load rendering)
 function renderStars(n) {
   n = Math.max(0, Math.min(3, n || 0));
   return `<span class="air-stars">${'★'.repeat(n)}<span class="air-stars-empty">${'☆'.repeat(3 - n)}</span></span>`;

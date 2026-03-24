@@ -1,112 +1,108 @@
-/* ── DESIGN TOKENS ── */
-/* Edit here to retheme the entire app. */
+/* design tokens — edit here to retheme the entire app */
 :root {
 
-  /* ── Base backgrounds ──────────────────────────────────────── */
-  --bg:       #0a0a0f;   /* page background */
-  --surface:  #111118;   /* cards, sections */
-  --surface2: #18181f;   /* inner cells, inputs */
-  --surface3: #1e1e28;   /* deepest inset (textareas) */
+  /* base backgrounds */
+  --bg:       #0a0a0f;
+  --surface:  #111118;
+  --surface2: #18181f;
+  --surface3: #1e1e28;
 
-  /* ── Borders ────────────────────────────────────────────────── */
-  --border:  #2a2a38;    /* default divider */
-  --border2: #363648;    /* stronger divider / hover state */
+  /* borders */
+  --border:  #2a2a38;
+  --border2: #363648;
 
-  /* ── Text ───────────────────────────────────────────────────── */
-  --text:       #e8e8f0; /* primary content */
-  --text-dim:   #9898b0; /* secondary content */
-  --text-muted: #6b6b85; /* labels, placeholders */
+  /* text */
+  --text:       #e8e8f0;
+  --text-dim:   #9898b0;
+  --text-muted: #6b6b85;
 
-  /* ── Accent (purple) ─────────────────────────────────────────── */
+  /* accent (purple) */
   --accent:       #7c6af7;
-  --accent-light: #9180ff;              /* hover / active — brighter */
-  --accent-rgb:   124, 106, 247;        /* for rgba(): rgba(var(--accent-rgb), 0.15) */
+  --accent-light: #9180ff;
+  --accent-rgb:   124, 106, 247;
   --accent-glow:  rgba(124,106,247,0.18);
-  --accent2:      #06d6a0;              /* teal secondary */
+  --accent2:      #06d6a0;
   --accent2-glow: rgba(6,214,160,0.15);
 
-  /* ── Difficulty ──────────────────────────────────────────────── */
+  /* difficulty */
   --easy:       #06d6a0;
-  --easy-rgb:   6, 214, 160;            /* for rgba(): rgba(var(--easy-rgb), 0.3) */
+  --easy-rgb:   6, 214, 160;
   --easy-bg:    rgba(6,214,160,0.08);
-  --easy-dark:  #00b875;                /* deep green (heatmap level 3) */
+  --easy-dark:  #00b875;
 
   --medium:     #f8b500;
-  --medium-rgb: 248, 181, 0;            /* for rgba(): rgba(var(--medium-rgb), 0.2) */
+  --medium-rgb: 248, 181, 0;
   --medium-bg:  rgba(248,181,0,0.08);
 
   --hard:       #ff4757;
-  --hard-light: #ff6b77;                /* hover state for danger actions */
-  --hard-rgb:   255, 71, 87;            /* for rgba(): rgba(var(--hard-rgb), 0.1) */
+  --hard-light: #ff6b77;
+  --hard-rgb:   255, 71, 87;
   --hard-bg:    rgba(255,71,87,0.08);
 
-  /* ── Orange (streak / daily-goal extra) ─────────────────────── */
+  /* orange (streak / daily goal) */
   --orange:     #ff9f1c;
-  --orange-rgb: 255, 159, 28;           /* for rgba(): rgba(var(--orange-rgb), 0.35) */
+  --orange-rgb: 255, 159, 28;
 
-  /* ── Done row ───────────────────────────────────────────────── */
+  /* done row */
   --done-bg: rgba(6,214,160,0.05);
 
-  /* ── Shadow scale ───────────────────────────────────────────── */
-  /* Use these instead of hardcoding rgba(0,0,0,*) everywhere */
-  --shadow-sm: rgba(0,0,0,0.25);        /* button hover */
-  --shadow-md: rgba(0,0,0,0.35);        /* card hover */
-  --shadow-lg: rgba(0,0,0,0.50);        /* dropdowns, popovers */
-  --shadow-xl: rgba(0,0,0,0.65);        /* heavy modals */
+  /* shadows */
+  --shadow-sm: rgba(0,0,0,0.25);
+  --shadow-md: rgba(0,0,0,0.35);
+  --shadow-lg: rgba(0,0,0,0.50);
+  --shadow-xl: rgba(0,0,0,0.65);
 
-  /* ── Overlay & blur backgrounds ─────────────────────────────── */
-  --overlay-bg:    rgba(0,0,0,0.75);        /* modal backdrop */
-  --surface-blur:  rgba(10,10,15,0.95);     /* sticky controls bar */
-  --surface-blur2: rgba(12,12,22,0.90);     /* timer widget / update banner */
+  /* overlay & blur */
+  --overlay-bg:    rgba(0,0,0,0.75);
+  --surface-blur:  rgba(10,10,15,0.95);
+  --surface-blur2: rgba(12,12,22,0.90);
 
-  /* ── Sticky layout heights ───────────────────────────────────── */
-  /* Update if controls bar height changes */
-  --controls-h: 126px;   /* two-row controls bar */
-  --section-h:  55px;    /* section header */
+  /* layout heights */
+  --controls-h: 126px;
+  --section-h:  55px;
 }
 
 @media (max-width: 768px) {
   :root { --controls-h: 100px; }
 }
 
-/* ── LIGHT MODE ── */
-/* Toggle by setting data-theme="light" on <html> */
+/* light mode */
 [data-theme="light"] {
 
-  /* ── Base backgrounds ──────────────────────────────────────── */
-  --bg:       #f0f0f8;   /* page background */
-  --surface:  #ffffff;   /* cards, sections */
-  --surface2: #f5f5fc;   /* inner cells, inputs */
-  --surface3: #ebebf5;   /* deepest inset (textareas) */
+  /* base backgrounds */
+  --bg:       #f0f0f8;
+  --surface:  #ffffff;
+  --surface2: #f5f5fc;
+  --surface3: #ebebf5;
 
-  /* ── Borders ────────────────────────────────────────────────── */
-  --border:  #d4d4e8;    /* default divider */
-  --border2: #c0c0d8;    /* stronger divider / hover state */
+  /* borders */
+  --border:  #d4d4e8;
+  --border2: #c0c0d8;
 
-  /* ── Text ───────────────────────────────────────────────────── */
-  --text:       #0d0d1c; /* primary — near-black, maximum readability */
-  --text-dim:   #1c1c36; /* secondary — dark navy, clearly visible */
-  --text-muted: #3a3a5a; /* labels/placeholders — medium-dark, no washout */
+  /* text */
+  --text:       #0d0d1c;
+  --text-dim:   #1c1c36;
+  --text-muted: #3a3a5a;
 
-  /* ── Accent — same purple works in light mode ─────────────── */
+  /* accent glow */
   --accent-glow:  rgba(124,106,247,0.12);
   --accent2-glow: rgba(6,214,160,0.12);
 
-  /* ── Difficulty backgrounds (slightly stronger for light) ──── */
+  /* difficulty backgrounds */
   --easy-bg:   rgba(6,214,160,0.10);
   --medium-bg: rgba(248,181,0,0.10);
   --hard-bg:   rgba(255,71,87,0.10);
 
-  /* ── Done row ───────────────────────────────────────────────── */
+  /* done row */
   --done-bg: rgba(6,214,160,0.07);
 
-  /* ── Shadows (much lighter on white backgrounds) ────────────── */
+  /* shadows */
   --shadow-sm: rgba(0,0,0,0.08);
   --shadow-md: rgba(0,0,0,0.12);
   --shadow-lg: rgba(0,0,0,0.18);
   --shadow-xl: rgba(0,0,0,0.28);
 
-  /* ── Overlay & blur backgrounds ─────────────────────────────── */
+  /* overlay & blur */
   --overlay-bg:    rgba(0,0,0,0.45);
   --surface-blur:  rgba(240,240,248,0.96);
   --surface-blur2: rgba(245,245,252,0.92);

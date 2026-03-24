@@ -1,4 +1,4 @@
-/* ── RESET & BASE ── */
+/* reset & base */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { overflow-x: hidden; }
 body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; max-width: 100vw; }
@@ -10,29 +10,26 @@ body::before {
 }
 .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; overflow-x: clip; }
 
-/* ── KEYFRAMES ── */
+/* keyframes */
 @keyframes blink       { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes shimmer     { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 @keyframes dots        { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
 @keyframes bouncePoint { 0%,100%{transform:translateX(0)} 50%{transform:translateX(8px)} }
 @keyframes fadeInOut   { 0%{opacity:0;transform:translateY(-50%) scale(0.85)} 12%{opacity:1;transform:translateY(-50%) scale(1)} 80%{opacity:1} 100%{opacity:0} }
 
-/* ── FOCUS INDICATORS (keyboard only) ── */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* ── SCROLLBAR ── */
+/* scrollbar */
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* ── PAGE LOADER OVERLAY ── */
-/* Covers the page during auth + initial render, preventing any flash or double-paint. */
+/* page loader */
 #page-loader {
   position: fixed; inset: 0; z-index: 99999;
   background: var(--bg);
 }
-/* Animated progress bar across the top */
 #page-loader::before {
   content: '';
   position: absolute; top: 0; left: 0; width: 40%; height: 2px;
@@ -46,8 +43,7 @@ body::before {
   100% { transform: translateX(275%); }
 }
 
-
-/* ── UPDATE BANNER ── */
+/* update banner */
 #update-banner {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   z-index: 99999;
@@ -80,40 +76,36 @@ body::before {
   #update-banner { left: 12px; right: 12px; transform: none; bottom: 16px; white-space: normal; }
 }
 
-/* ── WATERMARK ── */
+/* watermark */
 #watermark {
   position: fixed; inset: 0;
   pointer-events: none; z-index: 50;
   background-repeat: repeat;
   user-select: none;
-  /* Dark mode default: SVG black fill → invert to white */
   opacity: 0.12;
   filter: invert(1);
 }
 [data-theme='light'] #watermark {
-  /* Light mode: black fill on white, no invert needed */
   opacity: 0.08;
   filter: none;
 }
 @media (max-width: 768px) {
-  #watermark {
-    background-position: left center;
-  }
+  #watermark { background-position: left center; }
 }
 
-/* ── RESPONSIVE ── */
+/* responsive */
 @media (max-width: 768px) {
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: 1; }
   .wrapper { padding: 0 16px 60px; }
 }
 
-/* ── THEME FADE FALLBACK (mobile / no View Transition API) ── */
+/* theme fade fallback — used on mobile / when View Transitions API isn't available */
 html.theme-fading * {
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease !important;
 }
 
-/* ── VIEW TRANSITIONS API ── */
+/* view transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 0.3s;
@@ -121,13 +113,8 @@ html.theme-fading * {
   animation-fill-mode: both;
 }
 
-::view-transition-old(root) {
-  animation-name: fade-out;
-}
-
-::view-transition-new(root) {
-  animation-name: fade-in;
-}
+::view-transition-old(root) { animation-name: fade-out; }
+::view-transition-new(root) { animation-name: fade-in; }
 
 @keyframes fade-out {
   0% { opacity: 1; }
@@ -139,20 +126,15 @@ html.theme-fading * {
   100% { opacity: 1; }
 }
 
-/* ── THEME TRANSITION (CIRCULAR) ── */
+/* theme transition — circular clip on desktop */
 html.theme-transition::view-transition-old(root),
 html.theme-transition::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-html.theme-transition::view-transition-old(root) {
-  z-index: 1;
-}
-html.theme-transition::view-transition-new(root) {
-  z-index: 2;
-}
+html.theme-transition::view-transition-old(root) { z-index: 1; }
+html.theme-transition::view-transition-new(root) { z-index: 2; }
 
-/* ── Reduced motion preference ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

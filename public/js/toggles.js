@@ -1,13 +1,7 @@
-/**
- * View toggle functions — hide/show tags and solution column globally.
- * Active button (teal) = that column is VISIBLE.
- * Inactive button (muted) = that column is HIDDEN.
- */
 import { state } from './state.js';
 import { smoothTransition } from './utils.js';
 import { animate } from './motion.js';
 
-// Cache keys and 24-hour expiration threshold
 const TOGGLE_CACHE_KEY = 'dsa_toggles';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const THEME_KEY = 'dsa_theme';
@@ -28,18 +22,15 @@ export function initToggles() {
     const cached = localStorage.getItem(TOGGLE_CACHE_KEY);
     if (cached) {
       const parsed = JSON.parse(cached);
-      // Check 24-hour expiration
       if (Date.now() - parsed.timestamp < ONE_DAY_MS) {
         state.hideTags = !!parsed.hideTags;
         state.hideSolution = !!parsed.hideSolution;
         state.hideNotes = !!parsed.hideNotes;
-        state.hideCompanies = parsed.hideCompanies !== false; // default hidden
+        state.hideCompanies = parsed.hideCompanies !== false;
       }
     }
-  } catch {
-  }
+  } catch {}
 
-  // Apply state to DOM initially
   document.body.classList.toggle('tags-hidden',      state.hideTags);
   document.body.classList.toggle('topic-hidden',     state.hideTags);
   document.body.classList.toggle('solution-hidden',  state.hideSolution);
@@ -94,7 +85,6 @@ export function toggleCompanies(btn) {
   });
 }
 
-// ── Theme (dark / light) ──────────────────────────────────────────────────
 export function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === 'light') {
@@ -122,7 +112,6 @@ export function toggleTheme() {
   if (!document.startViewTransition || window.innerWidth <= 768) {
     document.documentElement.classList.add('theme-fading');
     switchTheme();
-    // Double-rAF ensures the fading class is painted before removal
     requestAnimationFrame(() => requestAnimationFrame(() => {
       document.documentElement.classList.remove('theme-fading');
     }));
@@ -159,7 +148,6 @@ export function toggleTheme() {
   transition.finished.then(() => {
     document.documentElement.classList.remove('theme-transition');
   }).catch(() => {
-    // Prevent leaving class if transition is skipped
     document.documentElement.classList.remove('theme-transition');
   });
 }

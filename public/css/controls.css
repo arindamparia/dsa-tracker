@@ -1,4 +1,4 @@
-/* ── SEARCH & FILTER CONTROLS ── */
+/* search & filter controls */
 .controls {
   display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
   position: sticky; top: 0; z-index: 30;
@@ -63,7 +63,7 @@
   .filter-btn { padding: 8px 10px; font-size: 10px; }
 }
 
-/* ── THEME FAB (floating sun/moon button, bottom-right) ── */
+/* theme fab (floating sun/moon button, bottom-right) */
 .theme-fab {
   position: fixed;
   bottom: 28px;
@@ -77,18 +77,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Only transform on GPU — box-shadow removed from transition (not composited) */
+  /* only transform on GPU — box-shadow removed from transition (not composited) */
   transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
   will-change: transform;
-  touch-action: manipulation;           /* removes 300ms tap delay on mobile */
+  touch-action: manipulation; /* removes 300ms tap delay on mobile */
   -webkit-tap-highlight-color: transparent;
 
-  /* Dark mode default: golden sun */
+  /* dark mode default: golden sun */
   background: radial-gradient(circle at 35% 35%, #ffe066, #f8b500);
   color: #3a2800;
   box-shadow: 0 0 0 1px rgba(248,181,0,0.3), 0 4px 18px rgba(248,181,0,0.45), 0 2px 8px rgba(0,0,0,0.35);
 }
-/* Pseudo-element holds the light-mode gradient and crossfades on theme switch */
+/* pseudo-element holds the light-mode gradient and crossfades on theme switch */
 .theme-fab::after {
   content: '';
   position: absolute;
@@ -102,13 +102,13 @@
 
 .theme-fab:hover  { transform: scale(1.13) rotate(18deg); }
 .theme-fab:active { transform: scale(0.93); }
-/* Light mode: deep indigo moon */
+/* light mode: deep indigo moon */
 [data-theme="light"] .theme-fab {
   color: #fff;
   box-shadow: 0 0 0 1px rgba(124,106,247,0.35), 0 4px 18px rgba(124,106,247,0.5), 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* Icons must sit above the ::after gradient layer */
+/* icons must sit above the ::after gradient layer */
 .theme-fab .icon-moon,
 .theme-fab .icon-sun  { position: relative; z-index: 1; }
 .theme-fab .icon-moon { display: none; }
@@ -121,7 +121,7 @@
   .theme-fab .theme-icon { width: 19px; height: 19px; }
 }
 
-/* ── HANGING TIMER WIDGET ── */
+/* hanging timer widget */
 
 @keyframes timerSwing {
   0%   { transform: rotate(-1deg); }
@@ -160,7 +160,7 @@
   pointer-events: none;
 }
 
-/* Ropes are hidden - they'll be rendered as ::before/::after on timer-body */
+/* ropes are hidden — rendered as ::before/::after on timer-body */
 .timer-hang > .timer-rope { display: none; }
 .timer-rope-left  { display: none; }
 .timer-rope-right { display: none; }
@@ -189,7 +189,7 @@
   white-space: nowrap;
 }
 
-/* Ropes hang from .timer-hang (non-rotating parent) */
+/* ropes hang from .timer-hang (non-rotating parent) */
 .timer-hang::before,
 .timer-hang::after {
   content: '';
@@ -275,7 +275,7 @@
 }
 .sw-minimize-btn:hover { color: var(--text-muted); }
 
-/* Minimized state */
+/* minimized state */
 .timer-hang.minimized .timer-body {
   padding: 8px 16px;
   gap: 0;

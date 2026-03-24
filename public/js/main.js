@@ -1,15 +1,5 @@
-/**
- * Entry point.
- *
- * Responsibilities:
- *  1. Import all modules
- *  2. Expose functions to `window` for inline onclick/oninput handlers
- *     (required because ES modules are not global by default)
- *  3. Register keyboard shortcuts
- *  4. Kick off the boot sequence (after Clerk auth)
- */
 import { animate, stagger } from './motion.js';
-import { initAuth, getToken, getUserEmail, getUserName } from './auth.js'; // getToken used by fetch interceptor below
+import { initAuth, getToken, getUserEmail, getUserName } from './auth.js';
 import { boot, bootFresh, RefreshModal } from './data.js';
 import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
 import { state } from './state.js';
@@ -39,70 +29,47 @@ import './smart-queue.js';
 import './weakness-heatmap.js';
 import { restoreSession } from './mock-interview.js';
 
-// ── Window bindings for inline HTML handlers ──────────────────────
-// Data
-window.boot         = boot;
-window.bootFresh    = bootFresh;
-window.RefreshModal = RefreshModal;
-
-// Render
-window.toggleSection  = toggleSection;
-window.preloadSection = preloadSection;
-
-// Filters & Actions
-window.setDiffFilter   = setDiffFilter;
-window.setStatusFilter = setStatusFilter;
-window.applyFilters    = applyFilters;
-window.pickRandom      = pickRandom;
-
-// Progress
+window.boot              = boot;
+window.bootFresh         = bootFresh;
+window.RefreshModal      = RefreshModal;
+window.toggleSection     = toggleSection;
+window.preloadSection    = preloadSection;
+window.setDiffFilter     = setDiffFilter;
+window.setStatusFilter   = setStatusFilter;
+window.applyFilters      = applyFilters;
+window.pickRandom        = pickRandom;
 window.toggleCheck       = toggleCheck;
 window.debounceSave      = debounceSave;
 window.debounceNotesSave = debounceNotesSave;
 window.toggleReview      = toggleReview;
 window.saveComplexity    = saveComplexity;
-
-// View toggles
-window.toggleTags       = toggleTags;
-window.toggleSolution   = toggleSolution;
-window.toggleNotes      = toggleNotes;
-window.toggleCompanies  = toggleCompanies;
-window.toggleTheme      = toggleTheme;
-
-// Misc
-window.ResetModal   = ResetModal;
-window.showToast    = showToast;
-window.PomodoroModal = PomodoroModal;
-
-// Add Question modal (called via onclick="openModal()" etc.)
-window.openModal          = () => AddQuestionModal.open();
-window.closeModal         = () => AddQuestionModal.close();
+window.toggleTags        = toggleTags;
+window.toggleSolution    = toggleSolution;
+window.toggleNotes       = toggleNotes;
+window.toggleCompanies   = toggleCompanies;
+window.toggleTheme       = toggleTheme;
+window.ResetModal        = ResetModal;
+window.showToast         = showToast;
+window.PomodoroModal     = PomodoroModal;
+window.openModal         = () => AddQuestionModal.open();
+window.closeModal        = () => AddQuestionModal.close();
 window.handleOverlayClick = (e) => AddQuestionModal.handleOverlayClick(e);
-window.submitQuestion     = () => AddQuestionModal.submit();
+window.submitQuestion    = () => AddQuestionModal.submit();
+window.SolutionModal     = SolutionModal;
+window.ReportModal       = ReportModal;
+window.confirmLogout     = () => Logout.open();
+window.Logout            = Logout;
+window.SRS               = SRS;
+window.MasteryChart      = MasteryChart;
+window.DailyGoal         = DailyGoal;
+window.FocusMode         = FocusMode;
+window.SimilarProblems   = SimilarProblems;
+window.AI                = AI;
+window.CompanyFilter     = CompanyFilter;
+window.CompanyStats      = CompanyStats;
+window.UserSettings      = UserSettings;
+window.state             = state;
 
-// Solution modal
-window.SolutionModal      = SolutionModal;
-
-// Report modal
-window.ReportModal        = ReportModal;
-
-// Logout modal (called via onclick="confirmLogout()" and onclick="Logout.close()" etc.)
-window.confirmLogout = () => Logout.open();
-window.Logout        = Logout; // exposes Logout.close() / Logout.confirm() used in HTML
-
-// ── New feature bindings ──────────────────────────────────────────
-window.SRS              = SRS;
-window.MasteryChart     = MasteryChart;
-window.DailyGoal        = DailyGoal;
-window.FocusMode        = FocusMode;
-window.SimilarProblems  = SimilarProblems;
-window.AI               = AI;
-window.CompanyFilter    = CompanyFilter;
-window.CompanyStats     = CompanyStats;
-window.UserSettings     = UserSettings;
-window.state            = state; // needed by company-stats.js for companyFilter check
-
-// ── Keyboard shortcuts ────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
 
@@ -123,7 +90,6 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Enter → click the primary button of the active modal (skip if typing in a textarea)
   if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
     const overlay = document.querySelector('.modal-overlay.open');
     if (overlay) {
@@ -133,32 +99,22 @@ document.addEventListener('keydown', e => {
     }
   }
 
-  if (inInput) return; // don't hijack typing
+  if (inInput) return;
 
-  // s or / → focus search
   if (e.key === 's' || e.key === '/') {
     e.preventDefault();
     document.getElementById('search')?.focus({ preventScroll: true });
   }
-  // r → smart pick
-  if (e.key === 'r') { pickRandom(); }
-  // f → focus mode picker
-  if (e.key === 'f') { FocusMode.openPicker(); }
-  // m → mock interview
-  if (e.key === 'm') { window.MockInterview?.openConfig(); }
-  // h → heatmap
-  if (e.key === 'h') { window.WeaknessHeatmap?.open(); }
+  if (e.key === 'r') pickRandom();
+  if (e.key === 'f') FocusMode.openPicker();
+  if (e.key === 'm') window.MockInterview?.openConfig();
+  if (e.key === 'h') window.WeaknessHeatmap?.open();
 });
 
-// ── Goal-changed event (avoids circular import with stats.js) ────
 document.addEventListener('goal-changed', () => {
-  // Re-run updateStats to refresh the ring
   import('./stats.js').then(m => m.updateStats());
 });
 
-// ── Global fetch interceptor — append Clerk Bearer token ──────────
-// Intercepts all /.netlify/functions/ calls and adds Authorization header.
-// Clerk auto-refreshes tokens; getToken() always returns a valid JWT.
 (function () {
   const _fetch = window.fetch;
   window.fetch = async function (url, options = {}) {
@@ -173,14 +129,10 @@ document.addEventListener('goal-changed', () => {
   };
 })();
 
-// ── BFCache: reload on restore so data is always fresh ────────────
-// pagehide (in index.html inline script) re-inserts the loader overlay
-// so the BFCache snapshot is dark. Here we reload on restore.
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) window.location.reload();
 });
 
-// ── Boot ──────────────────────────────────────────────────────────
 initStopwatch();
 initReveal();
 initMotivation();
@@ -188,14 +140,10 @@ initToggles();
 initTheme();
 DailyGoal.init();
 
-// Auth must complete before API calls are made
 (async () => {
   const authed = await initAuth();
-  if (!authed) return; // Clerk is redirecting to welcome page
+  if (!authed) return;
 
-  // ── Clear caches on user switch (any logout path) ────────────────────────
-  // Compares current Clerk user against last known user stored in localStorage.
-  // If they differ, all caches are wiped so the new user never sees stale data.
   const currentUserEmail = getUserEmail();
   const lastUserEmail = localStorage.getItem('dsa_last_user');
   if (currentUserEmail && lastUserEmail && lastUserEmail !== currentUserEmail) {
@@ -203,14 +151,9 @@ DailyGoal.init();
   }
   if (currentUserEmail) localStorage.setItem('dsa_last_user', currentUserEmail);
 
-  // ── Cross-tab auth sync ──────────────────────────────────────────────────
-  // Clerk uses BroadcastChannel internally, so addListener fires in ALL tabs
-  // when the session changes — even tabs that didn't trigger the change.
-  // Strategy: don't forcefully redirect mid-session. Instead, mark the session
-  // as stale and handle it on the next user interaction (click/keydown/submit).
   if (window._clerk) {
     const myUserId = window._clerk.user?.id ?? null;
-    let _staleAction = null; // 'logout' | 'switch' — set when auth changes in another tab
+    let _staleAction = null;
 
     window._clerk.addListener(({ user }) => {
       const newUserId = user?.id ?? null;
@@ -221,14 +164,11 @@ DailyGoal.init();
       }
     });
 
-    // On next user interaction, clear caches and navigate.
-    // capture:true means this fires BEFORE the button's own handler — no stale API calls.
     const IGNORED_KEYS = new Set(['Alt','Control','Meta','Shift','Tab','Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12']);
     const handleStaleInteraction = (e) => {
       if (!_staleAction) return;
-      // Don't intercept window-switching / system keys — those aren't app interactions
       if (e.type === 'keydown' && (IGNORED_KEYS.has(e.key) || e.altKey || e.ctrlKey || e.metaKey)) return;
-      e.stopImmediatePropagation(); // prevent the original handler from running
+      e.stopImmediatePropagation();
       Cache.clear(); UserCache.clear(); HintCache.clear(); SimilarCache.clear();
       if (_staleAction === 'logout') {
         window.location.href = '/welcome.html';
@@ -241,7 +181,6 @@ DailyGoal.init();
     document.addEventListener('submit',   handleStaleInteraction, { capture: true });
   }
 
-  // Set up header/watermark before page is revealed
   const email = getUserEmail();
   const name  = getUserName();
   const metaEl = document.getElementById('hdr-user-meta');
@@ -250,10 +189,6 @@ DailyGoal.init();
     metaEl.title = email;
   }
 
-  // Watermark with user email to deter content theft.
-  // Email is XML-escaped before embedding into SVG to prevent injection.
-  // Angle, tile size, and offset are randomised on every page load so the
-  // pattern never looks identical across sessions.
   const wmEl = document.getElementById('watermark');
   if (wmEl && email) {
     const safeEmail = email
@@ -263,12 +198,10 @@ DailyGoal.init();
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
 
-    // Randomise each session: angle ∈ [-35, -15], tile W ∈ [540, 660], tile H ∈ [230, 290]
-    const angle  = -(15 + Math.floor(Math.random() * 21));         // -15 to -35
-    const tileW  = 540 + Math.floor(Math.random() * 121);          // 540–660
-    const tileH  = 230 + Math.floor(Math.random() * 61);           // 230–290
+    const angle  = -(15 + Math.floor(Math.random() * 21));
+    const tileW  = 540 + Math.floor(Math.random() * 121);
+    const tileH  = 230 + Math.floor(Math.random() * 61);
     const cx = tileW / 2, cy = tileH / 2;
-    // Random phase offset so the grid starts at a different position each load
     const offX   = Math.floor(Math.random() * tileW);
     const offY   = Math.floor(Math.random() * tileH);
 
@@ -279,19 +212,14 @@ DailyGoal.init();
       `transform="rotate(${angle},${cx},${cy})">${safeEmail}</text></svg>`
     );
     wmEl.style.backgroundImage = `url("data:image/svg+xml,${svg}")`;
-    // On mobile the CSS centres a single instance; random offset only on desktop
     if (window.innerWidth > 768) {
       wmEl.style.backgroundPosition = `${offX}px ${offY}px`;
     }
   }
 
-  // Reveal the page only after initial content is in the DOM (no blank flash).
-  // The overlay (#page-loader) covers the page during auth+render, then fades out,
-  // then key page sections cascade in with a staggered entrance.
   const revealPage = async () => {
     const loader = document.getElementById('page-loader');
 
-    // Collect page sections in visual order (skip .stats-board — handled by reveal.js inView)
     const entrance = [
       document.querySelector('header'),
       document.querySelector('.study-tools-bar'),
@@ -304,12 +232,10 @@ DailyGoal.init();
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Pre-hide before loader fades (instant — user still sees loader overlay)
     if (!prefersReduced) {
       entrance.forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; });
     }
 
-    // Fade out loader
     if (loader) {
       await animate(loader, { opacity: 0 }, { duration: 0.3, easing: 'ease-out' }).finished;
       loader.remove();
@@ -317,14 +243,12 @@ DailyGoal.init();
 
     if (prefersReduced) return;
 
-    // Staggered entrance cascade
     animate(
       entrance,
       { opacity: [0, 1], y: [20, 0] },
       { duration: 0.45, easing: [0.22, 1, 0.36, 1], delay: stagger(0.06) }
     );
 
-    // Study tools buttons get their own sub-stagger (scale + slide)
     const featureBtns = document.querySelectorAll('.btn-feature');
     if (featureBtns.length) {
       featureBtns.forEach(b => { b.style.opacity = '0'; b.style.transform = 'translateY(10px) scale(0.95)'; });
@@ -340,7 +264,6 @@ DailyGoal.init();
 
   await boot(revealPage);
 
-  // Post-boot: non-critical features that run after content is visible
   if (state.userRole === 'ADMIN') {
     document.getElementById('btn-add-question')?.style.setProperty('display', '');
   }
@@ -348,6 +271,5 @@ DailyGoal.init();
   CompanyFilter.init();
   CompanyStats.render();
 
-  // Restore mock interview session if one was active before page refresh
   if (restoreSession()) window.MockInterview.resume();
 })();

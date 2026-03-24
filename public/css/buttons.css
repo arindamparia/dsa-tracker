@@ -1,4 +1,4 @@
-/* ── BUTTONS ── */
+/* buttons */
 .btn-add {
   display: flex; align-items: center; gap: 8px;
   background: var(--accent); border: none; border-radius: 8px; padding: 11px 20px;
@@ -80,7 +80,7 @@
 .btn-danger:hover { background: var(--hard-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--hard-rgb), 0.35); }
 .btn-danger:active { transform: scale(0.97); box-shadow: none; }
 
-/* ── HIGHLIGHTED FEATURE BUTTONS ── */
+/* highlighted feature buttons */
 .btn-feature {
   display: flex; align-items: center; justify-content: center; gap: 12px;
   background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--easy-bg));

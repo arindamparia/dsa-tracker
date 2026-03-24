@@ -1,4 +1,4 @@
-/* ── REPORT HEATMAP MODAL ── */
+/* report heatmap modal */
 .heatmap-modal {
   max-width: 860px !important;
   width: 95%;
@@ -60,7 +60,7 @@
   border-radius: 2px;
 }
 
-/* ── TOOLTIP ── */
+/* tooltip */
 .heatmap-tooltip {
   position: fixed;
   top: 0; left: 0;

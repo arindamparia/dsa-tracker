@@ -17,7 +17,7 @@ import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { animate } from './motion.js';
 
-// ── SRS due check ────────────────────────────────────────────────
+// srs due check
 const SRS_INTERVALS_DAYS = [1, 3, 7, 14, 30];
 
 function isSRSDue(q) {
@@ -30,7 +30,7 @@ function isSRSDue(q) {
   return Date.now() >= dueAt.getTime();
 }
 
-// ── Section stats ────────────────────────────────────────────────
+// section stats
 function buildSectionStats() {
   const map = new Map();
   state.questions.forEach(q => {
@@ -46,7 +46,7 @@ function buildSectionStats() {
   return map;
 }
 
-// ── Core scoring function ─────────────────────────────────────────
+// core scoring function
 function scoreQuestion(q, secMap) {
   const sec = secMap.get(q.section || 'Other') || { total: 1, done: 0, easy: 1, easyDone: 0, medium: 0, medDone: 0 };
 
@@ -76,7 +76,7 @@ function scoreQuestion(q, secMap) {
 
 const DIFF_ORDER = { Easy: 1, Medium: 2, Hard: 3 };
 
-// ── Public API ────────────────────────────────────────────────────
+// public api
 export const SmartQueue = {
   // Session-level exclusion: questions picked but not solved yet
   _excluded: new Set(),

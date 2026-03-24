@@ -1,4 +1,4 @@
-/* ── MODAL BASE ── */
+/* modal base */
 .modal-overlay {
   position: fixed; inset: 0; background: var(--overlay-bg); backdrop-filter: blur(4px);
   z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;
@@ -21,7 +21,7 @@
 .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
 .modal-sub   { font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 28px; }
 
-/* ── FORM ELEMENTS ── */
+/* form elements */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-grid .full { grid-column: 1 / -1; }
 .form-group  { display: flex; flex-direction: column; gap: 6px; }
@@ -48,7 +48,7 @@
   .modal-actions .btn-submit { flex: 1; text-align: center; }
 }
 
-/* ── CONFIRM / DANGER MODAL VARIANT ── */
+/* confirm / danger modal variant */
 .confirm-modal-icon {
   width: 44px; height: 44px; border-radius: 10px;
   background: rgba(var(--hard-rgb), 0.1); border: 1px solid rgba(var(--hard-rgb), 0.25);
@@ -64,7 +64,7 @@
 .reset-confirm-input  { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
 .reset-confirm-input:focus { border-color: var(--hard) !important; }
 
-/* ── POMODORO STEPPER ── */
+/* pomodoro stepper */
 .pomo-stepper {
   display: flex;
   align-items: center;
@@ -152,7 +152,7 @@
 }
 
 
-/* ── USER SETTINGS MODAL ── */
+/* user settings modal */
 .us-field-group { margin-bottom: 18px; }
 .us-label {
   display: block;

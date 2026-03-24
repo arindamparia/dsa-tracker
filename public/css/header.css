@@ -1,4 +1,4 @@
-/* ── HEADER ── */
+/* header */
 header { padding: 16px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
 .header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
 
@@ -29,7 +29,7 @@ h1 {
 .header-meta span { display: flex; align-items: center; gap: 6px; }
 .header-meta b { color: var(--text-dim); }
 
-/* Signed-in user chip */
+/* signed-in user chip */
 .hdr-user-chip {
   display: inline-flex; align-items: center; gap: 6px;
   background: rgba(var(--accent-rgb), 0.1);
@@ -46,7 +46,7 @@ h1 {
 }
 .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding-top: 0; margin-right: 200px; }
 
-/* ── MOTIVATION BOX ── */
+/* motivation box */
 .motivation-box {
   margin: -16px 0 32px 0;
   padding: 18px 20px;
@@ -104,7 +104,7 @@ h1 {
 }
 #quote-shuffle-btn:active { transform: rotate(180deg) scale(0.9); }
 
-/* ── HIDE TIMER ON MOBILE ── */
+/* hide timer on mobile */
 @media (max-width: 768px) {
   .timer-hang { display: none !important; }
   .header-actions { margin-right: 0; flex-wrap: wrap; gap: 8px; }

@@ -1,11 +1,3 @@
-/**
- * Pure utility functions — no side effects, no imports.
- * Safe to import from any module without creating circular deps.
- */
-
-/**
- * Executes a callback with a smooth view transition if supported.
- */
 export function smoothTransition(cb) {
   if (document.startViewTransition) {
     document.startViewTransition(cb);
@@ -14,11 +6,6 @@ export function smoothTransition(cb) {
   }
 }
 
-/**
- * Groups a flat question array into sections sorted by section_order.
- * @param {Array} questions
- * @returns {Array<{section, section_order, questions}>}
- */
 export function groupBySections(questions) {
   const map = new Map();
   for (const q of questions) {

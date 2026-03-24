@@ -3,7 +3,7 @@ import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { DailyGoal } from './daily-goal.js';
 
-// ── Animated number counter ──────────────────────────────────────────────────
+// animated number counter
 let _firstRender = true;
 const _prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const _activeCounters = new WeakMap(); // el → rAF id, to cancel overlapping animations

@@ -1,10 +1,7 @@
-/** Difficulty / status / search filters. */
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { animate } from './motion.js';
 
-// ── Pre-computed search index ─────────────────────────────────────────────
-// Built once after questions load; avoids rebuilding the haystack on every keystroke.
 export function buildSearchIndex() {
   state.searchIndex = new Map(
     state.questions.map(q => [
@@ -14,19 +11,11 @@ export function buildSearchIndex() {
   );
 }
 
-/** Returns the pre-computed search haystack for q, with lazy fallback. */
 function getSearchHaystack(q) {
   return state.searchIndex?.get(q.lc_number) ??
     `${q.name} ${q.lc_number} ${q.topic} ${(q.tags || []).join(' ')} ${(q.companies_asked || []).join(' ')}`.toLowerCase();
 }
 
-// ── Per-section filter (used by doRender to avoid full re-scan) ───────────
-/**
- * Applies current filters only to the rows in section `si`.
- * Updates that section's count badge.
- * Called from doRender() instead of full applyFilters() so that lazily
- * rendering one section never re-scans every other section.
- */
 export function applyFiltersToSection(si) {
   const search   = document.getElementById('search')?.value.toLowerCase().trim() || '';
   const sections = groupBySections(state.questions);
@@ -53,7 +42,6 @@ export function applyFiltersToSection(si) {
     if (tr) tr.classList.toggle('filtered-out', !show);
   });
 
-  // Update section count badge
   const scEl = document.getElementById(`sc-${si}`);
   if (scEl) {
     if (isFiltered) {
@@ -70,7 +58,6 @@ export function applyFiltersToSection(si) {
 
 export function setDiffFilter(f, btn) {
   smoothTransition(() => {
-    // Clicking an active filter again resets to 'all'
     if (btn.classList.contains('active') && f !== 'all') {
       f = 'all';
       btn = document.querySelector('[data-group="diff"][data-filter="all"]');
@@ -85,7 +72,6 @@ export function setDiffFilter(f, btn) {
 
 export function setStatusFilter(f, btn) {
   smoothTransition(() => {
-    // Clicking an active filter again resets to 'all'
     if (btn.classList.contains('active') && f !== 'all') {
       f = 'all';
       btn = document.querySelector('[data-group="status"][data-filter="all"]');
@@ -113,7 +99,6 @@ export function applyFilters(options = {}) {
   const sections   = groupBySections(state.questions);
   const isFiltered = search || state.diffFilter !== 'all' || state.statusFilter !== 'all' || state.companyFilter !== null;
 
-  // Collapse all sections first (accordion rule) unless told to preserve open ones
   if (!preserveOpen) {
     document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed'));
   }
@@ -145,7 +130,6 @@ export function applyFilters(options = {}) {
       }
     });
 
-    // Update section count: matching/total when filtered, done/total when not
     const scEl = document.getElementById(`sc-${si}`);
     if (scEl) {
       if (isFiltered) {
@@ -159,7 +143,6 @@ export function applyFilters(options = {}) {
       }
     }
 
-    // If section needs to be visible but isn't loaded yet, force it to render synchronously
     if (isFiltered && anyVisible) {
       const tbody = document.getElementById(`tbody-${si}`);
       if (tbody && tbody.dataset.loaded === 'false') {
@@ -167,18 +150,15 @@ export function applyFilters(options = {}) {
       }
     }
 
-    // Hide/show sections based on whether they have matching questions
     const secEl = document.getElementById(`sec-${si}`);
     if (secEl) secEl.classList.toggle('section-no-match', isFiltered && !anyVisible);
 
-    // When filtered, auto-expand only the first section with results
     if (!preserveOpen && isFiltered && anyVisible && firstVisibleSec === null) {
       if (secEl) secEl.classList.remove('collapsed');
       firstVisibleSec = si;
     }
   });
 
-  // Re-apply mock interview row/section visibility after normal filtering
   if (window.MockInterview?.isActive()) {
     window.MockInterview._applyFilter();
   }
@@ -191,19 +171,15 @@ export function pickRandom() {
     if (window.showToast) window.showToast('You have solved everything! 🎉', 'success');
     return;
   }
-  // Rotate away from the last ignored pick, then recommend
   window.SmartQueue?.advancePick();
   const choice = window.SmartQueue?.recommend(1)[0]
     ?? unsolved[Math.floor(Math.random() * unsolved.length)];
 
-  // Find which section index this question belongs to
-  // (groupBySections doesn't attach sectionIndex to questions, so we compute it here)
   const sections = groupBySections(state.questions);
   const si = sections.findIndex(sec =>
     sec.section === choice.section && sec.section_order === choice.section_order
   );
 
-  // Reset ALL filters silently (no intermediate applyFilters calls)
   document.getElementById('search').value = '';
   document.getElementById('search-clear-btn')?.classList.add('hidden');
   state.diffFilter   = 'all';
@@ -213,14 +189,11 @@ export function pickRandom() {
   document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
   document.querySelector('[data-group="diff"][data-filter="all"]')?.classList.add('active');
   document.querySelector('[data-group="status"][data-filter="all"]')?.classList.add('active');
-  // Sync company filter button label
   const cfLabel = document.getElementById('company-filter-label');
   if (cfLabel) cfLabel.textContent = '🏢 Company';
   document.getElementById('company-filter-btn')?.classList.remove('active');
   document.getElementById('company-clear-btn')?.classList.add('hidden');
 
-  // Apply filters, uncollapse section, render rows — all inside the transition callback
-  // so the scroll logic runs AFTER DOM changes are applied (fixes View Transition async race).
   smoothTransition(() => {
     applyFilters();
     if (si === -1) return;
@@ -232,11 +205,9 @@ export function pickRandom() {
 
     const tbody = document.getElementById(`tbody-${si}`);
     if (tbody && tbody.dataset.loaded === 'false') {
-      // Render synchronously so rows exist in DOM before we try to scroll
       document.dispatchEvent(new CustomEvent('force-render-section', { detail: si }));
     }
 
-    // Wait one rAF for the DOM to paint, then scroll after accordion animation
     requestAnimationFrame(() => {
       const tr = document.getElementById(`row-${choice.lc_number}`);
       if (!tr) return;
@@ -244,7 +215,6 @@ export function pickRandom() {
       tr.style.backgroundColor = 'rgba(124,106,247,0.2)';
       setTimeout(() => tr.style.backgroundColor = '', 7000);
 
-      // 350ms — enough for the grid accordion transition (0.38s) to finish
       setTimeout(() => {
         tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
@@ -292,4 +262,3 @@ export function pickRandom() {
     });
   });
 }
-

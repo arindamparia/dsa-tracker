@@ -1,21 +1,16 @@
-/**
- * localStorage cache with a 30-day TTL.
- * Hard Refresh bypasses it; Logout.confirm() clears it entirely.
- */
 const KEY    = 'dsa_questions';
 const TS_KEY = 'dsa_cache_ts';
-const TTL    = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+const TTL    = 30 * 24 * 60 * 60 * 1000;
 
-// ── User profile cache (5-minute TTL) ────────────────────────────
 const USER_KEY    = 'dsa_user_profile';
 const USER_TS_KEY = 'dsa_user_ts';
-const USER_TTL    = 5 * 60 * 1000; // 5 minutes in ms
+const USER_TTL    = 5 * 60 * 1000;
 
 export const UserCache = {
   get() {
     try {
       const ts = parseInt(localStorage.getItem(USER_TS_KEY) || '0', 10);
-      if (Date.now() - ts > USER_TTL) return null; // expired
+      if (Date.now() - ts > USER_TTL) return null;
       const raw = localStorage.getItem(USER_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
@@ -34,8 +29,7 @@ export const UserCache = {
   },
 };
 
-// ── Similar problems cache (persists until logout) ────────────────
-const SIMILAR_KEY = 'dsa_similar_v2'; // { [lc_number]: [lc1, lc2, lc3] }
+const SIMILAR_KEY = 'dsa_similar_v2';
 
 export const SimilarCache = {
   get(lc) {
@@ -60,8 +54,7 @@ export const SimilarCache = {
   },
 };
 
-// ── Hint cache (persists until hard refresh / logout) ────────────
-const HINT_KEY = 'dsa_hints_v1'; // { [lc_number]: hintStr }
+const HINT_KEY = 'dsa_hints_v1';
 
 export const HintCache = {
   get(lc) {
@@ -85,16 +78,14 @@ export const HintCache = {
   },
 };
 
-// Module-level parsed cache — avoids re-parsing JSON on every filter/search call.
-// Invalidated on set(), updateEntry(), and clear().
 let _memCache = null;
 
 export const Cache = {
   get() {
     try {
-      if (_memCache) return _memCache; // return in-memory copy — no I/O needed
+      if (_memCache) return _memCache;
       const ts = parseInt(localStorage.getItem(TS_KEY) || '0', 10);
-      if (Date.now() - ts > TTL) return null; // expired
+      if (Date.now() - ts > TTL) return null;
       const raw = localStorage.getItem(KEY);
       _memCache = raw ? JSON.parse(raw) : null;
       return _memCache;
@@ -103,20 +94,18 @@ export const Cache = {
 
   set(questions) {
     try {
-      _memCache = questions; // update in-memory copy immediately
+      _memCache = questions;
       localStorage.setItem(KEY, JSON.stringify(questions));
       localStorage.setItem(TS_KEY, String(Date.now()));
-    } catch {} // storage full — silently skip
+    } catch {}
   },
 
   updateEntry(lc_number, patch) {
     try {
-      // Update in-memory copy first (zero-cost fast path)
       if (_memCache) {
         const idx = _memCache.findIndex(q => q.lc_number === lc_number);
         if (idx !== -1) _memCache[idx] = { ..._memCache[idx], ...patch };
       }
-      // Persist to localStorage
       const raw = localStorage.getItem(KEY);
       if (!raw) return;
       const questions = JSON.parse(raw);
