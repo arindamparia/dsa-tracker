@@ -12,10 +12,10 @@
 }
 
 #ambient-toggle {
-  background: var(--surface-blur);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(var(--easy-rgb), 0.10));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
   border-radius: 30px;
   color: var(--text);
   font-weight: 700;
@@ -24,8 +24,8 @@
   align-items: center;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 16px var(--shadow-sm);
-  
+  box-shadow: 0 4px 16px var(--shadow-sm), 0 0 12px rgba(var(--accent-rgb), 0.15);
+
   width: 44px;
   height: 44px;
   padding: 0;
@@ -35,8 +35,8 @@
 
 #ambient-toggle:hover {
   width: 138px;
-  border-color: var(--border2);
-  box-shadow: 0 8px 24px var(--shadow-md);
+  border-color: rgba(var(--accent-rgb), 0.5);
+  box-shadow: 0 8px 24px var(--shadow-md), 0 0 20px rgba(var(--accent-rgb), 0.25);
 }
 
 .ambient-toggle-icon {
@@ -117,6 +117,24 @@
   background: var(--surface3);
   transform: translateY(-2px);
   color: var(--text);
+}
+
+.ambient-btn.loading {
+  pointer-events: none;
+  opacity: 0.6;
+  position: relative;
+}
+.ambient-btn.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  animation: ambient-spin 0.7s linear infinite;
+}
+@keyframes ambient-spin {
+  to { transform: rotate(360deg); }
 }
 
 .ambient-btn.playing {

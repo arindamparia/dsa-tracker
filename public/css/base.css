@@ -35,7 +35,7 @@ body::before {
   transition: opacity 0.8s ease;
 }
 html.bg-loaded body::before {
-  opacity: var(--bg-opacity, 0.15);
+  opacity: var(--bg-opacity, 0.28);
 }
 html.hide-theme-bg body::before {
   display: none !important;

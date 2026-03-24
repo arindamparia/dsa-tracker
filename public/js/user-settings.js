@@ -140,14 +140,15 @@ export const UserSettings = {
       // If the image was skipped during main page load (e.g. mobile default), lazily inject it now
       const root = document.documentElement;
       if (!root.style.getPropertyValue('--bg-image')) {
+        const bgUrl = 'https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1920/bg_lnzb9t.png';
         const img = new Image();
         img.onload = () => {
-          root.style.setProperty('--bg-image', "url('/images/bg.png')");
+          root.style.setProperty('--bg-image', `url('${bgUrl}')`);
           requestAnimationFrame(() => requestAnimationFrame(() => {
             root.classList.add('bg-loaded');
           }));
         };
-        img.src = '/images/bg.png';
+        img.src = bgUrl;
       }
     } else {
       document.documentElement.classList.add('hide-theme-bg');
