@@ -1,3 +1,12 @@
+const AUDIO_URLS = {
+  rain:    'https://res.cloudinary.com/dnju7wfma/video/upload/rain_fe6smc.mp3',
+  rain2:   'https://res.cloudinary.com/dnju7wfma/video/upload/rain2_uycmn6.mp3',
+  ocean:   'https://res.cloudinary.com/dnju7wfma/video/upload/ocean_gzek2u.mp3',
+  forest:  'https://res.cloudinary.com/dnju7wfma/video/upload/forest_l804pd.mp3',
+  forest2: 'https://res.cloudinary.com/dnju7wfma/video/upload/forest2_xg9jbw.mp3',
+  forest3: 'https://res.cloudinary.com/dnju7wfma/video/upload/forest3_xlypzq.mp3',
+};
+
 export const AmbientSound = {
   activeDeck: 'A',
   currentTrack: null,
@@ -150,8 +159,9 @@ export const AmbientSound = {
     
     // If it's a new track, swap SRC for both decks so they are ready
     if (this.currentTrack !== track) {
-      this.audioA.src = `/audio/${track}.mp3`;
-      this.audioB.src = `/audio/${track}.mp3`;
+      const src = AUDIO_URLS[track];
+      this.audioA.src = src;
+      this.audioB.src = src;
     }
     
     this.currentTrack = track;

@@ -284,12 +284,11 @@ AmbientSound.init();
     img.onload = () => {
       const root = document.documentElement;
       // Set image first (opacity is still 0 from CSS default)
-      root.style.setProperty('--bg-image', "url('/images/bg.png')");
-      // Kick off the fade-in on the next paint via CSS class
+      root.style.setProperty('--bg-image', "url('https://res.cloudinary.com/dnju7wfma/image/upload/bg_lnzb9t.png')");
       requestAnimationFrame(() => {
         requestAnimationFrame(() => root.classList.add('bg-loaded'));
       });
     };
-    img.src = '/images/bg.png';
+    img.src = 'https://res.cloudinary.com/dnju7wfma/image/upload/bg_lnzb9t.png';
   }
 })();
