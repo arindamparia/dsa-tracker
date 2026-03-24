@@ -12,11 +12,14 @@ export const AmbientSound = {
   activeDeck: 'A',
   currentTrack: null,
   isPlaying: false,
-  crossfadeDuration: 4.0, // 4 seconds overlap
+  crossfadeDuration: 4.0,
   isFading: false,
   fadeRaf: null,
   fadeStart: 0,
   isMuted: false,
+  audioCtx: null,
+  gainA: null,
+  gainB: null,
 
   init() {
     this.panel = document.getElementById('ambient-panel');
@@ -26,10 +29,10 @@ export const AmbientSound = {
 
     if (!this.panel) return;
 
-    // Load saved volume
+    // Restore saved volume (stored as actual vol, convert to slider position)
     const savedVol = localStorage.getItem('dsa_ambient_vol');
     if (savedVol !== null) {
-      this.volSlider.value = savedVol;
+      this.volSlider.value = this._volToSlider(parseFloat(savedVol));
     }
 
     this.toggleBtn.addEventListener('click', () => this.panel.classList.toggle('open'));
@@ -47,22 +50,65 @@ export const AmbientSound = {
       btn.addEventListener('click', () => this.toggleTrack(btn.dataset.track));
     });
 
+    this.volLabel = document.getElementById('ambient-vol-label');
+    this._updateVolLabel(this._sliderToVol(parseFloat(this.volSlider.value)));
+
     this.volSlider.addEventListener('input', (e) => {
-      const vol = parseFloat(e.target.value);
+      const slider = parseFloat(e.target.value);
+      let vol = this._sliderToVol(slider);
+      // Magnetic snap to nearest 0.5x step when within ±0.08
+      const snaps = [0, 0.5, 1, 1.5, 2, 2.5, 3];
+      for (const s of snaps) {
+        if (Math.abs(vol - s) < 0.08) {
+          vol = s;
+          this.volSlider.value = this._volToSlider(s);
+          break;
+        }
+      }
       localStorage.setItem('dsa_ambient_vol', vol);
       this.applyVolume(vol);
+      this._updateVolLabel(vol);
     });
 
-    // Cleanup audio on page unload
     window.addEventListener('beforeunload', () => this.destroy());
+  },
+
+  // Non-linear slider mapping: 0–0.5 slider = 0–1x vol, 0.5–1 slider = 1x–3x vol
+  _sliderToVol(s) {
+    if (s <= 0.5) return s * 2;          // 0→0, 0.5→1
+    return 1 + (s - 0.5) * 4;            // 0.5→1, 1→3
+  },
+  _volToSlider(v) {
+    if (v <= 1) return v / 2;            // 0→0, 1→0.5
+    return 0.5 + (v - 1) / 4;            // 1→0.5, 3→1
+  },
+
+  _initAudioCtx() {
+    if (this.audioCtx) return;
+    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  },
+
+  _connectToGain(audio, gain) {
+    const source = this.audioCtx.createMediaElementSource(audio);
+    source.connect(gain);
+    gain.connect(this.audioCtx.destination);
   },
 
   applyVolume(vol) {
     if (!this.isFading) {
-      if (this.activeDeck === 'A' && this.audioA) this.audioA.volume = vol;
-      // If we are on deck B, set B's volume (since activeDeck swapped)
-      if (this.activeDeck === 'B' && this.audioB) this.audioB.volume = vol;
+      if (this.activeDeck === 'A' && this.gainA) this.gainA.gain.value = vol;
+      if (this.activeDeck === 'B' && this.gainB) this.gainB.gain.value = vol;
     }
+  },
+
+  _updateVolLabel(vol) {
+    const boosted = vol > 1;
+    const label = vol % 1 === 0 ? vol.toFixed(0) + 'x' : vol.toFixed(1) + 'x';
+    if (this.volLabel) {
+      this.volLabel.textContent = label;
+      this.volLabel.classList.toggle('boosted', boosted);
+    }
+    this.volSlider.classList.toggle('boosted', boosted);
   },
 
   toggleMute() {
@@ -97,18 +143,31 @@ export const AmbientSound = {
   },
 
   lazyInitDecks() {
-    // Only initialize once
     if (this.audioA) return;
+
+    this._initAudioCtx();
 
     this.audioA = new Audio();
     this.audioA.preload = 'none';
-    this.audioA.loop = false; // We control looping manually via crossfade
+    this.audioA.loop = false;
     this.audioA.muted = this.isMuted;
+    this.audioA.crossOrigin = 'anonymous';
 
     this.audioB = new Audio();
     this.audioB.preload = 'none';
     this.audioB.loop = false;
     this.audioB.muted = this.isMuted;
+    this.audioB.crossOrigin = 'anonymous';
+
+    // Create GainNodes for volume amplification beyond 1.0
+    this.gainA = this.audioCtx.createGain();
+    this.gainB = this.audioCtx.createGain();
+    this._connectToGain(this.audioA, this.gainA);
+    this._connectToGain(this.audioB, this.gainB);
+
+    // Set Audio element volume to max — GainNode controls actual volume
+    this.audioA.volume = 1;
+    this.audioB.volume = 1;
 
     this._attachDeckEvents(this.audioA);
     this._attachDeckEvents(this.audioB);
@@ -116,26 +175,28 @@ export const AmbientSound = {
     const monitorTime = (deck, nextDeck) => {
       deck.addEventListener('timeupdate', () => {
         if (!this.isPlaying || this.isFading) return;
-
-        // Trigger crossfade securely near the end
         if (deck.duration && deck.currentTime >= deck.duration - this.crossfadeDuration) {
           this.doCrossfade(deck, nextDeck);
         }
       });
     };
 
-    // A fades into B at the end of A
     monitorTime(this.audioA, this.audioB);
-    // B fades into A at the end of B
     monitorTime(this.audioB, this.audioA);
+  },
+
+  _gainFor(audio) {
+    return audio === this.audioA ? this.gainA : this.gainB;
   },
 
   doCrossfade(fadeOutAudio, fadeInAudio) {
     this.isFading = true;
     fadeInAudio.currentTime = 0;
-    fadeInAudio.volume = 0;
 
-    // Play the next deck
+    const fadeOutGain = this._gainFor(fadeOutAudio);
+    const fadeInGain = this._gainFor(fadeInAudio);
+    fadeInGain.gain.value = 0;
+
     const playPromise = fadeInAudio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {});
@@ -149,18 +210,17 @@ export const AmbientSound = {
       const elapsed = now - this.fadeStart;
       const ratio = Math.min(elapsed / duration, 1);
 
-      const currentTargetVol = parseFloat(this.volSlider.value);
-      fadeOutAudio.volume = Math.max(0, currentTargetVol * (1 - ratio));
-      fadeInAudio.volume = Math.min(currentTargetVol, currentTargetVol * ratio);
+      const targetVol = this._sliderToVol(parseFloat(this.volSlider.value));
+      fadeOutGain.gain.value = Math.max(0, targetVol * (1 - ratio));
+      fadeInGain.gain.value = targetVol * ratio;
 
       if (ratio < 1) {
         this.fadeRaf = requestAnimationFrame(tick);
       } else {
-        // Successfully crossed over
         fadeOutAudio.pause();
         fadeOutAudio.currentTime = 0;
-        fadeOutAudio.volume = 0;
-        fadeInAudio.volume = currentTargetVol;
+        fadeOutGain.gain.value = 0;
+        fadeInGain.gain.value = targetVol;
         this.activeDeck = this.activeDeck === 'A' ? 'B' : 'A';
         this.isFading = false;
       }
@@ -176,14 +236,16 @@ export const AmbientSound = {
 
     this.lazyInitDecks();
 
-    // Stop any ongoing crossfades completely
+    // Resume AudioContext if suspended (browser autoplay policy)
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
+
     cancelAnimationFrame(this.fadeRaf);
     this.isFading = false;
 
-    // Reset to Deck A as the master
     this.activeDeck = 'A';
 
-    // If it's a new track, swap SRC for both decks so they are ready
     if (this.currentTrack !== track) {
       const src = AUDIO_URLS[track];
       this.audioA.src = src;
@@ -192,12 +254,14 @@ export const AmbientSound = {
 
     this.currentTrack = track;
     this._setLoading(track, true);
-    this.audioA.volume = parseFloat(this.volSlider.value);
+
+    const vol = this._sliderToVol(parseFloat(this.volSlider.value));
+    this.gainA.gain.value = vol;
     this.audioA.currentTime = 0;
 
-    // Pause Deck B just in case it was playing during a swap
     this.audioB.pause();
     this.audioB.currentTime = 0;
+    this.gainB.gain.value = 0;
 
     const playPromise = this.audioA.play();
     if (playPromise !== undefined) {
@@ -231,6 +295,9 @@ export const AmbientSound = {
     this.isPlaying = false;
     if (this.audioA) { this.audioA.pause(); this.audioA.src = ''; }
     if (this.audioB) { this.audioB.pause(); this.audioB.src = ''; }
+    if (this.audioCtx && this.audioCtx.state !== 'closed') {
+      this.audioCtx.close().catch(() => {});
+    }
   },
 
   updateUI() {
