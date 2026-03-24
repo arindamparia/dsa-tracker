@@ -2,7 +2,7 @@
  * Hard Problem Celebration — "Boss Defeated" ⚔️
  * Fires when a Hard difficulty problem is marked as solved.
  */
-import { animate, spring } from './motion.js';
+import { animate } from './motion.js';
 
 const HARD_QUOTES = [
   { q: 'The harder the battle, the sweeter the victory.',           attr: '— Les Brown' },
@@ -112,7 +112,7 @@ function showHardModal(problemName) {
 
   animate(div,
     { opacity: [0, 1], scale: [0.75, 1] },
-    { duration: 0.5, easing: spring({ stiffness: 300, damping: 20 }) }
+    { type: "spring", stiffness: 300, damping: 20 }
   );
 
   setTimeout(async () => {

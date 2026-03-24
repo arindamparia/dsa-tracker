@@ -26,9 +26,18 @@
 .progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
 .progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
 .progress-track { height: 8px; background: var(--surface3); border-radius: 999px; overflow: hidden; display: flex; }
-.easy-fill   { background: var(--easy);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
-.medium-fill { background: var(--medium); transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.1s; }
-.hard-fill   { background: var(--hard);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.2s; }
+.easy-fill   { background: var(--easy);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+.medium-fill { background: var(--medium); transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.1s; position: relative; overflow: hidden; }
+.hard-fill   { background: var(--hard);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.2s; position: relative; overflow: hidden; }
+.easy-fill::after, .medium-fill::after, .hard-fill::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: progressSweep 1s ease-out 1s 1 both;
+}
+@keyframes progressSweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); opacity: 0; }
+}
 
 /* ── TOP STATS (Today & Streak) ── */
 .top-stats {

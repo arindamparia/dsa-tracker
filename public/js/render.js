@@ -3,6 +3,7 @@ import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { updateStats } from './stats.js';
 import { applyFilters, applyFiltersToSection } from './filters.js';
+import { animate, stagger } from './motion.js';
 
 /** Escape a string for safe insertion into HTML text content or attributes. */
 function escapeHtml(str) {
@@ -311,7 +312,7 @@ export function renderSection(si, sync = false) {
   tbody.dataset.loaded = 'loading';
 
   if (sync) {
-     doRender(si, tbody);
+     doRender(si, tbody, true); // sync = filter/force path — skip stagger
      return;
   }
 
@@ -336,14 +337,14 @@ export function renderSection(si, sync = false) {
   }, 40);
 }
 
-function doRender(si, tbody) {
+function doRender(si, tbody, skipStagger = false) {
   const sections = groupBySections(state.questions);
   const sec = sections[si];
   if (!sec) return;
-  
+
   const frag = document.createDocumentFragment();
   sec.questions.forEach(q => frag.appendChild(buildRow(q, si)));
-  
+
   tbody.innerHTML = '';
   tbody.appendChild(frag);
   tbody.dataset.loaded = 'true';
@@ -357,10 +358,18 @@ function doRender(si, tbody) {
   }
   // Only re-filter the newly rendered section — avoids full DOM scan of all sections.
   applyFiltersToSection(si);
+
+  // Stagger-animate rows when opening a section (skip for filter/sync paths)
+  if (!skipStagger && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const rows = tbody.querySelectorAll('tr:not(.filtered-out)');
+    if (rows.length > 0 && rows.length <= 40) {
+      animate(rows, { opacity: [0, 1], y: [12, 0] }, { duration: 0.3, easing: 'ease-out', delay: stagger(0.03) });
+    }
+  }
 }
 
 document.addEventListener('force-render-section', (e) => {
-  renderSection(e.detail, true);
+  renderSection(e.detail, true); // sync path — skipStagger handled inside renderSection
 });
 
 // ── Company pill click delegation ─────────────────────────────────────────

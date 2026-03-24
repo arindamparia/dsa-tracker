@@ -15,7 +15,7 @@
  */
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
-import { animate, spring } from './motion.js';
+import { animate } from './motion.js';
 
 // ── SRS due check ────────────────────────────────────────────────
 const SRS_INTERVALS_DAYS = [1, 3, 7, 14, 30];
@@ -256,8 +256,8 @@ export const SmartQueue = {
     `;
     window._sscQ = q;
     animate(card,
-      { opacity: [0, 1], y: ['120%', '0%'] },
-      { duration: 0.35, easing: spring({ stiffness: 300, damping: 25 }) }
+      { opacity: [0, 1], y: [80, 0] },
+      { type: "spring", stiffness: 300, damping: 25 }
     );
     this._suggestionTimer = setTimeout(() => this._dismissCard(), 8000);
   },
@@ -265,7 +265,7 @@ export const SmartQueue = {
   _dismissCard() {
     const card = document.getElementById('smart-suggestion-card');
     if (!card) return;
-    animate(card, { opacity: 0, y: '120%' }, { duration: 0.3, easing: 'ease-in' })
+    animate(card, { opacity: 0, y: 80 }, { duration: 0.3, easing: 'ease-in' })
       .finished.then(() => card.remove());
   },
 };

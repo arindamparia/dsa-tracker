@@ -3,6 +3,54 @@ import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
 import { DailyGoal } from './daily-goal.js';
 
+// ── Animated number counter ──────────────────────────────────────────────────
+let _firstRender = true;
+const _prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const _activeCounters = new WeakMap(); // el → rAF id, to cancel overlapping animations
+
+function easeOutExpo(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+
+function animateNumber(el, target, duration = 0.6) {
+  if (!el) return;
+  if (_prefersReduced) { el.textContent = target; return; }
+  const current = parseInt(el.textContent, 10) || 0;
+  if (current === target) { el.textContent = target; return; }
+
+  // Cancel any running counter on this element
+  const prev = _activeCounters.get(el);
+  if (prev) cancelAnimationFrame(prev);
+
+  const start = performance.now();
+  const durationMs = duration * 1000;
+  function tick(now) {
+    const t = Math.min((now - start) / durationMs, 1);
+    el.textContent = Math.round(current + (target - current) * easeOutExpo(t));
+    if (t < 1) { _activeCounters.set(el, requestAnimationFrame(tick)); }
+    else { _activeCounters.delete(el); }
+  }
+  _activeCounters.set(el, requestAnimationFrame(tick));
+}
+
+function animatePct(el, target, duration = 0.6) {
+  if (!el) return;
+  if (_prefersReduced) { el.textContent = target + '%'; return; }
+  const current = parseInt(el.textContent, 10) || 0;
+  if (current === target) { el.textContent = target + '%'; return; }
+
+  const prev = _activeCounters.get(el);
+  if (prev) cancelAnimationFrame(prev);
+
+  const start = performance.now();
+  const durationMs = duration * 1000;
+  function tick(now) {
+    const t = Math.min((now - start) / durationMs, 1);
+    el.textContent = Math.round(current + (target - current) * easeOutExpo(t)) + '%';
+    if (t < 1) { _activeCounters.set(el, requestAnimationFrame(tick)); }
+    else { _activeCounters.delete(el); }
+  }
+  _activeCounters.set(el, requestAnimationFrame(tick));
+}
+
 export function updateStats() {
   document.body.classList.remove('loading');
   const total = state.questions.length;
@@ -58,20 +106,22 @@ export function updateStats() {
   const streakEl = document.getElementById('hdr-streak');
 
   smoothTransition(() => {
+    const dur = _firstRender ? 0.8 : 0.4;
+
     document.getElementById('hdr-total').textContent    = total;
-    document.getElementById('stat-done').textContent    = done;
+    animateNumber(document.getElementById('stat-done'), done, dur);
     document.getElementById('stat-of').textContent      = `of ${total}`;
-    document.getElementById('stat-easy').textContent    = easy;
+    animateNumber(document.getElementById('stat-easy'), easy, dur);
     document.getElementById('stat-easy-of').textContent = `of ${easyTotal}`;
-    document.getElementById('stat-medium').textContent  = medium;
+    animateNumber(document.getElementById('stat-medium'), medium, dur);
     document.getElementById('stat-med-of').textContent  = `of ${medTotal}`;
-    document.getElementById('stat-hard').textContent    = hard;
+    animateNumber(document.getElementById('stat-hard'), hard, dur);
     document.getElementById('stat-hard-of').textContent = `of ${hardTotal}`;
-    document.getElementById('stat-notes').textContent   = notes;
-    document.getElementById('stat-rem').textContent     = total - done;
+    animateNumber(document.getElementById('stat-notes'), notes, dur);
+    animateNumber(document.getElementById('stat-rem'), total - done, dur);
 
     if (todayEl) {
-      todayEl.textContent = todayDone;
+      animateNumber(todayEl, todayDone, dur);
       if (todayDone === 0) {
         todayEl.classList.remove('today-active');
       } else {
@@ -90,9 +140,11 @@ export function updateStats() {
     }
 
     const pct = total ? Math.round((done / total) * 100) : 0;
-    document.getElementById('prog-pct').textContent            = pct + '%';
+    animatePct(document.getElementById('prog-pct'), pct, dur);
     document.getElementById('prog-easy').style.width   = total ? (easy   / total * 100) + '%' : '0%';
     document.getElementById('prog-medium').style.width = total ? (medium / total * 100) + '%' : '0%';
     document.getElementById('prog-hard').style.width   = total ? (hard   / total * 100) + '%' : '0%';
+
+    _firstRender = false;
   });
 }

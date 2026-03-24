@@ -8,7 +8,7 @@ import { FocusMode } from './focus-mode.js';
 import { CompanyFilter } from './company-filter.js';
 import { SRS } from './spaced-repetition.js';
 import { HardCelebration } from './hard-celebration.js';
-import { animate, spring } from './motion.js';
+import { animate } from './motion.js';
 
 export async function toggleCheck(lc, _si) {
   const q = state.questions.find(x => x.lc_number === lc);
@@ -23,10 +23,9 @@ export async function toggleCheck(lc, _si) {
   }
 
   const chk = document.getElementById(`chk-${lc}`);
-  animate(chk, { borderColor: ['var(--border2)', 'var(--accent)', 'var(--border2)'] }, { duration: 0.6 });
   chk.classList.toggle('checked', newDone);
   if (newDone) {
-    animate(chk, { scale: [0.8, 1] }, { easing: spring({ stiffness: 400, damping: 15 }), duration: 0.3 });
+    try { animate(chk, { scale: [0.8, 1] }, { type: "spring", stiffness: 400, damping: 15 }); } catch {}
   }
   const rowEl = document.getElementById(`row-${lc}`);
   rowEl.classList.toggle('done-row', newDone);

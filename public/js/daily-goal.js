@@ -5,7 +5,7 @@
  * Page refresh does NOT re-trigger (baseline is set silently on first update).
  * Unchecking then re-checking DOES re-trigger (in-memory crossing detection).
  */
-import { animate, spring } from './motion.js';
+import { animate } from './motion.js';
 
 const GOAL_KEY = 'dsa_daily_goal';
 
@@ -112,7 +112,7 @@ function showCenterCaption(extra) {
   // Animate in with spring (centering handled by CSS translate, we animate scale+opacity)
   animate(div,
     { opacity: [0, 1], scale: [0.78, 1] },
-    { duration: 0.5, easing: spring({ stiffness: 280, damping: 22 }) }
+    { type: "spring", stiffness: 280, damping: 22 }
   );
 
   setTimeout(async () => {
@@ -124,7 +124,7 @@ function showCenterCaption(extra) {
 // ── Corner banner ─────────────────────────────────────────────────────────────
 
 function dismissBanner(banner) {
-  animate(banner, { opacity: 0, x: '110%' }, { duration: 0.4, easing: 'ease-in' })
+  animate(banner, { opacity: 0, x: 400 }, { duration: 0.4, easing: 'ease-in' })
     .finished.then(() => banner.remove());
 }
 
@@ -145,8 +145,8 @@ function showGoalBanner(extra) {
   banner.querySelector('.goal-banner-close').addEventListener('click', () => dismissBanner(banner));
 
   animate(banner,
-    { opacity: [0, 1], x: ['110%', '0%'] },
-    { duration: 0.45, easing: [0.175, 0.885, 0.32, 1.275] }
+    { opacity: [0, 1], x: [400, 0] },
+    { type: "spring", stiffness: 300, damping: 25 }
   );
 
   setTimeout(() => dismissBanner(banner), 6000);

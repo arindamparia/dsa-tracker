@@ -1,6 +1,7 @@
 /** Difficulty / status / search filters. */
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
+import { animate } from './motion.js';
 
 // ── Pre-computed search index ─────────────────────────────────────────────
 // Built once after questions load; avoids rebuilding the haystack on every keystroke.
@@ -77,6 +78,7 @@ export function setDiffFilter(f, btn) {
     state.diffFilter = f;
     document.querySelectorAll('[data-group="diff"]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    animate(btn, { scale: [0.9, 1] }, { type: "spring", stiffness: 500, damping: 18 });
     applyFilters();
   });
 }
@@ -91,6 +93,7 @@ export function setStatusFilter(f, btn) {
     state.statusFilter = f;
     document.querySelectorAll('[data-group="status"]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    animate(btn, { scale: [0.9, 1] }, { type: "spring", stiffness: 500, damping: 18 });
     applyFilters();
   });
 }

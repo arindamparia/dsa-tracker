@@ -154,7 +154,7 @@ export function toggleTheme() {
         pseudoElement: '::view-transition-new(root)'
       }
     );
-  });
+  }).catch(() => {});
 
   transition.finished.then(() => {
     document.documentElement.classList.remove('theme-transition');

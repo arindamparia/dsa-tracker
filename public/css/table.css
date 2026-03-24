@@ -39,10 +39,9 @@
   width: 17px; height: 17px; border: 2px solid var(--border2); border-radius: 5px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: transform 0.2s, border-color 0.2s, background-color 0.2s; flex-shrink: 0;
-  /* 44px minimum touch target via padding (WCAG 2.5.5) */
-  padding: 12px; box-sizing: content-box; margin: -12px; margin-top: -8px;
+  position: relative; z-index: 1;
 }
-.custom-check:hover { border-color: var(--easy); transform: scale(1.1); }
+.custom-check:hover { border-color: var(--easy); transform: scale(1.25); }
 .custom-check.checked {
   background: var(--easy); border-color: var(--easy);
 }

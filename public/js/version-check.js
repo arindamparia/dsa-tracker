@@ -38,7 +38,7 @@ function showUpdateBanner() {
     { opacity: [0, 1], transform: isMobile
         ? ['translateY(80px)', 'translateY(0)']
         : ['translateX(-50%) translateY(80px)', 'translateX(-50%) translateY(0)'] },
-    { duration: 0.35, easing: [0.175, 0.885, 0.32, 1.275] }
+    { type: "spring", stiffness: 300, damping: 25 }
   );
 }
 

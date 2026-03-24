@@ -18,7 +18,7 @@
     # is impractical. XSS protection comes from escapeHtml() on all DB-sourced content instead.
     # Remaining CSP directives (connect-src, frame-src, object-src, base-uri) still provide value.
     # Clerk requires worker-src blob: for its authentication web worker.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.clerk.accounts.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.clerk.accounts.dev https://api.openai.com; img-src 'self' data: https:; frame-src 'none'; object-src 'none'; base-uri 'self'; worker-src blob:"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.clerk.accounts.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.clerk.accounts.dev https://api.openai.com https://cdn.jsdelivr.net; img-src 'self' data: https:; frame-src 'none'; object-src 'none'; base-uri 'self'; worker-src blob:"
 
 # Prevent browsers from caching API responses
 [[headers]]

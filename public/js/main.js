@@ -8,7 +8,7 @@
  *  3. Register keyboard shortcuts
  *  4. Kick off the boot sequence (after Clerk auth)
  */
-import { animate } from './motion.js';
+import { animate, stagger } from './motion.js';
 import { initAuth, getToken, getUserEmail, getUserName } from './auth.js'; // getToken used by fetch interceptor below
 import { boot, bootFresh, RefreshModal } from './data.js';
 import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
@@ -286,12 +286,55 @@ DailyGoal.init();
   }
 
   // Reveal the page only after initial content is in the DOM (no blank flash).
-  // The overlay (#page-loader) covers the page during auth+render, then fades out.
+  // The overlay (#page-loader) covers the page during auth+render, then fades out,
+  // then key page sections cascade in with a staggered entrance.
   const revealPage = async () => {
     const loader = document.getElementById('page-loader');
+
+    // Collect page sections in visual order (skip .stats-board — handled by reveal.js inView)
+    const entrance = [
+      document.querySelector('header'),
+      document.querySelector('.study-tools-bar'),
+      document.querySelector('.motivation-box'),
+      document.querySelector('.top-stats'),
+      document.querySelector('.global-progress'),
+      document.querySelector('.controls'),
+      document.getElementById('sections'),
+    ].filter(Boolean);
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Pre-hide before loader fades (instant — user still sees loader overlay)
+    if (!prefersReduced) {
+      entrance.forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; });
+    }
+
+    // Fade out loader
     if (loader) {
       await animate(loader, { opacity: 0 }, { duration: 0.3, easing: 'ease-out' }).finished;
       loader.remove();
+    }
+
+    if (prefersReduced) return;
+
+    // Staggered entrance cascade
+    animate(
+      entrance,
+      { opacity: [0, 1], y: [20, 0] },
+      { duration: 0.45, easing: [0.22, 1, 0.36, 1], delay: stagger(0.06) }
+    );
+
+    // Study tools buttons get their own sub-stagger (scale + slide)
+    const featureBtns = document.querySelectorAll('.btn-feature');
+    if (featureBtns.length) {
+      featureBtns.forEach(b => { b.style.opacity = '0'; b.style.transform = 'translateY(10px) scale(0.95)'; });
+      setTimeout(() => {
+        animate(
+          featureBtns,
+          { opacity: [0, 1], y: [10, 0], scale: [0.95, 1] },
+          { duration: 0.4, easing: [0.22, 1, 0.36, 1], delay: stagger(0.05) }
+        );
+      }, 150);
     }
   };
 
