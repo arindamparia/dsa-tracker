@@ -29,6 +29,7 @@ import './smart-queue.js';
 import './weakness-heatmap.js';
 import { restoreSession } from './mock-interview.js';
 import { AmbientSound } from './ambient.js';
+import { initPWAInstall, registerSW } from './pwa-install.js';
 
 window.boot              = boot;
 window.bootFresh         = bootFresh;
@@ -141,6 +142,8 @@ initToggles();
 initTheme();
 DailyGoal.init();
 AmbientSound.init();
+registerSW();
+initPWAInstall();
 
 (async () => {
   const authed = await initAuth();
