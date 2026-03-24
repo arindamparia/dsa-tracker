@@ -1,10 +1,10 @@
 const AUDIO_URLS = {
-  rain:    'https://res.cloudinary.com/dnju7wfma/video/upload/rain_fe6smc.mp3',
-  rain2:   'https://res.cloudinary.com/dnju7wfma/video/upload/rain2_uycmn6.mp3',
-  ocean:   'https://res.cloudinary.com/dnju7wfma/video/upload/ocean_gzek2u.mp3',
-  forest:  'https://res.cloudinary.com/dnju7wfma/video/upload/forest_l804pd.mp3',
-  forest2: 'https://res.cloudinary.com/dnju7wfma/video/upload/forest2_xg9jbw.mp3',
-  forest3: 'https://res.cloudinary.com/dnju7wfma/video/upload/forest3_xlypzq.mp3',
+  rain:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain_fe6smc.mp3',
+  rain2:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain2_uycmn6.mp3',
+  ocean:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378668/ocean_gzek2u.mp3',
+  forest:  'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest_l804pd.mp3',
+  forest2: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest2_xg9jbw.mp3',
+  forest3: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest3_xlypzq.mp3',
 };
 
 export const AmbientSound = {

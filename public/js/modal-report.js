@@ -81,7 +81,7 @@ export const ReportModal = {
       else if (count === 3) level = 2;
       else if (count >= 4) level = 3;
 
-      box.className = `heatmap-box level-${level}`;
+      box.className = 'heatmap-box';
       box.dataset.level = level;
 
       // Tooltip formatting
