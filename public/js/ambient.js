@@ -5,6 +5,7 @@ const AUDIO_URLS = {
   forest:  'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest_l804pd.mp3',
   forest2: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest2_xg9jbw.mp3',
   forest3: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest3_xlypzq.mp3',
+  river:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382577/river_ffhhlr.mp3',
 };
 
 export const AmbientSound = {
