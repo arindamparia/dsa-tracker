@@ -1,16 +1,19 @@
 /* stat cards */
-.stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 12px; }
 .stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--easy-bg));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 12px;
   padding: 16px 18px;
-  transition: border-color 0.25s, transform 0.25s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px var(--shadow-sm);
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
 }
 .stat-card:hover {
-  border-color: var(--border2);
+  border-color: rgba(var(--accent-rgb), 0.4);
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 24px var(--shadow-md);
 }
 .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px; }
 .stat-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
@@ -21,7 +24,7 @@
 .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
 
 /* overall progress bar */
-.global-progress { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+.global-progress { background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--easy-bg)); border: 1px solid rgba(var(--accent-rgb), 0.3); border-radius: 12px; padding: 20px 24px; margin-bottom: 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 16px var(--shadow-sm); }
 .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
 .progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
@@ -44,7 +47,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .top-stats .stat-card {

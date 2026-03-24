@@ -252,6 +252,12 @@ export function buildRow(q, si) {
   return tr;
 }
 
+function getStickyOffset() {
+  const ctrl = document.querySelector('.controls');
+  if (ctrl && window.innerWidth <= 768) return ctrl.offsetHeight;
+  return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--controls-h')) || 126;
+}
+
 export function toggleSection(si) {
   const clicked = document.getElementById(`sec-${si}`);
   const isNowCollapsed = clicked.classList.contains('collapsed');
@@ -263,7 +269,7 @@ export function toggleSection(si) {
       renderSection(si);
     } else {
       // When closing, instantly correct scroll position so the View Transition smoothly crossfades
-      const controlsH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--controls-h')) || 126;
+      const controlsH = getStickyOffset();
       const y = clicked.getBoundingClientRect().top + window.scrollY - controlsH;
       window.scrollTo({ top: y, behavior: 'auto' });
     }
@@ -273,7 +279,7 @@ export function toggleSection(si) {
     setTimeout(() => {
       const el = document.getElementById(`sec-${si}`);
       if (!el) return;
-      const controlsH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--controls-h')) || 126;
+      const controlsH = getStickyOffset();
       const y = el.getBoundingClientRect().top + window.scrollY - controlsH;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }, 420);

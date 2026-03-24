@@ -133,11 +133,14 @@ body.company-prep-active .company-stats-section { display: none !important; }
 
 /* company readiness stats panel */
 .company-stats-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--easy-bg));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   overflow: hidden;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px var(--shadow-sm);
 }
 
 .company-stats-header {
