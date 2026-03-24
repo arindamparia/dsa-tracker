@@ -112,9 +112,9 @@ export function toggleTheme() {
   if (!document.startViewTransition || window.innerWidth <= 768) {
     document.documentElement.classList.add('theme-fading');
     switchTheme();
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    setTimeout(() => {
       document.documentElement.classList.remove('theme-fading');
-    }));
+    }, 350);
     return;
   }
 

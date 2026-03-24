@@ -138,15 +138,31 @@ html.hide-theme-bg body::before {
   .wrapper { padding: 0 16px 60px; }
 }
 
-/* theme fade fallback — used on mobile / when View Transitions API isn't available */
-html.theme-fading * {
-  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease !important;
+/* theme fade fallback — mobile / no View Transitions API
+   Only transition key properties on direct children, not every element */
+html.theme-fading,
+html.theme-fading body,
+html.theme-fading .wrapper,
+html.theme-fading .controls,
+html.theme-fading .stat-card,
+html.theme-fading .global-progress,
+html.theme-fading .section-header,
+html.theme-fading .filter-btn,
+html.theme-fading .search-box,
+html.theme-fading #ambient-panel {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Prevent bg image from transitioning during theme switch — it changes via CSS vars */
+html.theme-fading body::before,
+html.theme-transition body::before {
+  transition: none !important;
 }
 
 /* view transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.3s;
+  animation-duration: 0.35s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-fill-mode: both;
 }
