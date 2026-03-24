@@ -272,4 +272,24 @@ DailyGoal.init();
   CompanyStats.render();
 
   if (restoreSession()) window.MockInterview.resume();
+
+  // Lazy-load the background image after the page is already visible
+  const hideBg = localStorage.getItem('dsa_hide_bg');
+  const isMobile = window.innerWidth <= 768;
+  const shouldHide = hideBg === '1' || (hideBg === null && isMobile);
+  if (!shouldHide) {
+    const img = new Image();
+    img.onload = () => {
+      const root = document.documentElement;
+      // Set image first (opacity is still 0 from CSS default)
+      root.style.setProperty('--bg-image', "url('/images/bg.png')");
+      // Kick off the fade-in on the next paint
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          root.style.setProperty('--bg-opacity', '0.15');
+        });
+      });
+    };
+    img.src = '/images/bg.png';
+  }
 })();

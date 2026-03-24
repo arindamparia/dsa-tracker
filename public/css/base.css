@@ -29,6 +29,7 @@ body::before {
   mix-blend-mode: var(--bg-blend);
   z-index: -1;
   pointer-events: none;
+  transition: opacity 0.8s ease;
 }
 html.hide-theme-bg body::before {
   display: none !important;
@@ -69,9 +70,9 @@ html.hide-theme-bg body::before {
 }
 
 :root {
-  /* The path to the downloaded image */
-  --bg-image: url('../images/bg.png');
-  --bg-opacity: 0.15;
+  /* The path to the downloaded image - injected lazily by JS */
+  --bg-image: none;
+  --bg-opacity: 0;
   --bg-blend: normal;
 }
 
