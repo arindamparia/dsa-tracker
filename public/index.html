@@ -786,11 +786,14 @@
       <button class="ambient-btn" data-track="forest3" title="Nature Birds">🐦</button>
     </div>
     <div class="ambient-volume">
-      <span>🔉</span>
+      <span id="ambient-mute" style="cursor:pointer; user-select:none; font-size:16px; transition:transform 0.1s;" title="Mute/Unmute">🔉</span>
       <input type="range" id="ambient-vol" min="0" max="1" step="0.01" value="0.3" title="Volume">
     </div>
   </div>
-  <button id="ambient-toggle" title="Ambient Sounds">🎵 Focus Audio</button>
+  <button id="ambient-toggle" title="Ambient Sounds">
+    <span class="ambient-toggle-icon">🎵</span>
+    <span class="ambient-toggle-text">Focus Audio</span>
+  </button>
 </div>
 
 <script type="module" src="js/ai.js"></script>

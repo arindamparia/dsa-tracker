@@ -38,10 +38,10 @@
   z-index: 2;
 }
 
-.heatmap-box[data-level="0"] { background: var(--surface3); } /* #1e1e28 */
-.heatmap-box[data-level="1"] { background: rgba(var(--easy-rgb), 0.4); }
-.heatmap-box[data-level="2"] { background: var(--easy); }
-.heatmap-box[data-level="3"] { background: var(--easy-dark); }
+.heatmap-box[data-level="0"], .heatmap-box.level-0 { background: var(--surface3); }
+.heatmap-box[data-level="1"], .heatmap-box.level-1 { background: rgba(var(--easy-rgb), 0.4); }
+.heatmap-box[data-level="2"], .heatmap-box.level-2 { background: var(--easy); }
+.heatmap-box[data-level="3"], .heatmap-box.level-3 { background: var(--easy-dark); }
 
 .heatmap-legend {
   display: flex;

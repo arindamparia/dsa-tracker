@@ -76,14 +76,12 @@ export const ReportModal = {
       const count = counts[key] || 0;
 
       const box = document.createElement('div');
-      box.className = 'heatmap-box';
-      
-      // Level assignment
       let level = 0;
       if (count >= 1 && count <= 2) level = 1;
       else if (count === 3) level = 2;
       else if (count >= 4) level = 3;
 
+      box.className = `heatmap-box level-${level}`;
       box.dataset.level = level;
 
       // Tooltip formatting

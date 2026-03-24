@@ -5,6 +5,7 @@ export const AmbientSound = {
   crossfadeDuration: 4.0, // 4 seconds overlap
   isFading: false,
   fadeInterval: null,
+  isMuted: false,
 
   init() {
     this.panel = document.getElementById('ambient-panel');
@@ -22,6 +23,11 @@ export const AmbientSound = {
 
     this.toggleBtn.addEventListener('click', () => this.panel.classList.toggle('open'));
     
+    this.muteBtn = document.getElementById('ambient-mute');
+    if (this.muteBtn) {
+      this.muteBtn.addEventListener('click', () => this.toggleMute());
+    }
+
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#ambient-widget')) this.panel.classList.remove('open');
     });
@@ -45,6 +51,15 @@ export const AmbientSound = {
     }
   },
 
+  toggleMute() {
+    this.isMuted = !this.isMuted;
+    if (this.audioA) this.audioA.muted = this.isMuted;
+    if (this.audioB) this.audioB.muted = this.isMuted;
+    if (this.muteBtn) {
+      this.muteBtn.textContent = this.isMuted ? '🔇' : '🔉';
+    }
+  },
+
   lazyInitDecks() {
     // Only initialize once
     if (this.audioA) return;
@@ -52,10 +67,12 @@ export const AmbientSound = {
     this.audioA = new Audio();
     this.audioA.preload = 'none';
     this.audioA.loop = false; // We control looping manually via crossfade
+    this.audioA.muted = this.isMuted;
 
     this.audioB = new Audio();
     this.audioB.preload = 'none';
     this.audioB.loop = false;
+    this.audioB.muted = this.isMuted;
 
     const monitorTime = (deck, nextDeck) => {
       deck.addEventListener('timeupdate', () => {
