@@ -28,6 +28,7 @@ import { UserSettings } from './user-settings.js';
 import './smart-queue.js';
 import './weakness-heatmap.js';
 import { restoreSession } from './mock-interview.js';
+import { AmbientSound } from './ambient.js';
 
 window.boot              = boot;
 window.bootFresh         = bootFresh;
@@ -139,6 +140,7 @@ initMotivation();
 initToggles();
 initTheme();
 DailyGoal.init();
+AmbientSound.init();
 
 (async () => {
   const authed = await initAuth();
