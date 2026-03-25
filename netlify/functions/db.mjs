@@ -114,6 +114,10 @@ export async function initSchema(sql) {
     await sql`CREATE INDEX IF NOT EXISTS idx_progress_lc_user ON progress(lc_number, user_email)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_questions_section_order ON questions(section_order, lc_number)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
+    // Covers night-reminder "solved today" filter (is_done + solved_at range scan)
+    await sql`CREATE INDEX IF NOT EXISTS idx_progress_user_done_solved ON progress(user_email, solved_at) WHERE is_done = TRUE`;
+    // Covers reminders "done count per user" aggregation
+    await sql`CREATE INDEX IF NOT EXISTS idx_progress_user_is_done ON progress(user_email) WHERE is_done = TRUE`;
   } catch (e) { /* ignore — indexes may already exist */ }
 
   // ── AI rate-limiting table ───────────────────────────────────────────────

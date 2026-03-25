@@ -2,6 +2,9 @@ const KEY    = 'dsa_questions';
 const TS_KEY = 'dsa_cache_ts';
 const TTL    = 30 * 24 * 60 * 60 * 1000;
 
+const PROGRESS_TS_KEY = 'dsa_progress_ts';
+const PROGRESS_TTL    = 15 * 60 * 1000; // 15 minutes
+
 const USER_KEY    = 'dsa_user_profile';
 const USER_TS_KEY = 'dsa_user_ts';
 const USER_TTL    = 5 * 60 * 1000;
@@ -117,9 +120,19 @@ export const Cache = {
     } catch {}
   },
 
+  isProgressStale() {
+    const ts = parseInt(localStorage.getItem(PROGRESS_TS_KEY) || '0', 10);
+    return Date.now() - ts > PROGRESS_TTL;
+  },
+
+  touchProgress() {
+    localStorage.setItem(PROGRESS_TS_KEY, String(Date.now()));
+  },
+
   clear() {
     _memCache = null;
     localStorage.removeItem(KEY);
     localStorage.removeItem(TS_KEY);
+    localStorage.removeItem(PROGRESS_TS_KEY);
   },
 };

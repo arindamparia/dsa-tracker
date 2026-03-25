@@ -34,6 +34,43 @@ export default async (request, context) => {
       });
     }
 
+    const userEmails = users.map(u => u.email);
+
+    // ── Bulk query 1: total question count + done per user ─────────
+    // Avoids CROSS JOIN — total is the same for everyone, just count done from progress.
+    const [[{ total: totalQuestions }], allDone] = await Promise.all([
+      sql`SELECT COUNT(*) AS total FROM questions`,
+      sql`
+        SELECT user_email, COUNT(*) AS done
+        FROM   progress
+        WHERE  is_done    = TRUE
+          AND  user_email = ANY(${userEmails})
+        GROUP  BY user_email
+      `,
+    ]);
+    const total = Number(totalQuestions);
+    const doneMap = Object.fromEntries(allDone.map(r => [r.user_email, Number(r.done)]));
+
+    // ── Bulk query 2: one random unsolved problem per user ────────
+    // LATERAL join picks one random unsolved problem per user without
+    // creating the full N×M cross product that ROW_NUMBER() required.
+    const allProblems = await sql`
+      SELECT u.email AS user_email, sub.name, sub.lc_number, sub.difficulty, sub.topic, sub.url
+      FROM   users u
+      CROSS JOIN LATERAL (
+        SELECT q.name, q.lc_number, q.difficulty, q.topic, q.url
+        FROM   questions q
+        LEFT JOIN progress p
+          ON  p.lc_number  = q.lc_number
+          AND p.user_email = u.email
+        WHERE  COALESCE(p.is_done, false) = false
+        ORDER  BY RANDOM()
+        LIMIT  1
+      ) sub
+      WHERE  u.email = ANY(${userEmails})
+    `;
+    const problemMap = Object.fromEntries(allProblems.map(r => [r.user_email, r]));
+
     // ── Difficulty colours ────────────────────────────────────────
     const diffStyle = {
       Easy:   { color: "#06d6a0", border: "rgba(6,214,160,0.4)" },
@@ -45,38 +82,16 @@ export default async (request, context) => {
     const today       = todayDate.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
     const subjectDate = todayDate.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" });
 
+    // ── Send emails — no DB calls in this loop ────────────────────
     let sent = 0;
     for (const user of users) {
       const userEmail   = user.email;
       const toEmail     = user.send_to;
       const displayName = user.name || toEmail.split("@")[0];
 
-      // Fetch a random unsolved problem + overall stats in parallel
-      const [[problem], [stats]] = await Promise.all([
-        sql`
-          SELECT q.name, q.lc_number, q.difficulty, q.topic, q.url
-          FROM   questions q
-          LEFT JOIN progress p
-            ON  p.lc_number  = q.lc_number
-            AND p.user_email = ${userEmail}
-          WHERE  COALESCE(p.is_done, false) = false
-          ORDER  BY RANDOM()
-          LIMIT  1
-        `,
-        sql`
-          SELECT
-            COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = true)  AS done,
-            COUNT(*) FILTER (WHERE COALESCE(p.is_done, false) = false) AS remaining
-          FROM   questions q
-          LEFT JOIN progress p
-            ON  p.lc_number  = q.lc_number
-            AND p.user_email = ${userEmail}
-        `,
-      ]);
-
-      const done      = Number(stats?.done      || 0);
-      const remaining = Number(stats?.remaining || 0);
-      const total     = done + remaining;
+      const problem   = problemMap[userEmail] || null;
+      const done      = doneMap[userEmail] || 0;
+      const remaining = total - done;
       const pct       = total ? Math.round((done / total) * 100) : 0;
 
       const ds = diffStyle[problem?.difficulty] || diffStyle.Hard;

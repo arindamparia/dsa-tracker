@@ -15,15 +15,19 @@ export const handler = async (event) => {
 
     const sql = getDb();
 
-    if (similar_problems !== undefined) {
+    if (similar_problems !== undefined && hint !== undefined) {
+      await sql`
+        UPDATE questions
+        SET similar_problems = ${similar_problems}, hint = ${hint}
+        WHERE lc_number = ${lc_number}
+      `;
+    } else if (similar_problems !== undefined) {
       await sql`
         UPDATE questions
         SET similar_problems = ${similar_problems}
         WHERE lc_number = ${lc_number}
       `;
-    }
-
-    if (hint !== undefined) {
+    } else if (hint !== undefined) {
       await sql`
         UPDATE questions
         SET hint = ${hint}

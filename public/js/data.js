@@ -5,6 +5,35 @@ import { showToast } from './toast.js';
 import { buildSearchIndex } from './filters.js';
 import { smoothTransition } from './utils.js';
 
+const PROGRESS_FIELDS = ['is_done','solution','notes','needs_review','time_complexity',
+  'space_complexity','ai_analysis','srs_interval_index','srs_last_reviewed_at','updated_at','solved_at'];
+
+async function revalidateProgress() {
+  try {
+    const res = await fetch('/.netlify/functions/get-progress', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.ok || !Array.isArray(data.progress)) return;
+
+    const map = Object.fromEntries(data.progress.map(p => [p.lc_number, p]));
+
+    let changed = false;
+    for (const q of state.questions) {
+      const p = map[q.lc_number];
+      if (!p) continue;
+      for (const f of PROGRESS_FIELDS) {
+        if (q[f] !== p[f]) { q[f] = p[f]; changed = true; }
+      }
+    }
+
+    Cache.touchProgress();
+    if (changed) {
+      Cache.set(state.questions);
+      smoothTransition(() => render());
+    }
+  } catch {}
+}
+
 function applyUserProfile(data) {
   state.isSubscribed     = data.is_subscribed     ?? false;
   state.remindersEnabled = data.reminders_enabled ?? false;
@@ -54,6 +83,10 @@ export async function boot(onReady) {
     if (state.questions.length) {
       smoothTransition(() => render());
     }
+    // Background progress revalidation if stale (>15 min)
+    if (Cache.isProgressStale()) {
+      revalidateProgress();
+    }
   } else {
     await bootFresh(onReady);
   }
@@ -73,6 +106,7 @@ export async function bootFresh(onReady) {
     buildSearchIndex();
     applyUserProfile(data);
     Cache.set(state.questions);
+    Cache.touchProgress(); // fresh load counts as progress revalidation
     UserCache.set({
       reminders_enabled: data.reminders_enabled,
       reminder_email:    data.reminder_email,

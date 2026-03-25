@@ -112,12 +112,23 @@ export const UserSettings = {
       let hideBgState = localStorage.getItem('dsa_hide_bg');
       if (hideBgState === null && window.innerWidth <= 768) hideBgState = '1';
       bgToggleEl.checked = hideBgState !== '1';
+      // Snapshot current bg state so we can revert on cancel
+      this._bgSnapshot = document.documentElement.classList.contains('hide-theme-bg') ? '1' : '0';
     }
 
     modal.classList.add('open');
   },
 
   close() {
+    // Revert bg preview if user didn't save
+    if (this._bgSnapshot !== undefined) {
+      if (this._bgSnapshot === '1') {
+        document.documentElement.classList.add('hide-theme-bg');
+      } else {
+        document.documentElement.classList.remove('hide-theme-bg');
+      }
+      this._bgSnapshot = undefined;
+    }
     document.getElementById('user-settings-modal')?.classList.remove('open');
   },
 
@@ -132,12 +143,11 @@ export const UserSettings = {
   },
 
   onThemeBgToggle() {
+    // Preview only — no localStorage write until Save
     const checked = document.getElementById('us-bg-toggle')?.checked;
     if (checked) {
       document.documentElement.classList.remove('hide-theme-bg');
-      localStorage.setItem('dsa_hide_bg', '0');
-      
-      // If the image was skipped during main page load (e.g. mobile default), lazily inject it now
+      // If the image was never loaded, lazily inject it for preview
       const root = document.documentElement;
       if (!root.style.getPropertyValue('--bg-image')) {
         const bgUrl = 'https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1920/bg_lnzb9t.png';
@@ -152,7 +162,6 @@ export const UserSettings = {
       }
     } else {
       document.documentElement.classList.add('hide-theme-bg');
-      localStorage.setItem('dsa_hide_bg', '1');
     }
   },
 
@@ -190,7 +199,15 @@ export const UserSettings = {
       showToast('Enter a valid reminder email address.', 'error'); return;
     }
 
+    const bgChecked = document.getElementById('us-bg-toggle')?.checked;
+    const bgChanged = bgChecked !== undefined && (bgChecked ? '0' : '1') !== this._bgSnapshot;
+
     if (!nameChanged && !phoneChanged && !enabledChanged && !emailChanged) {
+      if (bgChanged) {
+        // Only bg changed — no API call needed, just persist it
+        localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
+        this._bgSnapshot = undefined;
+      }
       this.close();
       return;
     }
@@ -228,6 +245,13 @@ export const UserSettings = {
       // Refresh header display name if it changed
       const metaEl = document.getElementById('hdr-user-meta');
       if (metaEl && rawName) { metaEl.textContent = rawName; }
+
+      // Persist bg toggle only on successful save
+      const bgChecked = document.getElementById('us-bg-toggle')?.checked;
+      if (bgChecked !== undefined) {
+        localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
+      }
+      this._bgSnapshot = undefined; // prevent close() from reverting
 
       showToast('Settings saved ✓', 'success');
       this.close();
