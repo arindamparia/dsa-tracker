@@ -136,7 +136,7 @@
 
 @media (max-width: 768px) {
   #toggle-sol, #toggle-notes { display: none !important; }
-  .controls { margin: 0 -16px; padding-left: 16px; padding-right: 16px; gap: 8px; }
+  .controls { margin: 0 -8px; padding-left: 8px; padding-right: 8px; gap: 8px; }
   .search-wrap { min-width: 0; }
   .filter-group { gap: 6px; }
   .filter-btn { padding: 8px 10px; font-size: 10px; }
