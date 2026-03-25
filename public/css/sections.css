@@ -13,8 +13,6 @@
   position: sticky; top: var(--controls-h, 72px); z-index: 20;
   background: var(--surface);
   border-radius: 14px 14px 0 0;
-  transform: translateZ(0);
-  will-change: transform;
 }
 .section.collapsed .section-sticky { border-radius: 14px; }
 
