@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /src/
+Allow: /assets/
+Allow: /js/
+Allow: /css/
+Allow: /images/
+
+# Block crawlers from spamming API endpoints directly
+Disallow: /.netlify/functions/
+Disallow: /api/
+
+Sitemap: https://algotracker.xyz/sitemap.xml

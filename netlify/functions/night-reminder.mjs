@@ -146,7 +146,7 @@ export default async (request, context) => {
             ``,
             `Keep the streak going: ${siteUrl}`,
             ``,
-            `— Trace My DSA`,
+            `— AlgoTracker`,
           ].join("\n")
         : [
             `Hi ${displayName},`,
@@ -162,7 +162,7 @@ export default async (request, context) => {
             ``,
             `Open your tracker: ${siteUrl}`,
             ``,
-            `— Trace My DSA`,
+            `— AlgoTracker`,
           ].join("\n");
 
       // ── Suggestion block ────────────────────────────────────────
@@ -286,7 +286,7 @@ export default async (request, context) => {
               <div style="height:3px;background:linear-gradient(90deg,#7c6af7,#06d6a0);"></div>
 
               <div style="padding:28px 28px 10px;">
-                <p style="margin:0 0 6px;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:#6b6b85;">Trace My DSA</p>
+                <p style="margin:0 0 6px;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:#6b6b85;">AlgoTracker</p>
                 <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#e8e8f0;line-height:1.2;">Good Night, ${displayName} &#127769;</h1>
                 <p style="margin:0;font-size:14px;color:#9898b0;line-height:1.6;">
                   Here's your end-of-day summary for <strong style="color:#e8e8f0;">${today}</strong>.
@@ -321,7 +321,7 @@ export default async (request, context) => {
 </html>`;
 
       await resend.emails.send({
-        from:     `Trace My DSA <${fromEmail}>`,
+        from:     `AlgoTracker <${fromEmail}>`,
         to:       toEmail,
         reply_to: toEmail,
         subject:  `🌙 DSA Night Check-in — ${subjectDate}`,
@@ -330,7 +330,7 @@ export default async (request, context) => {
         headers: {
           "List-Unsubscribe": `<mailto:${toEmail}?subject=Unsubscribe%20DSA%20Reminder>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-          "X-Mailer": "Trace-My-DSA/1.0",
+          "X-Mailer": "AlgoTracker/1.0",
         },
       });
 

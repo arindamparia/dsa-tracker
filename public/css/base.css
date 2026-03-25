@@ -199,3 +199,25 @@ html.theme-transition::view-transition-new(root) { z-index: 2; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Footer credit */
+.site-footer {
+  text-align: center;
+  padding: 20px 0 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.site-footer a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.site-footer a:hover {
+  opacity: 0.75;
+}
+.footer-heart {
+  color: #ff4757;
+  font-size: 13px;
+}

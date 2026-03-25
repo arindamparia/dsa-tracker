@@ -53,11 +53,11 @@ export function initPWAInstall() {
     if (platform === 'ios') {
       // Safari share icon (box with arrow)
       const shareIcon = `<svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-2px;" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M4 14v5a2 2 0 002 2h12a2 2 0 002-2v-5"/></svg>`;
-      text.innerHTML = `<strong>Install DSA Tracker</strong><span>Tap ${shareIcon} then <b>"Add to Home Screen"</b></span>`;
+      text.innerHTML = `<strong>Install AlgoTracker</strong><span>Tap ${shareIcon} then <b>"Add to Home Screen"</b></span>`;
     } else if (platform === 'macos-safari') {
-      text.innerHTML = `<strong>Install DSA Tracker</strong><span>Go to <b>File → Add to Dock</b> for quick access</span>`;
+      text.innerHTML = `<strong>Install AlgoTracker</strong><span>Go to <b>File → Add to Dock</b> for quick access</span>`;
     } else {
-      text.innerHTML = `<strong>Install DSA Tracker</strong><span>Add to your home screen for quick access</span>`;
+      text.innerHTML = `<strong>Install AlgoTracker</strong><span>Add to your home screen for quick access</span>`;
     }
 
     const actions = document.createElement('div');
