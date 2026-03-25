@@ -1,6 +1,8 @@
-export default async () => {
+export const handler = async () => {
   const pk = process.env.CLERK_PUBLISHABLE_KEY ?? "";
-  return new Response(JSON.stringify({ pk }), {
+  return {
+    statusCode: 200,
     headers: { "Content-Type": "application/json" },
-  });
+    body: JSON.stringify({ pk }),
+  };
 };
