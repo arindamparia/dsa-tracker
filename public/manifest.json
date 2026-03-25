@@ -1,7 +1,7 @@
 {
   "name": "AlgoTracker - DSA Mastery by Arindam Paria",
   "short_name": "AlgoTracker",
-  "description": "Master Data Structures and Algorithms with AlgoTracker. A powerful tracking tool created by Arindam Paria.",
+  "description": "Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, focus sessions with ambient audio, and section mastery charts. Built by Arindam Paria.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
