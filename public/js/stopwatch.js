@@ -23,8 +23,8 @@ export function initStopwatch() {
     }
   });
 
-  // Restore minimized state from localStorage
-  if (localStorage.getItem('dsa_timer_minimized') === '1') {
+  // Default to minimized; only expand if user explicitly chose to
+  if (localStorage.getItem('dsa_timer_minimized') !== '0') {
     document.getElementById('timer-hang').classList.add('minimized');
   }
 
