@@ -7,7 +7,7 @@ export function initPWAInstall() {
   const dismissed = localStorage.getItem('dsa_pwa_dismissed');
   if (dismissed) {
     const daysSince = (Date.now() - parseInt(dismissed)) / 86400000;
-    if (daysSince < 14) return;
+    if (daysSince < 3) return;
   }
 
   let deferredPrompt = null;

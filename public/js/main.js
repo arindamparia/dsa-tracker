@@ -192,6 +192,8 @@ initPWAInstall();
   if (metaEl && email) {
     metaEl.textContent = name || email;
     metaEl.title = email;
+    metaEl.style.cursor = 'pointer';
+    metaEl.addEventListener('click', () => UserSettings.open());
   }
 
   const wmEl = document.getElementById('watermark');

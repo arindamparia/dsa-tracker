@@ -96,7 +96,6 @@
         <button class="btn-action" onclick="RefreshModal.open()" title="Sync latest questions">↺ Hard Refresh</button>
         <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
         <button class="btn-settings" onclick="UserSettings.open()" title="Profile &amp; Settings">⚙ Settings</button>
-        <button class="btn-logout" onclick="confirmLogout()">⎋ Logout</button>
       </div>
     </div>
   </header>
@@ -366,7 +365,15 @@
 
 <!-- USER SETTINGS MODAL -->
 <div class="modal-overlay" id="user-settings-modal" onclick="UserSettings.handleOverlayClick(event)">
-  <div class="modal" style="max-width:480px">
+  <div class="modal us-modal" style="max-width:480px">
+    <button class="us-logout-btn" onclick="confirmLogout()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span>Log Out</span>
+    </button>
     <div class="confirm-modal-header">
       <div class="confirm-modal-icon">⚙</div>
       <div class="modal-title">Profile &amp; Settings</div>
