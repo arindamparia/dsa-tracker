@@ -1,12 +1,9 @@
-/* search & filter controls */
 .controls {
   display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
   position: sticky; top: 0; z-index: 30;
   background: var(--surface-blur);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transform: translateZ(0);
-  will-change: transform, backdrop-filter;
   padding: 12px 0 14px;
   margin: 0 -24px;
   padding-left: 24px; padding-right: 24px;
