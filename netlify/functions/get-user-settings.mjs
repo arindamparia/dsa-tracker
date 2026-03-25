@@ -21,7 +21,7 @@ export const handler = async (event) => {
       INSERT INTO users (email, clerk_id, name, clerk_name)
       VALUES (${userEmail}, ${clerkId}, ${clerkName}, ${clerkName})
       ON CONFLICT (email) DO UPDATE SET
-        clerk_id   = COALESCE(users.clerk_id, EXCLUDED.clerk_id),
+        clerk_id   = EXCLUDED.clerk_id,
         clerk_name = COALESCE(EXCLUDED.clerk_name, users.clerk_name),
         name       = COALESCE(NULLIF(users.name, ''), EXCLUDED.clerk_name)
       RETURNING is_subscribed, reminders_enabled, reminder_email, name, phone, role, clerk_name
