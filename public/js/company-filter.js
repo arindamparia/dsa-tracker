@@ -57,7 +57,12 @@ export const CompanyFilter = {
     if (this._open) {
       this._query = '';
       const si = document.getElementById('company-search-input');
-      if (si) { si.value = ''; setTimeout(() => si.focus({ preventScroll: true }), 50); }
+      if (si) {
+        si.value = '';
+        if (window.innerWidth > 768) {
+          setTimeout(() => si.focus({ preventScroll: true }), 50);
+        }
+      }
       this.renderList();
       setTimeout(() => document.addEventListener('click', CompanyFilter._handleOutside, { once: true }), 0);
     }
@@ -160,7 +165,12 @@ export const CompanyFilter = {
     }
     this._renderPickerList('');
     const searchEl = document.getElementById('company-prep-search');
-    if (searchEl) { searchEl.value = ''; setTimeout(() => searchEl.focus({ preventScroll: true }), 50); }
+    if (searchEl) {
+      searchEl.value = '';
+      if (window.innerWidth > 768) {
+        setTimeout(() => searchEl.focus({ preventScroll: true }), 50);
+      }
+    }
     document.getElementById('company-prep-modal')?.classList.add('open');
   },
 
