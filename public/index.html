@@ -52,7 +52,7 @@
 <script>(function(){
   if(localStorage.getItem('dsa_theme')==='light'){document.documentElement.setAttribute('data-theme','light');}
   var hideBg = localStorage.getItem('dsa_hide_bg');
-  if(hideBg === null && window.innerWidth <= 768) { hideBg = '1'; }
+  if(hideBg === null) { hideBg = '1'; }
   if(hideBg === '1'){document.documentElement.classList.add('hide-theme-bg');}
   // BFCache: when the browser stores this page in the back-forward cache,
   // re-insert the loader overlay so the snapshot is dark (not stale data),
@@ -348,6 +348,10 @@ if('serviceWorker' in navigator){
   <!-- SECTIONS -->
   <div id="sections">
     <div class="loading-msg"><span class="loading-dots">Loading questions</span></div>
+  </div>
+
+  <div style="text-align: center; margin-top: 40px; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted);">
+    Created by <a href="https://arindamparia.in" target="_blank" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted var(--text-muted); transition: color 0.2s;">Arindam Paria</a>
   </div>
 </div>
 

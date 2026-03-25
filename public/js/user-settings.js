@@ -110,7 +110,7 @@ export const UserSettings = {
     const bgToggleEl = document.getElementById('us-bg-toggle');
     if (bgToggleEl) {
       let hideBgState = localStorage.getItem('dsa_hide_bg');
-      if (hideBgState === null && window.innerWidth <= 768) hideBgState = '1';
+      if (hideBgState === null) hideBgState = '1';
       bgToggleEl.checked = hideBgState !== '1';
       // Snapshot current bg state so we can revert on cancel
       this._bgSnapshot = document.documentElement.classList.contains('hide-theme-bg') ? '1' : '0';
