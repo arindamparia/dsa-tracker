@@ -1,11 +1,17 @@
 let _pk = null;
+const PK_TTL = 5 * 60 * 1000;
 
 async function getPublishableKey() {
   if (_pk) return _pk;
   try {
+    const cached = JSON.parse(sessionStorage.getItem('_cpk') || 'null');
+    if (cached && (Date.now() - cached.t < PK_TTL)) { _pk = cached.pk; return _pk; }
+  } catch {}
+  try {
     const res = await fetch("/.netlify/functions/clerk-config");
     const { pk } = await res.json();
     _pk = pk || "";
+    if (_pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk: _pk, t: Date.now() }));
   } catch {
     _pk = "";
   }

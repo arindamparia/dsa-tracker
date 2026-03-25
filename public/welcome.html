@@ -140,21 +140,26 @@
 </div>
 
 <script>
-  let _clerkPromise = null;
-
-  async function getPublishableKey() {
+  const PK_TTL = 5 * 60 * 1000;
+  const _pkPromise = (() => {
     try {
-      const res = await fetch('/.netlify/functions/clerk-config');
-      const { pk } = await res.json();
-      return pk || '';
-    } catch {
-      return '';
-    }
-  }
+      const cached = JSON.parse(sessionStorage.getItem('_cpk') || 'null');
+      if (cached && (Date.now() - cached.t < PK_TTL)) return Promise.resolve(cached.pk);
+    } catch {}
+    return fetch('/.netlify/functions/clerk-config')
+      .then(r => r.json())
+      .then(({ pk }) => {
+        if (pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk, t: Date.now() }));
+        return pk || '';
+      })
+      .catch(() => '');
+  })();
+
+  let _clerkPromise = null;
 
   function loadClerk() {
     if (_clerkPromise) return _clerkPromise;
-    _clerkPromise = getPublishableKey().then(PK => new Promise((resolve, reject) => {
+    _clerkPromise = _pkPromise.then(PK => new Promise((resolve, reject) => {
       if (!PK || PK.startsWith('REPLACE')) { resolve(null); return; }
       const s = document.createElement('script');
       s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
@@ -172,7 +177,7 @@
     return _clerkPromise;
   }
 
-  // Eagerly load Clerk in background so buttons respond instantly
+  // Eagerly start full Clerk load so redirect happens without waiting for a button click
   loadClerk().catch(() => {});
 
   async function handleSignIn() {
