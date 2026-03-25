@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dsa-tracker-v3';
+const CACHE_NAME = 'dsa-tracker-v2';
 
 // Install — activate immediately
 self.addEventListener('install', () => self.skipWaiting());
