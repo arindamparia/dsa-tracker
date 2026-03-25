@@ -4,8 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Trace My DSA</title>
-<meta name="clerk-publishable-key" content="pk_test_aW1wcm92ZWQtZ3JhY2tsZS01NS5jbGVyay5hY2NvdW50cy5kZXYk" />
-<meta name="clerk-domain" content="https://improved-grackle-55.clerk.accounts.dev" />
+
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
@@ -141,8 +140,13 @@
 </div>
 
 <script>
-  const PK     = document.querySelector('meta[name="clerk-publishable-key"]')?.content || '';
-  const DOMAIN = document.querySelector('meta[name="clerk-domain"]')?.content || '';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const PK = isLocal 
+    ? "pk_test_aW1wcm92ZWQtZ3JhY2tsZS01NS5jbGVyay5hY2NvdW50cy5kZXYk" 
+    : "pk_live_Y2xlcmsuYWxnb3RyYWNrZXIueHl6JA";
+  const DOMAIN = isLocal 
+    ? "https://improved-grackle-55.clerk.accounts.dev" 
+    : "";
 
   let _clerkPromise = null;
 
