@@ -3,11 +3,12 @@ export function initPWAInstall() {
   // Don't show if already installed as standalone
   if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
 
-  // Don't show if user previously dismissed
+  // Don't show if user previously dismissed (7 days for Safari, 3 days for others)
+  const isSafariBrowser = /safari/i.test(navigator.userAgent) && !/chrome|chromium|crios|fxios/i.test(navigator.userAgent);
   const dismissed = localStorage.getItem('dsa_pwa_dismissed');
   if (dismissed) {
     const daysSince = (Date.now() - parseInt(dismissed)) / 86400000;
-    if (daysSince < 3) return;
+    if (daysSince < (isSafariBrowser ? 7 : 3)) return;
   }
 
   let deferredPrompt = null;
@@ -25,8 +26,9 @@ export function initPWAInstall() {
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isSafari = /safari/i.test(navigator.userAgent) && !/chrome|chromium|crios|fxios/i.test(navigator.userAgent);
 
-  if (isIOS && isSafari) {
-    setTimeout(() => { if (!bannerShown) showBanner('ios'); }, 3000);
+  if (isSafari) {
+    // iOS Safari: "Add to Home Screen", macOS Safari: "Add to Dock"
+    setTimeout(() => { if (!bannerShown) showBanner(isIOS ? 'ios' : 'macos-safari'); }, 3000);
   }
 
   // Also listen for successful install
@@ -52,6 +54,8 @@ export function initPWAInstall() {
       // Safari share icon (box with arrow)
       const shareIcon = `<svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-2px;" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M4 14v5a2 2 0 002 2h12a2 2 0 002-2v-5"/></svg>`;
       text.innerHTML = `<strong>Install DSA Tracker</strong><span>Tap ${shareIcon} then <b>"Add to Home Screen"</b></span>`;
+    } else if (platform === 'macos-safari') {
+      text.innerHTML = `<strong>Install DSA Tracker</strong><span>Go to <b>File → Add to Dock</b> for quick access</span>`;
     } else {
       text.innerHTML = `<strong>Install DSA Tracker</strong><span>Add to your home screen for quick access</span>`;
     }
