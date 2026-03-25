@@ -28,6 +28,7 @@ import { UserSettings } from './user-settings.js';
 import './smart-queue.js';
 import './weakness-heatmap.js';
 import { restoreSession } from './mock-interview.js';
+import { loadBgImage } from './asset-cache.js';
 import { AmbientSound } from './ambient.js';
 import { initPWAInstall, registerSW } from './pwa-install.js';
 
@@ -285,16 +286,6 @@ initPWAInstall();
   const isMobile = window.innerWidth <= 768;
   const shouldHide = hideBg === '1' || (hideBg === null && isMobile);
   if (!shouldHide) {
-    const bgUrl = 'https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1920/bg_lnzb9t.png';
-    const img = new Image();
-    img.onload = () => {
-      const root = document.documentElement;
-      // Set image first (opacity is still 0 from CSS default)
-      root.style.setProperty('--bg-image', `url('${bgUrl}')`);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => root.classList.add('bg-loaded'));
-      });
-    };
-    img.src = bgUrl;
+    loadBgImage();
   }
 })();

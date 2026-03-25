@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dsa-tracker-v1';
+const CACHE_NAME = 'dsa-tracker-v2';
 
 // Install — activate immediately
 self.addEventListener('install', () => self.skipWaiting());
@@ -54,15 +54,21 @@ self.addEventListener('fetch', (e) => {
   }
 
   // Cross-origin (CDN fonts, Cloudinary audio/images) — cache-first
+  // Only cache proper CORS responses (not opaque no-cors responses which have status 0)
   e.respondWith(
     caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
+      if (cached && cached.status !== 0) return cached;
+      // Build a CORS request so we get a readable response we can cache
+      const corsReq = new Request(e.request.url, { mode: 'cors', credentials: 'omit' });
+      return fetch(corsReq).then(res => {
         if (res.ok) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
         }
         return res;
+      }).catch(() => {
+        // CORS failed — fall back to opaque response (but don't cache it)
+        return cached || fetch(e.request);
       });
     })
   );

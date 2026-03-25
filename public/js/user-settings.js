@@ -3,6 +3,7 @@ import { UserCache } from './cache.js';
 import { showToast } from './toast.js';
 import { getUserEmail } from './auth.js';
 import { handleError } from './errors.js';
+import { loadBgImage } from './asset-cache.js';
 
 // country code list (flag emoji + name + dial code)
 const COUNTRIES = [
@@ -147,19 +148,8 @@ export const UserSettings = {
     const checked = document.getElementById('us-bg-toggle')?.checked;
     if (checked) {
       document.documentElement.classList.remove('hide-theme-bg');
-      // If the image was never loaded, lazily inject it for preview
-      const root = document.documentElement;
-      if (!root.style.getPropertyValue('--bg-image')) {
-        const bgUrl = 'https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1920/bg_lnzb9t.png';
-        const img = new Image();
-        img.onload = () => {
-          root.style.setProperty('--bg-image', `url('${bgUrl}')`);
-          requestAnimationFrame(() => requestAnimationFrame(() => {
-            root.classList.add('bg-loaded');
-          }));
-        };
-        img.src = bgUrl;
-      }
+      // Always ensure the image is loaded (checks cache, fetches if missing)
+      loadBgImage();
     } else {
       document.documentElement.classList.add('hide-theme-bg');
     }

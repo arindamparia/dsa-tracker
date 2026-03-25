@@ -1,3 +1,5 @@
+import { getAudioBlobUrl } from './asset-cache.js';
+
 const AUDIO_URLS = {
   rain:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain_fe6smc.mp3',
   rain2:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain2_uycmn6.mp3',
@@ -7,6 +9,9 @@ const AUDIO_URLS = {
   forest3: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest3_xlypzq.mp3',
   river:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382577/river_ffhhlr.mp3',
 };
+
+// Reuse blob URLs so we don't re-fetch cached tracks
+const _blobUrls = {};
 
 export const AmbientSound = {
   activeDeck: 'A',
@@ -228,7 +233,7 @@ export const AmbientSound = {
     this.fadeRaf = requestAnimationFrame(tick);
   },
 
-  toggleTrack(track) {
+  async toggleTrack(track) {
     if (this.currentTrack === track && this.isPlaying) {
       this.pause();
       return;
@@ -247,7 +252,18 @@ export const AmbientSound = {
     this.activeDeck = 'A';
 
     if (this.currentTrack !== track) {
-      const src = AUDIO_URLS[track];
+      this._setLoading(track, true);
+      // Get blob URL from Cache API (fetches + caches if missing)
+      let src;
+      try {
+        if (!_blobUrls[track]) {
+          _blobUrls[track] = await getAudioBlobUrl(AUDIO_URLS[track]);
+        }
+        src = _blobUrls[track];
+      } catch {
+        // Fallback to direct URL if caching fails
+        src = AUDIO_URLS[track];
+      }
       this.audioA.src = src;
       this.audioB.src = src;
     }
