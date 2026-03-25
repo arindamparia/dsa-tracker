@@ -1,44 +1,41 @@
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const PK = isLocal 
-  ? "pk_test_aW1wcm92ZWQtZ3JhY2tsZS01NS5jbGVyay5hY2NvdW50cy5kZXYk" 
-  : "pk_live_Y2xlcmsuYWxnb3RyYWNrZXIueHl6JA";
-const DOMAIN = isLocal 
-  ? "https://improved-grackle-55.clerk.accounts.dev" 
-  : "";
+let _pk = null;
+
+async function getPublishableKey() {
+  if (_pk) return _pk;
+  try {
+    const res = await fetch("/.netlify/functions/clerk-config");
+    const { pk } = await res.json();
+    _pk = pk || "";
+  } catch {
+    _pk = "";
+  }
+  return _pk;
+}
 
 async function loadClerk() {
   if (window._clerk) return window._clerk;
 
+  const PK = await getPublishableKey();
   if (!PK || PK.startsWith("REPLACE")) {
     window._clerk = null;
     return null;
   }
 
-  const urls = [
-    "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js",
-    ...(DOMAIN ? [`${DOMAIN.replace(/\/$/, "")}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`] : []),
-  ];
-
-  let loaded = false;
-  for (const src of urls) {
-    try {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = src;
-        s.setAttribute("data-clerk-publishable-key", PK);
-        s.crossOrigin = "anonymous";
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-      loaded = true;
-      break;
-    } catch {
-      // try next CDN
-    }
+  try {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js";
+      s.setAttribute("data-clerk-publishable-key", PK);
+      s.crossOrigin = "anonymous";
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  } catch {
+    throw new Error("Failed to load Clerk JS");
   }
 
-  if (!loaded || !window.Clerk) throw new Error("Failed to load Clerk JS from all sources");
+  if (!window.Clerk) throw new Error("Clerk JS not available");
 
   const clerk = window.Clerk;
   await clerk.load({ touchSession: false });
