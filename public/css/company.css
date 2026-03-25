@@ -312,6 +312,12 @@ body.companies-hidden .company-pills-wrap { display: none; }
   border-color: rgba(var(--accent-rgb),0.4);
 }
 [data-theme="light"] .company-pill { color: var(--accent); }
+[data-theme="light"] .company-list-item {
+  border-bottom-color: rgba(0,0,0,0.06);
+}
+[data-theme="light"] .cs-card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
 
 /* Hidden overflow pills */
 .company-pill.cp-hidden         { display: none; }

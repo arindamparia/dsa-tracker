@@ -101,3 +101,12 @@ body.notes-hidden.solution-hidden .th-spacer     { display: table-cell; width: a
   overflow: hidden;
   min-height: 0;
 }
+
+/* ── light mode overrides ── */
+[data-theme="light"] .section:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+}
+[data-theme="light"] .section-col-headers {
+  color: var(--text-dim);
+  font-weight: 600;
+}

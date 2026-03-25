@@ -3,7 +3,7 @@
   position: fixed; bottom: 24px; right: 24px;
   background: var(--surface2); border: 1px solid var(--accent);
   border-radius: 12px; padding: 14px 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(var(--accent-rgb),0.15);
+  box-shadow: 0 8px 32px var(--shadow-lg), 0 0 0 1px rgba(var(--accent-rgb),0.15);
   min-width: 220px; max-width: 300px;
   opacity: 0;
   z-index: 200;

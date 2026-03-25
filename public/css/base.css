@@ -56,6 +56,9 @@ html.hide-theme-bg body::before {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+[data-theme="light"] ::-webkit-scrollbar-track { background: var(--surface2); }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--border); }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: var(--border2); }
 
 /* page loader */
 #page-loader {

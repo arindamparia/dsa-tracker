@@ -74,7 +74,16 @@
 }
 
 [data-theme="light"] .stat-card:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .top-stats .stat-card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+[data-theme="light"] .streak-active {
+  text-shadow: none;
+}
+[data-theme="light"] .today-active {
+  text-shadow: none;
 }
 
 /* Base states: dim unless active */
@@ -134,4 +143,9 @@ body.loading .stat-sub::after {
   animation: shimmer 1.5s infinite linear;
 }
 body.loading .progress-track { opacity: 0.15; }
+[data-theme="light"] body.loading .stat-value::after,
+[data-theme="light"] body.loading .stat-sub::after {
+  background: linear-gradient(90deg, transparent 25%, rgba(0,0,0,0.04) 50%, transparent 75%);
+  background-size: 200% 100%;
+}
 body.loading #prog-pct        { visibility: hidden; }

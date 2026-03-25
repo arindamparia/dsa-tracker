@@ -41,6 +41,7 @@ function applyUserProfile(data) {
   state.userName         = data.user_name         ?? null;
   state.userPhone        = data.user_phone        ?? null;
   state.userRole         = data.user_role         ?? 'USER';
+  state.clerkName        = data.clerk_name        ?? null;
 }
 
 export async function refreshUserSettings() {
@@ -55,6 +56,7 @@ export async function refreshUserSettings() {
       reminder_email:    data.reminder_email,
       user_name:         data.user_name,
       user_phone:        data.user_phone,
+      clerk_name:        data.clerk_name,
     });
     const metaEl = document.getElementById('hdr-user-meta');
     if (metaEl && state.userName) metaEl.textContent = state.userName;
@@ -104,16 +106,11 @@ export async function bootFresh(onReady) {
     if (!data.ok) throw new Error(data.error);
     state.questions = data.questions;
     buildSearchIndex();
-    applyUserProfile(data);
     Cache.set(state.questions);
     Cache.touchProgress(); // fresh load counts as progress revalidation
-    UserCache.set({
-      reminders_enabled: data.reminders_enabled,
-      reminder_email:    data.reminder_email,
-      user_name:         data.user_name,
-      user_phone:        data.user_phone,
-    });
     smoothTransition(() => render());
+    // Fetch user profile separately (includes clerk_name backfill)
+    refreshUserSettings();
   } catch (err) {
     document.getElementById('sections').innerHTML =
       `<div class="error-msg">⚠ Something went wrong. Please check your connection and try again.<br><br>

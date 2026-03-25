@@ -253,3 +253,17 @@ body.focus-active .focus-btn { background: var(--accent-glow); border-color: rgb
   .focus-diff-row { gap: 8px; }
   .hard-modal { padding: 24px 20px 20px; min-width: 0; }
 }
+
+/* ── light mode overrides ── */
+[data-theme="light"] .hard-modal {
+  box-shadow: 0 0 60px rgba(220,60,20,0.1), 0 16px 48px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .hm-sword {
+  filter: none;
+}
+[data-theme="light"] .hm-eyebrow {
+  color: var(--hard);
+}
+[data-theme="light"] .hm-attr {
+  color: var(--orange);
+}

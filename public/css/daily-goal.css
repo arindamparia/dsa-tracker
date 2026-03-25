@@ -210,3 +210,23 @@
 [data-theme="light"] .goal-banner-close { color: var(--text-muted); }
 [data-theme="light"] .goal-banner-close:hover { color: var(--text); }
 [data-theme="light"] .gcc-sub { color: var(--text-dim); }
+[data-theme="light"] .goal-banner-icon {
+  filter: none;
+}
+[data-theme="light"] .gcc-icon {
+  filter: none;
+}
+[data-theme="light"] .caption-met {
+  box-shadow: 0 0 60px rgba(var(--easy-rgb),0.12), 0 16px 48px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .caption-extra {
+  box-shadow: 0 0 60px rgba(var(--orange-rgb),0.12), 0 16px 48px rgba(0,0,0,0.1);
+}
+[data-theme="light"] .today-card.goal-met {
+  animation: none;
+  box-shadow: 0 0 12px rgba(var(--easy-rgb),0.15);
+}
+[data-theme="light"] .today-card.goal-extra {
+  animation: none;
+  box-shadow: 0 0 12px rgba(var(--orange-rgb),0.15);
+}

@@ -6,9 +6,10 @@
  * Required env vars (set in Netlify Dashboard → Environment variables):
  *   CLERK_SECRET_KEY  — Clerk Dashboard → API Keys → Secret key
  *
- * Session token custom claim (configure once in Clerk Dashboard → Sessions →
- *   "Customize session token" → add): { "email": "{{user.primary_email_address}}" }
- *   This embeds email in the JWT so the backend needs no extra API call.
+ * Session token custom claims (configure once in Clerk Dashboard → Sessions →
+ *   "Customize session token" → add):
+ *     { "email": "{{user.primary_email_address}}", "name": "{{user.full_name}}" }
+ *   This embeds email + name in the JWT so the backend needs no extra API call.
  *
  * Dev fallback: if CLERK_SECRET_KEY is not set, returns the default user email so
  *   `netlify dev` works without Clerk configured.
@@ -25,7 +26,7 @@ function getClerk() {
 
 /**
  * Extracts and verifies the Clerk session token from the request Authorization
- * header. Returns { email, clerkId } for the authenticated user.
+ * header. Returns { email, clerkId, name } for the authenticated user.
  *
  * Throws an error with statusCode = 401 if the token is missing or invalid.
  */
@@ -49,7 +50,8 @@ export async function getAuthInfo(event) {
 
     // ── Get email — fast path: from custom JWT claim ───────────────
     if (payload.email) {
-      return { email: String(payload.email).toLowerCase(), clerkId };
+      const name = payload.name || [payload.first_name, payload.last_name].filter(Boolean).join(' ') || null;
+      return { email: String(payload.email).toLowerCase(), clerkId, name };
     }
 
     // ── Slow path: fetch user from Clerk API ──────────────────────
@@ -61,7 +63,8 @@ export async function getAuthInfo(event) {
     const email = primary?.emailAddress;
     if (!email) throw new Error("No primary email on Clerk account");
 
-    return { email: email.toLowerCase(), clerkId };
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+    return { email: email.toLowerCase(), clerkId, name };
   } catch (err) {
     if (err.statusCode === 401) throw err;
     throw authError(err.message);

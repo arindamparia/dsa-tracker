@@ -569,3 +569,39 @@ tr.filtered-out { display: none; }
   letter-spacing: 1px;
 }
 .air-stars-empty { color: var(--border2); }
+
+/* ── light mode overrides ── */
+[data-theme="light"] .skeleton-box::after {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.045), transparent);
+}
+[data-theme="light"] .ai-rich-fb {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .air-card {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .air-thumb:hover {
+  background: rgba(0,0,0,0.06);
+}
+[data-theme="light"] .ai-rich-complexity {
+  background: rgba(0,0,0,0.04);
+}
+[data-theme="light"] .ai-rich-complexity.optimal {
+  color: var(--easy);
+  background: rgba(var(--easy-rgb),0.1);
+}
+[data-theme="light"] .air-cplx {
+  background: rgba(0,0,0,0.04);
+}
+[data-theme="light"] .approach-section .ai-rich-title {
+  color: var(--accent);
+}
+[data-theme="light"] .air-stitle-approach {
+  color: var(--accent);
+}
+[data-theme="light"] .custom-check.checked::after {
+  color: #fff;
+}
+[data-theme="light"] .review-star.active {
+  text-shadow: none;
+}

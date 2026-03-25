@@ -20,4 +20,5 @@ export const state = {
   userName:        null,
   userPhone:       null,
   userRole:        'USER',
+  clerkName:       null,
 };

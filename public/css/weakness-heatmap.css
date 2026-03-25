@@ -57,8 +57,11 @@
   font-size: 10px; color: rgba(255,255,255,0.7);
   font-family: 'JetBrains Mono', monospace;
 }
-[data-theme="light"] .hm-sub      { color: rgba(0,0,0,0.65); }
-[data-theme="light"] .hm-leg-item { color: rgba(0,0,0,0.72); }
+[data-theme="light"] .hm-sub      { color: var(--text-dim); }
+[data-theme="light"] .hm-leg-item { color: var(--text-dim); }
+[data-theme="light"] .hm-cell:hover {
+  border-color: rgba(0,0,0,0.1);
+}
 
 /* Modal sizing */
 #heatmap-modal .modal {
