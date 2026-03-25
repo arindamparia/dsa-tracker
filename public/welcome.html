@@ -179,7 +179,7 @@
     btn.textContent = 'Loading…';
     try {
       const clerk = await loadClerk();
-      if (clerk) clerk.redirectToSignIn({ redirectUrl: window.location.origin + '/' });
+      if (clerk) clerk.redirectToSignIn({ fallbackRedirectUrl: window.location.origin + '/' });
     } catch {
       btn.disabled = false;
       btn.textContent = 'Sign In';
@@ -192,7 +192,7 @@
     btn.textContent = 'Loading…';
     try {
       const clerk = await loadClerk();
-      if (clerk) clerk.redirectToSignUp({ redirectUrl: window.location.origin + '/' });
+      if (clerk) clerk.redirectToSignUp({ fallbackRedirectUrl: window.location.origin + '/' });
     } catch {
       btn.disabled = false;
       btn.textContent = 'Create Account';
