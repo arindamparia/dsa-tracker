@@ -212,54 +212,74 @@ export const UserSettings = {
       return;
     }
 
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+    // Save snapshot in case of failure
+    const prev = {
+      name: state.userName,
+      phone: state.userPhone,
+      remindersEnabled: state.remindersEnabled,
+      email: state.reminderEmail
+    };
 
-    try {
-      const res = await fetch('/.netlify/functions/update-reminder-settings', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name:              rawName || null,
-          phone,
-          reminders_enabled: enabled,
-          reminder_email:    remEmail || null,
-        }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Save failed');
+    // Optimistically update state
+    state.userName = rawName || null;
+    state.userPhone = phone;
+    state.remindersEnabled = enabled;
+    state.reminderEmail = remEmail || null;
 
-      // Update state
-      state.userName         = rawName  || null;
-      state.userPhone        = phone;
-      state.remindersEnabled = enabled;
-      state.reminderEmail    = remEmail || null;
+    UserCache.set({
+      reminders_enabled: enabled,
+      reminder_email: remEmail || null,
+      user_name: rawName || null,
+      user_phone: phone,
+    });
 
-      // Only cache non-sensitive preferences — never store is_subscribed or user_role
-      UserCache.set({
-        reminders_enabled: enabled,
-        reminder_email:    remEmail || null,
-        user_name:         rawName  || null,
-        user_phone:        phone,
-      });
+    const metaEl = document.getElementById('hdr-user-meta');
+    if (metaEl && rawName) { metaEl.textContent = rawName; }
 
-      // Refresh header display name if it changed
-      const metaEl = document.getElementById('hdr-user-meta');
-      if (metaEl && rawName) { metaEl.textContent = rawName; }
-
-      // Persist bg toggle only on successful save
-      const bgChecked = document.getElementById('us-bg-toggle')?.checked;
-      if (bgChecked !== undefined) {
-        localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
-      }
-      this._bgSnapshot = undefined; // prevent close() from reverting
-
-      showToast('Settings saved ✓', 'success');
-      this.close();
-    } catch (err) {
-      handleError(err, "Couldn't save settings. Please try again.");
-    } finally {
-      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+    if (bgChecked !== undefined) {
+      localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
     }
+    this._bgSnapshot = undefined;
+
+    this.close();
+
+    // Background fetch
+    fetch('/.netlify/functions/update-reminder-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: rawName || null,
+        phone,
+        reminders_enabled: enabled,
+        reminder_email: remEmail || null,
+      }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.ok) throw new Error(data.error || 'Save failed');
+      showToast('Settings saved ✓', 'success');
+    })
+    .catch(err => {
+      // Revert state on failure
+      state.userName = prev.name;
+      state.userPhone = prev.phone;
+      state.remindersEnabled = prev.remindersEnabled;
+      state.reminderEmail = prev.email;
+
+      UserCache.set({
+        reminders_enabled: prev.remindersEnabled,
+        reminder_email: prev.email,
+        user_name: prev.name,
+        user_phone: prev.phone,
+      });
+
+      if (metaEl && prev.name) { metaEl.textContent = prev.name; }
+
+      handleError(err, "Couldn't save settings. Changes reverted.");
+    })
+    .finally(() => {
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+    });
   },
 
   /** Build the country code <select> options HTML. */
