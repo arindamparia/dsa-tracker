@@ -106,15 +106,5 @@ export function registerSW() {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
-    // When a new SW activates and sends SW_UPDATED, prompt user to reload
-    navigator.serviceWorker.addEventListener('message', (e) => {
-      if (e.data?.type === 'SW_UPDATED') {
-        const bar = document.createElement('div');
-        bar.className = 'sw-update-bar';
-        bar.innerHTML = 'A new version is available. <button onclick="window.location.reload()">Reload</button>';
-        document.body.appendChild(bar);
-        requestAnimationFrame(() => requestAnimationFrame(() => bar.classList.add('visible')));
-      }
-    });
   }
 }

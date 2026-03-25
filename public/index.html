@@ -29,6 +29,16 @@
   window.addEventListener('pagehide', showLoader);
   window.addEventListener('beforeunload', showLoader);
 })();</script>
+<script>
+// Detect when a new service worker takes control and reload for fresh assets.
+// This is inline so it works even when the old SW serves stale JS bundles.
+if('serviceWorker' in navigator){
+  var reloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(!reloading){reloading=true;window.location.reload();}
+  });
+}
+</script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/variables.css" />

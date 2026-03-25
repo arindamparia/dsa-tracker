@@ -3,15 +3,13 @@ const CACHE_NAME = 'dsa-tracker-v2';
 // Install — activate immediately
 self.addEventListener('install', () => self.skipWaiting());
 
-// Activate — clean old caches, claim clients, then notify all pages to reload
+// Activate — clean old caches, claim clients
+// The inline controllerchange listener in index.html handles the reload
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
-     .then(() => self.clients.matchAll().then(clients =>
-       clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
-     ))
   );
 });
 
