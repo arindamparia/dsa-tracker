@@ -20,6 +20,7 @@
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://algotracker.xyz/" />
+<meta property="og:site_name" content="AlgoTracker" />
 <meta property="og:title" content="AlgoTracker - DSA Mastery by Arindam Paria" />
 <meta property="og:description" content="Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, ambient focus audio, and section mastery tracking." />
 <meta property="og:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
@@ -31,21 +32,31 @@
 <meta name="twitter:description" content="Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, ambient focus audio, and section mastery tracking." />
 <meta name="twitter:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
 
-<!-- JSON-LD Structured Data -->
+<!-- JSON-LD Structured Data for Google Site Name -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "AlgoTracker",
-  "operatingSystem": "Web",
-  "applicationCategory": "EducationalApplication",
-  "description": "Full-stack LeetCode tracker and DSA preparation tool featuring mock interviews, focus mode, and company readiness.",
-  "url": "https://algotracker.xyz",
-  "author": {
-    "@type": "Person",
-    "name": "Arindam Paria",
-    "url": "https://arindamparia.in"
-  }
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "AlgoTracker",
+      "alternateName": "Algo Tracker",
+      "url": "https://algotracker.xyz/"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "AlgoTracker",
+      "operatingSystem": "Web",
+      "applicationCategory": "EducationalApplication",
+      "description": "Full-stack LeetCode tracker and DSA preparation tool featuring mock interviews, focus mode, and company readiness.",
+      "url": "https://algotracker.xyz",
+      "author": {
+        "@type": "Person",
+        "name": "Arindam Paria",
+        "url": "https://arindamparia.in"
+      }
+    }
+  ]
 }
 </script>
 
