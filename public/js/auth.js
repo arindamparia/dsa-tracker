@@ -1,5 +1,10 @@
-const PK = document.querySelector('meta[name="clerk-publishable-key"]')?.content || "";
-const DOMAIN = document.querySelector('meta[name="clerk-domain"]')?.content || "";
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const PK = isLocal 
+  ? "pk_test_aW1wcm92ZWQtZ3JhY2tsZS01NS5jbGVyay5hY2NvdW50cy5kZXYk" 
+  : "pk_live_Y2xlcmsuYWxnb3RyYWNrZXIueHl6JA";
+const DOMAIN = isLocal 
+  ? "https://improved-grackle-55.clerk.accounts.dev" 
+  : "";
 
 async function loadClerk() {
   if (window._clerk) return window._clerk;
@@ -53,6 +58,7 @@ export async function initAuth() {
 
     return true;
   } catch {
+    window.location.href = '/welcome.html';
     return false;
   }
 }

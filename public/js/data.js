@@ -9,6 +9,7 @@ const PROGRESS_FIELDS = ['is_done','solution','notes','needs_review','time_compl
   'space_complexity','ai_analysis','srs_interval_index','srs_last_reviewed_at','updated_at','solved_at'];
 
 async function revalidateProgress() {
+  if (!window._clerk?.user) return;
   try {
     const res = await fetch('/.netlify/functions/get-progress', { cache: 'no-store' });
     if (!res.ok) return;
@@ -45,6 +46,7 @@ function applyUserProfile(data) {
 }
 
 export async function refreshUserSettings() {
+  if (!window._clerk?.user) return;
   try {
     const res  = await fetch('/.netlify/functions/get-user-settings', { cache: 'no-store' });
     if (!res.ok) return;
@@ -95,6 +97,7 @@ export async function boot(onReady) {
 }
 
 export async function bootFresh(onReady) {
+  if (!window._clerk?.user) return;
   smoothTransition(() => {
     renderSkeletonSections();
     onReady?.();
