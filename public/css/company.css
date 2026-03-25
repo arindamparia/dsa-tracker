@@ -346,8 +346,8 @@ body.companies-hidden .company-pills-wrap { display: none; }
 @media (max-width: 600px) {
   .company-dropdown {
     width: 260px;
-    left: auto;
-    right: 0;
+    left: -80px;
+    right: auto;
   }
 }
 
