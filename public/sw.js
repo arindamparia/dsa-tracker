@@ -3,12 +3,15 @@ const CACHE_NAME = 'dsa-tracker-v2';
 // Install — activate immediately
 self.addEventListener('install', () => self.skipWaiting());
 
-// Activate — clean old caches, claim clients
+// Activate — clean old caches, claim clients, then notify all pages to reload
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
+     .then(() => self.clients.matchAll().then(clients =>
+       clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }))
+     ))
   );
 });
 
@@ -36,19 +39,18 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Same-origin static assets (CSS, JS, images) — stale-while-revalidate
+  // Same-origin static assets (CSS, JS, images) — network-first with cache fallback
   if (url.origin === self.location.origin) {
     e.respondWith(
-      caches.open(CACHE_NAME).then(cache =>
-        cache.match(e.request).then(cached => {
-          const fetchPromise = fetch(e.request).then(res => {
-            if (res.ok) cache.put(e.request, res.clone());
-            return res;
-          }).catch(() => cached);
-
-          return cached || fetchPromise;
+      fetch(e.request)
+        .then(res => {
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+          }
+          return res;
         })
-      )
+        .catch(() => caches.match(e.request))
     );
     return;
   }
