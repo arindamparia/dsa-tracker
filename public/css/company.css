@@ -345,27 +345,10 @@ body.companies-hidden .company-pills-wrap { display: none; }
 
 @media (max-width: 600px) {
   .company-dropdown {
-    position: fixed;
-    top: auto;
-    bottom: 24px;
-    left: 12px;
-    right: 12px;
-    width: auto;
-    max-height: 55vh;
-    box-shadow: 0 -12px 48px rgba(0,0,0,0.8), 0 0 0 1px rgba(var(--accent-rgb), 0.3);
-    z-index: 9999;
+    width: 260px;
+    left: auto;
+    right: 0;
   }
-  .company-dropdown.open {
-    animation: companyDropInBottom 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .company-list {
-    max-height: calc(55vh - 54px);
-  }
-}
-
-@keyframes companyDropInBottom {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Company filter active = show toggle button as teal */
