@@ -17,11 +17,12 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Skip non-GET, API calls, Clerk, external auth
+  // Skip non-GET, API calls, Clerk, external auth, and cross-origin assets
   if (e.request.method !== 'GET') return;
   if (url.pathname.startsWith('/.netlify/')) return;
   if (url.pathname.startsWith('/cdn-cgi/')) return;
   if (url.hostname.includes('clerk')) return;
+  if (url.origin !== self.location.origin) return; // let browser handle cross-origin (Cloudinary, fonts) directly
 
   // Navigation (HTML) — network-first with cache fallback
   if (e.request.mode === 'navigate') {
@@ -53,23 +54,4 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Cross-origin (CDN fonts, Cloudinary audio/images) — cache-first
-  // Only cache proper CORS responses (not opaque no-cors responses which have status 0)
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached && cached.status !== 0) return cached;
-      // Build a CORS request so we get a readable response we can cache
-      const corsReq = new Request(e.request.url, { mode: 'cors', credentials: 'omit' });
-      return fetch(corsReq).then(res => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => {
-        // CORS failed — fall back to opaque response (but don't cache it)
-        return cached || fetch(e.request);
-      });
-    })
-  );
 });
