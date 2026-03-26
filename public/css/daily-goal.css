@@ -83,7 +83,7 @@
   transform: translateZ(0);
   box-shadow: 0 8px 32px var(--shadow-lg);
   user-select: none;
-  opacity: 0;
+  opacity: 0; pointer-events: none;
 }
 .goal-banner-met {
   background: rgba(var(--easy-rgb),0.12);

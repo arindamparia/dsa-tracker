@@ -33,6 +33,7 @@ function showUpdateBanner() {
     <button class="update-banner-close" onclick="this.closest('#update-banner').remove()" aria-label="Dismiss">✕</button>
   `;
   document.body.appendChild(banner);
+  banner.style.pointerEvents = 'auto';
   const isMobile = window.innerWidth <= 600;
   animate(banner,
     { opacity: [0, 1], transform: isMobile

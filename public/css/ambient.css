@@ -9,9 +9,11 @@
   align-items: flex-start;
   gap: 12px;
   font-family: 'Syne', sans-serif;
+  pointer-events: none; /* container must not block touches — children opt-in */
 }
 
 #ambient-toggle {
+  pointer-events: auto;
   background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(var(--easy-rgb), 0.10));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

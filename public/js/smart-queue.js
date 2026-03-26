@@ -253,6 +253,7 @@ export const SmartQueue = {
       <button class="ssc-dismiss" onclick="SmartQueue._dismissCard()">✕</button>
     `;
     window._sscQ = q;
+    card.style.pointerEvents = 'auto';
     animate(card,
       { opacity: [0, 1], y: [80, 0] },
       { type: "spring", stiffness: 300, damping: 25 }

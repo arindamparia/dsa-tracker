@@ -140,6 +140,7 @@ function showGoalBanner(extra) {
 
   banner.querySelector('.goal-banner-close').addEventListener('click', () => dismissBanner(banner));
 
+  banner.style.pointerEvents = 'auto';
   animate(banner,
     { opacity: [0, 1], x: [400, 0] },
     { type: "spring", stiffness: 300, damping: 25 }
