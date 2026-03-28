@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Access Restricted — AlgoTracker</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/icons/favicon.ico" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Syne:wght@700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #2a2a38;
+    --text: #e8e8f0;
+    --text-muted: #6b6b85;
+    --accent: #7c6af7;
+    --hard: #ff4757;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: 0 0 60px rgba(255, 71, 87, 0.08), 0 24px 64px rgba(0,0,0,0.6);
+  }
+
+  .icon {
+    font-size: 52px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--hard);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.35);
+    border-radius: 10px;
+    color: var(--hard);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 11px 22px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    text-decoration: none;
+  }
+  .btn:hover { background: rgba(255, 71, 87, 0.18); transform: translateY(-1px); }
+  .btn:active { transform: scale(0.96); }
+
+  .footer {
+    margin-top: 40px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { opacity: 0.75; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <span class="icon">🔒</span>
+  <h1>Access Restricted</h1>
+  <p>This is a private application and your account is not on the access list.</p>
+  <p>If you believe this is a mistake, reach out to the owner.</p>
+
+  <div class="divider"></div>
+
+  <button class="btn" onclick="handleSignOut()">
+    ← Sign out &amp; try another account
+  </button>
+</div>
+
+<div class="footer">
+  Made with <span style="color:#ff4757">♥</span> by <a href="https://arindamparia.in" target="_blank" rel="noopener">Arindam</a>
+</div>
+
+<script>
+  async function handleSignOut() {
+    // Load Clerk and sign out if session exists
+    try {
+      const res = await fetch('/.netlify/functions/clerk-config');
+      const { pk } = await res.json();
+      if (pk) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+          s.setAttribute('data-clerk-publishable-key', pk);
+          s.crossOrigin = 'anonymous';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+        if (window.Clerk) {
+          await window.Clerk.load({ touchSession: false });
+          await window.Clerk.signOut();
+        }
+      }
+    } catch {}
+    window.location.href = '/welcome.html';
+  }
+</script>
+</body>
+</html>

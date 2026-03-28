@@ -1,21 +1,32 @@
 let _pk = null;
+let _allowAllUsers = false;
 const PK_TTL = 5 * 60 * 1000;
+const ALLOWED_EMAIL = "arindamparia321@gmail.com";
 
-async function getPublishableKey() {
-  if (_pk) return _pk;
+async function getConfig() {
+  if (_pk) return { pk: _pk, allowAllUsers: _allowAllUsers };
   try {
     const cached = JSON.parse(sessionStorage.getItem('_cpk') || 'null');
-    if (cached && (Date.now() - cached.t < PK_TTL)) { _pk = cached.pk; return _pk; }
+    if (cached && (Date.now() - cached.t < PK_TTL)) {
+      _pk = cached.pk;
+      _allowAllUsers = cached.allowAllUsers ?? false;
+      return { pk: _pk, allowAllUsers: _allowAllUsers };
+    }
   } catch {}
   try {
     const res = await fetch("/.netlify/functions/clerk-config");
-    const { pk } = await res.json();
-    _pk = pk || "";
-    if (_pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk: _pk, t: Date.now() }));
+    const data = await res.json();
+    _pk = data.pk || "";
+    _allowAllUsers = data.allowAllUsers ?? false;
+    if (_pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk: _pk, allowAllUsers: _allowAllUsers, t: Date.now() }));
   } catch {
     _pk = "";
   }
-  return _pk;
+  return { pk: _pk, allowAllUsers: _allowAllUsers };
+}
+
+async function getPublishableKey() {
+  return (await getConfig()).pk;
 }
 
 async function loadClerk() {
@@ -56,6 +67,16 @@ export async function initAuth() {
 
     if (!clerk.user) {
       window.location.href = '/welcome.html';
+      return false;
+    }
+
+    // Access control — check if this user is allowed
+    const { allowAllUsers } = await getConfig();
+    const email = clerk.user?.primaryEmailAddress?.emailAddress?.toLowerCase() || "";
+    if (!allowAllUsers && email !== ALLOWED_EMAIL) {
+      // Sign them out silently then redirect to the access-denied page
+      try { await clerk.signOut(); } catch {}
+      window.location.href = '/not-allowed.html';
       return false;
     }
 
