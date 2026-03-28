@@ -135,6 +135,10 @@
     gap: 12px;
   }
 
+  /* Hidden until Clerk confirms user is NOT signed in */
+  .card { opacity: 0; transition: opacity 0.2s ease; }
+  .card.ready { opacity: 1; }
+
   button {
     width: 100%;
     padding: 13px 24px;
@@ -210,7 +214,10 @@
   function loadClerk() {
     if (_clerkPromise) return _clerkPromise;
     _clerkPromise = _pkPromise.then(PK => new Promise((resolve, reject) => {
-      if (!PK || PK.startsWith('REPLACE')) { resolve(null); return; }
+      if (!PK || PK.startsWith('REPLACE')) {
+        document.querySelector('.card').classList.add('ready');
+        resolve(null); return;
+      }
       const s = document.createElement('script');
       s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
       s.setAttribute('data-clerk-publishable-key', PK);
@@ -219,6 +226,8 @@
         const clerk = window.Clerk;
         await clerk.load();
         if (clerk.user) { window.location.replace('/'); return; }
+        // User is not signed in — safe to show the card
+        document.querySelector('.card').classList.add('ready');
         resolve(clerk);
       };
       s.onerror = () => reject(new Error('Failed to load Clerk'));
@@ -228,7 +237,10 @@
   }
 
   // Eagerly start full Clerk load so redirect happens without waiting for a button click
-  loadClerk().catch(() => {});
+  // On failure, still reveal the card so the user isn't stuck on a blank page
+  loadClerk().catch(() => {
+    document.querySelector('.card').classList.add('ready');
+  });
 
   async function handleSignIn() {
     const btn = document.getElementById('btn-signin');
