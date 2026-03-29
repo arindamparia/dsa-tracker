@@ -1,11 +1,12 @@
 const AUDIO_URLS = {
-  rain:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain_fe6smc.mp3',
-  rain2:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain2_uycmn6.mp3',
-  ocean:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378668/ocean_gzek2u.mp3',
-  forest:  'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest_l804pd.mp3',
-  forest2: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382236/forest2_xg9jbw.mp3',
-  forest3: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest3_xlypzq.mp3',
-  river:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382577/river_ffhhlr.mp3',
+  rain:       'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain_fe6smc.mp3',
+  rain2:      'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain2_uycmn6.mp3',
+  ocean:      'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378668/ocean_gzek2u.mp3',
+  forest:     'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest_l804pd.mp3',
+  forest2:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382236/forest2_xg9jbw.mp3',
+  forest3:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest3_xlypzq.mp3',
+  river:      'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382577/river_ffhhlr.mp3',
+  meditation: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1774774806/Temple_Rhythms_Tabla__Flute___Sitar_Tranquility___1_Hour_Indian_Meditation_Music_MP3_160K_aspm1l.mp3',
 };
 
 export const AmbientSound = {
@@ -71,6 +72,21 @@ export const AmbientSound = {
     });
 
     window.addEventListener('beforeunload', () => this.destroy());
+
+    // Resume playback when tab regains focus — browsers suspend AudioContext
+    // and sometimes pause audio after ~5-10 min of the tab being hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden || !this.isPlaying || !this.audioCtx) return;
+      // Resume AudioContext if browser suspended it
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume();
+      }
+      // Re-play the active deck if it got paused by the browser
+      const activeAudio = this.activeDeck === 'A' ? this.audioA : this.audioB;
+      if (activeAudio && activeAudio.paused) {
+        activeAudio.play().catch(() => {});
+      }
+    });
   },
 
   // Non-linear slider mapping: 0–0.5 slider = 0–1x vol, 0.5–1 slider = 1x–3x vol

@@ -39,12 +39,14 @@
 }
 .ssc-dismiss:hover { color: var(--text); }
 
-/* smart pick highlight */
+/* smart pick highlight — static inset border + bg; opacity-only animation (GPU-composited) */
 @keyframes smartPulse {
-  0%   { box-shadow: inset 3px 0 0 var(--accent); background: rgba(var(--accent-rgb),0.12); }
-  50%  { box-shadow: inset 3px 0 0 var(--accent); background: rgba(var(--accent-rgb),0.06); }
-  100% { box-shadow: inset 3px 0 0 var(--accent); background: rgba(var(--accent-rgb),0.12); }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }
 .q-table tbody tr.smart-highlight {
+  box-shadow: inset 3px 0 0 var(--accent);
+  background: rgba(var(--accent-rgb),0.10);
   animation: smartPulse 0.8s ease 3;
+  will-change: opacity;
 }

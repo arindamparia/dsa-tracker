@@ -272,9 +272,8 @@ tr.filtered-out { display: none; }
 }
 
 @keyframes pulseLoadingText {
-  0% { opacity: 0.5; }
-  50% { opacity: 0.9; box-shadow: 0 0 8px rgba(124, 106, 247, 0.4); }
-  100% { opacity: 0.5; }
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
 }
 
 .ai-btn.loading {

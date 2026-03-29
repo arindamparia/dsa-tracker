@@ -18,27 +18,33 @@
   transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1), stroke 0.3s;
 }
 
-/* goal met — emerald glow pulse */
-@keyframes goalPulse {
-  0%   { box-shadow: 0 0 0px rgba(var(--easy-rgb),0); }
-  50%  { box-shadow: 0 0 22px rgba(var(--easy-rgb),0.32), inset 0 0 14px rgba(var(--easy-rgb),0.08); }
-  100% { box-shadow: 0 0 0px rgba(var(--easy-rgb),0); }
+/* goal met / extra — glow pulse via ::after opacity only (GPU-composited, no repaint)
+   Box-shadow is static on the pseudo; only opacity animates */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 1; }
 }
 .today-card.goal-met {
   border-color: rgba(var(--easy-rgb),0.5) !important;
-  animation: goalPulse 2.4s ease-in-out infinite;
+}
+.today-card.goal-met::after {
+  content: ''; position: absolute; inset: -1px;
+  border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 22px rgba(var(--easy-rgb),0.32), inset 0 0 14px rgba(var(--easy-rgb),0.08);
+  animation: glowPulse 2.4s ease-in-out infinite;
+  will-change: opacity;
 }
 .today-card.goal-met .goal-ring-svg { opacity: 0.9; }
 
-/* extra problems — fire orange glow */
-@keyframes extraPulse {
-  0%   { box-shadow: 0 0 0px rgba(var(--orange-rgb),0); }
-  50%  { box-shadow: 0 0 26px rgba(var(--orange-rgb),0.35), inset 0 0 16px rgba(var(--orange-rgb),0.08); }
-  100% { box-shadow: 0 0 0px rgba(var(--orange-rgb),0); }
-}
 .today-card.goal-extra {
   border-color: rgba(var(--orange-rgb),0.6) !important;
-  animation: extraPulse 2s ease-in-out infinite;
+}
+.today-card.goal-extra::after {
+  content: ''; position: absolute; inset: -1px;
+  border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 26px rgba(var(--orange-rgb),0.35), inset 0 0 16px rgba(var(--orange-rgb),0.08);
+  animation: glowPulse 2s ease-in-out infinite;
+  will-change: opacity;
 }
 .today-card.goal-extra .goal-ring-svg { opacity: 0.95; }
 
