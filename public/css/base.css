@@ -1,6 +1,6 @@
 /* reset & base */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { overflow-x: clip; }
+html { overflow-x: clip; background-color: var(--bg); } /* safety net — prevents background image showing if body layer desyncs */
 body {
   background-color: var(--bg);
   color: var(--text);
@@ -24,11 +24,8 @@ body::before {
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;
-  transform: scale(1.2) translateY(-5vh) translateZ(0); /* pushes image higher and forces hardware acceleration */
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  transform: scale(1.2) translateY(-5vh); /* pushes image higher; no translateZ — avoids forcing a GPU layer that conflicts with animated content */
   opacity: 0; /* Starts hidden until JS lazily loads it */
-  mix-blend-mode: var(--bg-blend);
   z-index: -1;
   pointer-events: none;
   transition: opacity 0.8s ease;
@@ -39,7 +36,7 @@ html.bg-loaded body::before {
 html.hide-theme-bg body::before {
   display: none !important;
 }
-.wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+.wrapper { position: relative; z-index: 1; isolation: isolate; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
 
 /* keyframes */
 @keyframes blink       { 0%,100%{opacity:1} 50%{opacity:0.3} }
