@@ -94,6 +94,20 @@
   pointer-events: auto;
 }
 
+/* —— Scrollable track area: always shows 3×3, hidden scrollbar —— */
+.ambient-tracks-scroll {
+  /* Each button: aspect-ratio 1/1, grid gap 8px, 3 cols.
+     Button width = (panel min-width − 2*16px padding − 2*8px gap) / 3 ≈ 56px
+     Height for 3 rows = 3 * 56px + 2 * 8px gap = 184px */
+  height: 184px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* hide scrollbar on all browsers */
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge legacy */
+}
+.ambient-tracks-scroll::-webkit-scrollbar { display: none; }
+
 .ambient-tracks {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

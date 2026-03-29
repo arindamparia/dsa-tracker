@@ -852,15 +852,23 @@ if('serviceWorker' in navigator){
 <!-- AMBIENT SOUND WIDGET -->
 <div id="ambient-widget">
   <div id="ambient-panel">
-    <div class="ambient-tracks">
-      <button class="ambient-btn" data-track="rain" title="Calming Rain">🌧️</button>
-      <button class="ambient-btn" data-track="rain2" title="Light Rain">🌦️</button>
-      <button class="ambient-btn" data-track="ocean" title="Ocean Waves">🌊</button>
-      <button class="ambient-btn" data-track="forest" title="Forest Ambience">🌲</button>
-      <button class="ambient-btn" data-track="forest2" title="Wind & Crickets">🍃</button>
-      <button class="ambient-btn" data-track="forest3" title="Nature Birds">🐦</button>
-      <button class="ambient-btn" data-track="river" title="River & Birds">🛶</button>
-      <button class="ambient-btn" data-track="meditation" title="Indian Meditation">🪘</button>
+    <div class="ambient-tracks-scroll">
+      <div class="ambient-tracks">
+        <!-- ── New tracks (priority) ── -->
+        <button class="ambient-btn" data-track="healingSound"    title="Healing Sound">✨</button>
+        <button class="ambient-btn" data-track="mandirWinds"     title="Mandir Winds">🛕</button>
+        <button class="ambient-btn" data-track="shivaMeditation" title="Shiva Meditation">🕉️</button>
+        <button class="ambient-btn" data-track="meditation"      title="Temple Rhythms">🪘</button>
+        <button class="ambient-btn" data-track="krishnaFlute"    title="Krishna Flute">🪈</button>
+        <!-- ── Nature & ambient ── -->
+        <button class="ambient-btn" data-track="rain"    title="Calming Rain">🌧️</button>
+        <button class="ambient-btn" data-track="rain2"   title="Light Rain">🌦️</button>
+        <button class="ambient-btn" data-track="ocean"   title="Ocean Waves">🌊</button>
+        <button class="ambient-btn" data-track="forest"  title="Forest Ambience">🌲</button>
+        <button class="ambient-btn" data-track="forest2" title="Wind & Crickets">🍃</button>
+        <button class="ambient-btn" data-track="forest3" title="Nature Birds">🐦</button>
+        <button class="ambient-btn" data-track="river"   title="River & Birds">🛶</button>
+      </div>
     </div>
     <div class="ambient-volume">
       <span id="ambient-mute" style="cursor:pointer; user-select:none; font-size:16px; transition:transform 0.1s;" title="Mute/Unmute">🔉</span>

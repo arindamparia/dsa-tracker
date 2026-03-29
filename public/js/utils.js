@@ -1,9 +1,9 @@
+// smoothTransition: intentionally bypasses View Transitions API to prevent
+// Chrome's compositing flicker when a position:fixed background image is active.
+// The theme toggle (circular clip) calls startViewTransition directly and is unaffected.
+// CSS transitions on .section-body / .section-col-headers handle visual smoothness.
 export function smoothTransition(cb) {
-  if (document.startViewTransition) {
-    document.startViewTransition(cb);
-  } else {
-    cb();
-  }
+  cb();
 }
 
 export function groupBySections(questions) {

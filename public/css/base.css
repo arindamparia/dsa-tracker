@@ -24,17 +24,32 @@ body::before {
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;
-  transform: scale(1.2) translateY(-5vh); /* pushes image higher; no translateZ — avoids forcing a GPU layer that conflicts with animated content */
+  transform: scale(1.2) translateY(-5vh);
   opacity: 0; /* Starts hidden until JS lazily loads it */
   z-index: -1;
   pointer-events: none;
   transition: opacity 0.8s ease;
+  /*
+   * Chrome flicker fix: give the bg its own view-transition-name so it is
+   * captured as a separate pseudo-element and NOT baked into the ::root
+   * snapshot. We then suppress its own transition animation below so it
+   * stays visually stable (live) during section open/close crossfades.
+   */
+  view-transition-name: bg-art;
 }
 html.bg-loaded body::before {
   opacity: var(--bg-opacity, 0.28);
 }
 html.hide-theme-bg body::before {
   display: none !important;
+}
+/* Keep the background art stable (no animation) during ALL view transitions */
+::view-transition-group(bg-art),
+::view-transition-image-pair(bg-art),
+::view-transition-old(bg-art),
+::view-transition-new(bg-art) {
+  animation: none !important;
+  mix-blend-mode: normal;
 }
 .wrapper { position: relative; z-index: 1; isolation: isolate; max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
 
@@ -164,6 +179,8 @@ html.theme-transition body::before {
   animation-duration: 0.35s;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   animation-fill-mode: both;
+  /* Prevent the root snapshot from including the bg-art layer */
+  mix-blend-mode: normal;
 }
 
 ::view-transition-old(root) { animation-name: fade-out; }
@@ -187,6 +204,14 @@ html.theme-transition::view-transition-new(root) {
 }
 html.theme-transition::view-transition-old(root) { z-index: 1; }
 html.theme-transition::view-transition-new(root) { z-index: 2; }
+/* Also suppress bg-art during theme switch — circular clip handles visibility */
+html.theme-transition::view-transition-old(bg-art),
+html.theme-transition::view-transition-new(bg-art),
+html.theme-transition::view-transition-group(bg-art),
+html.theme-transition::view-transition-image-pair(bg-art) {
+  animation: none !important;
+  display: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
