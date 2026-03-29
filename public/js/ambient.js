@@ -36,11 +36,18 @@ export const AmbientSound = {
 
     if (!this.panel) return;
 
+    // Restructure each button: icon + eq-bars injected via JS
+    this.trackBtns.forEach(btn => {
+      const emoji = btn.innerHTML.trim();
+      btn.innerHTML = `<span class="abt-icon">${emoji}</span><span class="abt-bars"><span></span><span></span><span></span><span></span></span>`;
+    });
+
     // Restore saved volume (stored as actual vol, convert to slider position)
     const savedVol = localStorage.getItem('dsa_ambient_vol');
     if (savedVol !== null) {
       this.volSlider.value = this._volToSlider(parseFloat(savedVol));
     }
+    this._updateSliderFill(parseFloat(this.volSlider.value));
 
     this.toggleBtn.addEventListener('click', () => this.panel.classList.toggle('open'));
 
@@ -75,6 +82,7 @@ export const AmbientSound = {
       localStorage.setItem('dsa_ambient_vol', vol);
       this.applyVolume(vol);
       this._updateVolLabel(vol);
+      this._updateSliderFill(parseFloat(this.volSlider.value));
     });
 
     window.addEventListener('beforeunload', () => this.destroy());
@@ -103,6 +111,12 @@ export const AmbientSound = {
   _volToSlider(v) {
     if (v <= 1) return v / 2;            // 0→0, 1→0.5
     return 0.5 + (v - 1) / 4;            // 1→0.5, 3→1
+  },
+
+  // Updates the filled-track gradient on the volume slider
+  _updateSliderFill(sliderVal) {
+    if (!this.volSlider) return;
+    this.volSlider.style.setProperty('--slider-fill', Math.round(sliderVal * 100) + '%');
   },
 
   _initAudioCtx() {
@@ -323,13 +337,18 @@ export const AmbientSound = {
   },
 
   updateUI() {
+    const iconEl = this.toggleBtn?.querySelector('.ambient-toggle-icon');
     this.trackBtns.forEach(b => b.classList.remove('playing'));
 
     if (this.isPlaying) {
       document.querySelector(`.ambient-btn[data-track="${this.currentTrack}"]`)?.classList.add('playing');
       this.toggleBtn.classList.add('active-glow');
+      // Swap toggle icon to animated live waveform
+      if (iconEl) iconEl.innerHTML = '<span class="live-bars"><span></span><span></span><span></span><span></span></span>';
     } else {
       this.toggleBtn.classList.remove('active-glow');
+      // Restore static emoji
+      if (iconEl) iconEl.textContent = '🎵';
     }
   }
 };

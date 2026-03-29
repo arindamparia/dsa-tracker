@@ -123,11 +123,56 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
   color: var(--text-dim);
+  position: relative;
 }
+
+/* Icon wrapper — injected by JS on init */
+.abt-icon {
+  display: block;
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.25s ease, font-size 0.25s ease;
+  pointer-events: none;
+}
+/* When playing: nudge icon up to make room for bars */
+.ambient-btn.playing .abt-icon {
+  transform: translateY(-7px);
+}
+
+/* Equalizer bars (absolute, at bottom of button) */
+.abt-bars {
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.ambient-btn.playing .abt-bars { opacity: 1; }
+.abt-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 2px 2px 1px 1px;
+  background: linear-gradient(to top, var(--easy), rgba(var(--easy-rgb), 0.45));
+  height: 4px;
+  will-change: height;
+}
+.ambient-btn.playing .abt-bars span:nth-child(1) { animation: eq-b1 0.58s ease-in-out infinite alternate; }
+.ambient-btn.playing .abt-bars span:nth-child(2) { animation: eq-b2 0.73s ease-in-out infinite alternate 0.08s; }
+.ambient-btn.playing .abt-bars span:nth-child(3) { animation: eq-b3 0.62s ease-in-out infinite alternate 0.16s; }
+.ambient-btn.playing .abt-bars span:nth-child(4) { animation: eq-b4 0.79s ease-in-out infinite alternate 0.04s; }
+@keyframes eq-b1 { from { height: 3px; }  to { height: 13px; } }
+@keyframes eq-b2 { from { height: 10px; } to { height: 4px;  } }
+@keyframes eq-b3 { from { height: 13px; } to { height: 5px;  } }
+@keyframes eq-b4 { from { height: 5px;  } to { height: 11px; } }
 
 .ambient-btn:hover {
   background: var(--surface3);
@@ -153,28 +198,52 @@
   to { transform: rotate(360deg); }
 }
 
-/* playing state — static shadow, ::before ring animates only opacity+transform (GPU-composited) */
+/* Playing state */
 .ambient-btn.playing {
-  background: rgba(var(--easy-rgb), 0.15);
+  background: rgba(var(--easy-rgb), 0.12);
   border-color: var(--easy);
   color: var(--easy);
-  box-shadow: 0 0 10px rgba(var(--easy-rgb), 0.3);
-  position: relative;
+  box-shadow: 0 0 16px rgba(var(--easy-rgb), 0.25), inset 0 0 10px rgba(var(--easy-rgb), 0.06);
 }
 .ambient-btn.playing::before {
   content: '';
   position: absolute; inset: -4px;
   border-radius: 16px;
-  border: 2px solid rgba(var(--easy-rgb), 0.55);
-  animation: pulse-ring 2s ease-in-out infinite;
+  border: 2px solid rgba(var(--easy-rgb), 0.45);
+  animation: pulse-ring 2.2s ease-in-out infinite;
   will-change: opacity, transform;
   pointer-events: none;
 }
 @keyframes pulse-ring {
-  0%   { opacity: 0.7; transform: scale(1); }
-  70%  { opacity: 0;   transform: scale(1.22); }
-  100% { opacity: 0;   transform: scale(1.22); }
+  0%   { opacity: 0.6; transform: scale(1); }
+  70%  { opacity: 0;   transform: scale(1.25); }
+  100% { opacity: 0;   transform: scale(1.25); }
 }
+
+/* ── Live bars in toggle button icon when playing ── */
+.live-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 20px;
+  padding-bottom: 1px;
+}
+.live-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 2px 2px 1px 1px;
+  background: var(--accent);
+  height: 4px;
+  will-change: height;
+}
+.live-bars span:nth-child(1) { animation: lb1 0.58s ease-in-out infinite alternate; }
+.live-bars span:nth-child(2) { animation: lb2 0.73s ease-in-out infinite alternate 0.08s; }
+.live-bars span:nth-child(3) { animation: lb3 0.62s ease-in-out infinite alternate 0.16s; }
+.live-bars span:nth-child(4) { animation: lb4 0.79s ease-in-out infinite alternate 0.04s; }
+@keyframes lb1 { from { height: 4px;  } to { height: 20px; } }
+@keyframes lb2 { from { height: 14px; } to { height: 6px;  } }
+@keyframes lb3 { from { height: 18px; } to { height: 6px;  } }
+@keyframes lb4 { from { height: 7px;  } to { height: 16px; } }
 
 .ambient-volume {
   display: flex;
@@ -188,6 +257,7 @@
 }
 
 .ambient-volume input[type="range"] {
+  --slider-fill: 50%;
   flex: 1;
   appearance: none;
   -webkit-appearance: none;
@@ -197,31 +267,57 @@
 
 .ambient-volume input[type="range"]::-webkit-slider-runnable-track {
   width: 100%;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--slider-fill),
+    rgba(255,255,255,0.08) var(--slider-fill),
+    rgba(255,255,255,0.08) 100%
+  );
+  border-radius: 3px;
 }
 
 .ambient-volume input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   -webkit-appearance: none;
-  height: 16px;
-  width: 16px;
+  height: 18px;
+  width: 18px;
   border-radius: 50%;
-  background: var(--text);
+  background: #fff;
+  border: 2px solid var(--accent);
   margin-top: -6px;
   cursor: pointer;
-  box-shadow: 0 2px 4px var(--shadow-sm);
-  transition: transform 0.1s;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5), 0 2px 6px rgba(0,0,0,0.35);
+  transition: transform 0.1s, box-shadow 0.15s;
 }
-
 .ambient-volume input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.18);
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.65), 0 2px 8px rgba(0,0,0,0.4);
 }
 
-.ambient-volume input[type="range"]:focus {
-  outline: none;
+/* Firefox */
+.ambient-volume input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
 }
+.ambient-volume input[type="range"]::-moz-range-progress {
+  height: 6px;
+  background: var(--accent);
+  border-radius: 3px;
+}
+.ambient-volume input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5);
+  cursor: pointer;
+}
+
+.ambient-volume input[type="range"]:focus { outline: none; }
 
 /* volume label */
 .ambient-vol-label {
@@ -238,13 +334,20 @@
   text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.4);
 }
 
-/* slider track glow when boosted */
+/* Boosted state — accent fills track, thumb glows */
 .ambient-volume input[type="range"].boosted::-webkit-slider-runnable-track {
-  background: linear-gradient(90deg, var(--border) 0%, rgba(var(--accent-rgb), 0.5) 100%);
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent-light) var(--slider-fill),
+    rgba(255,255,255,0.08) var(--slider-fill),
+    rgba(255,255,255,0.08) 100%
+  );
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3);
 }
 .ambient-volume input[type="range"].boosted::-webkit-slider-thumb {
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5);
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.65), 0 2px 6px rgba(0,0,0,0.3);
 }
 
 /* responsive */
