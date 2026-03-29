@@ -1,27 +1,34 @@
 let _pk = null;
-let _allowAllUsers = false;
+let _allowAllUsers = null; // null = not yet fetched this page load
 const PK_TTL = 5 * 60 * 1000;
 const ALLOWED_EMAIL = "arindamparia321@gmail.com";
 
 async function getConfig() {
-  if (_pk) return { pk: _pk, allowAllUsers: _allowAllUsers };
-  try {
-    const cached = JSON.parse(sessionStorage.getItem('_cpk') || 'null');
-    if (cached && (Date.now() - cached.t < PK_TTL)) {
-      _pk = cached.pk;
-      _allowAllUsers = cached.allowAllUsers ?? false;
-      return { pk: _pk, allowAllUsers: _allowAllUsers };
-    }
-  } catch {}
+  // pk is stable (never changes), cache it. allowAllUsers can change on redeploy — always fetch fresh.
+  if (_pk !== null && _allowAllUsers !== null) return { pk: _pk, allowAllUsers: _allowAllUsers };
+
+  // Restore pk from sessionStorage (stable across deploys)
+  if (_pk === null) {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem('_cpk') || 'null');
+      if (cached?.pk && (Date.now() - cached.t < PK_TTL)) _pk = cached.pk;
+    } catch {}
+  }
+
+  // Always fetch from server — needed to get fresh allowAllUsers, and pk if not cached
   try {
     const res = await fetch("/.netlify/functions/clerk-config");
     const data = await res.json();
-    _pk = data.pk || "";
     _allowAllUsers = data.allowAllUsers ?? false;
-    if (_pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk: _pk, allowAllUsers: _allowAllUsers, t: Date.now() }));
+    if (!_pk) {
+      _pk = data.pk || "";
+      if (_pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk: _pk, t: Date.now() }));
+    }
   } catch {
-    _pk = "";
+    if (_pk === null) _pk = "";
+    if (_allowAllUsers === null) _allowAllUsers = false;
   }
+
   return { pk: _pk, allowAllUsers: _allowAllUsers };
 }
 
