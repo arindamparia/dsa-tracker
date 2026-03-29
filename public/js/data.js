@@ -59,6 +59,7 @@ export async function refreshUserSettings() {
       user_name:         data.user_name,
       user_phone:        data.user_phone,
       clerk_name:        data.clerk_name,
+      user_role:         data.user_role,
     });
     const metaEl = document.getElementById('hdr-user-meta');
     if (metaEl && state.userName) metaEl.textContent = state.userName;
@@ -113,7 +114,7 @@ export async function bootFresh(onReady) {
     Cache.touchProgress(); // fresh load counts as progress revalidation
     smoothTransition(() => render());
     // Fetch user profile separately (includes clerk_name backfill)
-    refreshUserSettings();
+    await refreshUserSettings();
   } catch (err) {
     document.getElementById('sections').innerHTML =
       `<div class="error-msg">⚠ Something went wrong. Please check your connection and try again.<br><br>

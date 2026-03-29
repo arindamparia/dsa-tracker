@@ -76,28 +76,156 @@ function countDigits(s) {
   return (s.match(/\d/g) || []).length;
 }
 
-export const UserSettings = {
+/** Single initial from display name or email fallback. */
+function getInitial(name, email) {
+  if (name && name.trim()) return name.trim()[0].toUpperCase();
+  if (email) return email[0].toUpperCase();
+  return '?';
+}
+
+/** Build <option> HTML for country code <select>. */
+function buildCountryOptions(selected = '+91') {
+  return COUNTRIES.map(c => {
+    const val = `${c.code}`;
+    const lbl = `${c.flag} ${c.name} (${c.code})`;
+    return `<option value="${val}"${val === selected ? ' selected' : ''}>${lbl}</option>`;
+  }).join('');
+}
+
+// ---------------------------------------------------------------------------
+// UserProfile — name, phone, avatar. Opened by clicking the username chip.
+// ---------------------------------------------------------------------------
+export const UserProfile = {
   open() {
-    const modal = document.getElementById('user-settings-modal');
+    const modal = document.getElementById('user-profile-modal');
     if (!modal) return;
 
-    const nameEl   = document.getElementById('us-name');
-    const codeEl   = document.getElementById('us-phone-code');
-    const numEl    = document.getElementById('us-phone-number');
-    const toggleEl = document.getElementById('us-reminders-toggle');
-    const emailEl  = document.getElementById('us-reminder-email');
+    const nameEl   = document.getElementById('up-name');
+    const codeEl   = document.getElementById('up-phone-code');
+    const numEl    = document.getElementById('up-phone-number');
+    const avatarEl = document.getElementById('up-avatar');
+    const emailEl  = document.getElementById('up-email');
 
+    const email = getUserEmail();
     const { code, number } = splitPhone(state.userPhone);
 
-    // Populate country code select (only once)
+    if (avatarEl) {
+      const imgUrl = window._clerk?.user?.imageUrl;
+      if (imgUrl) {
+        avatarEl.innerHTML = `<img src="${imgUrl}" alt="profile" />`;
+      } else {
+        avatarEl.textContent = getInitial(state.userName, email);
+      }
+    }
+    if (emailEl)  emailEl.textContent  = email;
+
     if (codeEl && !codeEl.options.length) {
-      codeEl.innerHTML = this.buildCountryOptions(code);
+      codeEl.innerHTML = buildCountryOptions(code);
     } else if (codeEl) {
       codeEl.value = code;
     }
 
-    if (nameEl)   nameEl.value  = state.userName     || '';
-    if (numEl)    numEl.value   = number;
+    if (nameEl) nameEl.value = state.userName || '';
+    if (numEl)  numEl.value  = number;
+
+    modal.classList.add('open');
+  },
+
+  close() {
+    document.getElementById('user-profile-modal')?.classList.remove('open');
+  },
+
+  handleOverlayClick(e) {
+    if (e.target === document.getElementById('user-profile-modal')) this.close();
+  },
+
+  async save() {
+    const nameEl  = document.getElementById('up-name');
+    const codeEl  = document.getElementById('up-phone-code');
+    const numEl   = document.getElementById('up-phone-number');
+    const saveBtn = document.getElementById('up-save-btn');
+
+    const rawName = nameEl?.value.trim() || '';
+    const rawCode = codeEl?.value.trim() || '+91';
+    const rawNum  = sanitizeNumber(numEl?.value || '');
+    const phone   = rawNum ? `${rawCode} ${rawNum}` : null;
+
+    const nameChanged  = rawName !== (state.userName || '');
+    const phoneChanged = phone !== (state.userPhone || null);
+
+    if (rawName.length > 80) {
+      showToast('Name must be 80 characters or less.', 'error'); return;
+    }
+    if (rawNum) {
+      const digits = countDigits(rawNum);
+      if (digits < 7)  { showToast('Phone number must have at least 7 digits.', 'error'); return; }
+      if (digits > 15) { showToast('Phone number must have at most 15 digits.', 'error'); return; }
+      if (!/^[\d\s\-()]+$/.test(rawNum)) { showToast('Phone number contains invalid characters.', 'error'); return; }
+    }
+
+    if (!nameChanged && !phoneChanged) { this.close(); return; }
+
+    const prev = { name: state.userName, phone: state.userPhone };
+
+    state.userName  = rawName || null;
+    state.userPhone = phone;
+
+    UserCache.set({
+      reminders_enabled: state.remindersEnabled,
+      reminder_email:    state.reminderEmail,
+      user_name:         rawName || null,
+      user_phone:        phone,
+    });
+
+    const metaEl = document.getElementById('hdr-user-meta');
+    if (metaEl && rawName) metaEl.textContent = rawName;
+
+    this.close();
+
+    fetch('/.netlify/functions/update-reminder-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:             rawName || null,
+        phone,
+        reminders_enabled: state.remindersEnabled,
+        reminder_email:    state.reminderEmail || null,
+      }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.ok) throw new Error(data.error || 'Save failed');
+      showToast('Profile saved ✓', 'success');
+    })
+    .catch(err => {
+      state.userName  = prev.name;
+      state.userPhone = prev.phone;
+      UserCache.set({
+        reminders_enabled: state.remindersEnabled,
+        reminder_email:    state.reminderEmail,
+        user_name:         prev.name,
+        user_phone:        prev.phone,
+      });
+      if (metaEl && prev.name) metaEl.textContent = prev.name;
+      handleError(err, "Couldn't save profile. Changes reverted.");
+    })
+    .finally(() => {
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
+    });
+  },
+};
+
+// ---------------------------------------------------------------------------
+// UserSettings — reminders & background artwork. Opened by ⚙ Settings button.
+// ---------------------------------------------------------------------------
+export const UserSettings = {
+  open() {
+    const modal    = document.getElementById('user-settings-modal');
+    if (!modal) return;
+
+    const toggleEl = document.getElementById('us-reminders-toggle');
+    const emailEl  = document.getElementById('us-reminder-email');
+
     if (emailEl) {
       emailEl.value       = state.reminderEmail || '';
       emailEl.placeholder = getUserEmail() || 'your@email.com';
@@ -106,13 +234,12 @@ export const UserSettings = {
       toggleEl.checked = state.remindersEnabled;
       document.getElementById('us-reminder-email-row')?.classList.toggle('hidden', !state.remindersEnabled);
     }
-    
+
     const bgToggleEl = document.getElementById('us-bg-toggle');
     if (bgToggleEl) {
       let hideBgState = localStorage.getItem('dsa_hide_bg');
       if (hideBgState === null) hideBgState = '1';
       bgToggleEl.checked = hideBgState !== '1';
-      // Snapshot current bg state so we can revert on cancel
       this._bgSnapshot = document.documentElement.classList.contains('hide-theme-bg') ? '1' : '0';
     }
 
@@ -147,7 +274,6 @@ export const UserSettings = {
     const checked = document.getElementById('us-bg-toggle')?.checked;
     if (checked) {
       document.documentElement.classList.remove('hide-theme-bg');
-      // If the image was never loaded, lazily inject it for preview
       const root = document.documentElement;
       if (!root.classList.contains('bg-loaded')) {
         const bgUrl = 'https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1920/bg_lnzb9t.png';
@@ -166,45 +292,20 @@ export const UserSettings = {
   },
 
   async save() {
-    const nameEl     = document.getElementById('us-name');
-    const codeEl     = document.getElementById('us-phone-code');
-    const numEl      = document.getElementById('us-phone-number');
-    const toggleEl   = document.getElementById('us-reminders-toggle');
-    const emailEl    = document.getElementById('us-reminder-email');
-    const saveBtn    = document.getElementById('us-save-btn');
+    const toggleEl = document.getElementById('us-reminders-toggle');
+    const emailEl  = document.getElementById('us-reminder-email');
+    const saveBtn  = document.getElementById('us-save-btn');
 
-    const rawName    = nameEl?.value.trim() || '';
-    const rawCode    = codeEl?.value.trim() || '+91';
-    const rawNum     = sanitizeNumber(numEl?.value || '');
-    const enabled    = toggleEl?.checked ?? false;
-    const remEmail   = emailEl?.value.trim() || '';
-    const phone      = rawNum ? `${rawCode} ${rawNum}` : null;
+    const enabled  = toggleEl?.checked ?? false;
+    const remEmail = emailEl?.value.trim() || '';
 
-    const nameChanged = rawName !== (state.userName || '');
-    const phoneChanged = phone !== (state.userPhone || null);
     const enabledChanged = enabled !== !!state.remindersEnabled;
-    const emailChanged = remEmail !== (state.reminderEmail || '');
+    const emailChanged   = remEmail !== (state.reminderEmail || '');
+    const bgChecked      = document.getElementById('us-bg-toggle')?.checked;
+    const bgChanged      = bgChecked !== undefined && (bgChecked ? '0' : '1') !== this._bgSnapshot;
 
-    // validation
-    if (rawName.length > 80) {
-      showToast('Name must be 80 characters or less.', 'error'); return;
-    }
-    if (rawNum) {
-      const digits = countDigits(rawNum);
-      if (digits < 7)  { showToast('Phone number must have at least 7 digits.', 'error'); return; }
-      if (digits > 15) { showToast('Phone number must have at most 15 digits.', 'error'); return; }
-      if (!/^[\d\s\-()]+$/.test(rawNum)) { showToast('Phone number contains invalid characters.', 'error'); return; }
-    }
-    if (enabled && remEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(remEmail)) {
-      showToast('Enter a valid reminder email address.', 'error'); return;
-    }
-
-    const bgChecked = document.getElementById('us-bg-toggle')?.checked;
-    const bgChanged = bgChecked !== undefined && (bgChecked ? '0' : '1') !== this._bgSnapshot;
-
-    if (!nameChanged && !phoneChanged && !enabledChanged && !emailChanged) {
+    if (!enabledChanged && !emailChanged) {
       if (bgChanged) {
-        // Only bg changed — no API call needed, just persist it
         localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
         this._bgSnapshot = undefined;
       }
@@ -212,29 +313,24 @@ export const UserSettings = {
       return;
     }
 
-    // Save snapshot in case of failure
+    if (enabled && remEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(remEmail)) {
+      showToast('Enter a valid reminder email address.', 'error'); return;
+    }
+
     const prev = {
-      name: state.userName,
-      phone: state.userPhone,
       remindersEnabled: state.remindersEnabled,
-      email: state.reminderEmail
+      email: state.reminderEmail,
     };
 
-    // Optimistically update state
-    state.userName = rawName || null;
-    state.userPhone = phone;
     state.remindersEnabled = enabled;
-    state.reminderEmail = remEmail || null;
+    state.reminderEmail    = remEmail || null;
 
     UserCache.set({
       reminders_enabled: enabled,
-      reminder_email: remEmail || null,
-      user_name: rawName || null,
-      user_phone: phone,
+      reminder_email:    remEmail || null,
+      user_name:         state.userName,
+      user_phone:        state.userPhone,
     });
-
-    const metaEl = document.getElementById('hdr-user-meta');
-    if (metaEl && rawName) { metaEl.textContent = rawName; }
 
     if (bgChecked !== undefined) {
       localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
@@ -243,15 +339,14 @@ export const UserSettings = {
 
     this.close();
 
-    // Background fetch
     fetch('/.netlify/functions/update-reminder-settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: rawName || null,
-        phone,
+        name:             state.userName || null,
+        phone:            state.userPhone || null,
         reminders_enabled: enabled,
-        reminder_email: remEmail || null,
+        reminder_email:    remEmail || null,
       }),
     })
     .then(res => res.json())
@@ -260,34 +355,18 @@ export const UserSettings = {
       showToast('Settings saved ✓', 'success');
     })
     .catch(err => {
-      // Revert state on failure
-      state.userName = prev.name;
-      state.userPhone = prev.phone;
       state.remindersEnabled = prev.remindersEnabled;
-      state.reminderEmail = prev.email;
-
+      state.reminderEmail    = prev.email;
       UserCache.set({
         reminders_enabled: prev.remindersEnabled,
-        reminder_email: prev.email,
-        user_name: prev.name,
-        user_phone: prev.phone,
+        reminder_email:    prev.email,
+        user_name:         state.userName,
+        user_phone:        state.userPhone,
       });
-
-      if (metaEl && prev.name) { metaEl.textContent = prev.name; }
-
       handleError(err, "Couldn't save settings. Changes reverted.");
     })
     .finally(() => {
       if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save'; }
     });
-  },
-
-  /** Build the country code <select> options HTML. */
-  buildCountryOptions(selected = '+91') {
-    return COUNTRIES.map(c => {
-      const val = `${c.code}`;
-      const lbl = `${c.flag} ${c.name} (${c.code})`;
-      return `<option value="${val}"${val === selected ? ' selected' : ''}>${lbl}</option>`;
-    }).join('');
   },
 };

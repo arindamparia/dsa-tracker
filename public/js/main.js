@@ -24,7 +24,7 @@ import { SimilarProblems } from './similar-problems.js';
 import { AI } from './ai.js';
 import { CompanyFilter } from './company-filter.js';
 import { CompanyStats } from './company-stats.js';
-import { UserSettings } from './user-settings.js';
+import { UserSettings, UserProfile } from './user-settings.js';
 import './smart-queue.js';
 import './weakness-heatmap.js';
 import { restoreSession } from './mock-interview.js';
@@ -70,6 +70,7 @@ window.AI                = AI;
 window.CompanyFilter     = CompanyFilter;
 window.CompanyStats      = CompanyStats;
 window.UserSettings      = UserSettings;
+window.UserProfile       = UserProfile;
 window.state             = state;
 
 document.addEventListener('keydown', e => {
@@ -86,6 +87,7 @@ document.addEventListener('keydown', e => {
     CompanyFilter.closeSummary();
     ResetModal.close();
     UserSettings.close();
+    UserProfile.close();
     window.WeaknessHeatmap?.close();
     window.MockInterview?.closeConfig();
     window.MockInterview?.closeSummary();
@@ -193,7 +195,7 @@ initPWAInstall();
     metaEl.textContent = name || email;
     metaEl.title = email;
     metaEl.style.cursor = 'pointer';
-    metaEl.addEventListener('click', () => UserSettings.open());
+    metaEl.addEventListener('click', () => UserProfile.open());
   }
 
   const wmEl = document.getElementById('watermark');

@@ -422,9 +422,9 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
-<!-- USER SETTINGS MODAL -->
-<div class="modal-overlay" id="user-settings-modal" onclick="UserSettings.handleOverlayClick(event)">
-  <div class="modal us-modal" style="max-width:480px">
+<!-- USER PROFILE MODAL -->
+<div class="modal-overlay" id="user-profile-modal" onclick="UserProfile.handleOverlayClick(event)">
+  <div class="modal us-modal" style="max-width:420px">
     <button class="us-logout-btn" onclick="confirmLogout()">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -433,28 +433,43 @@ if('serviceWorker' in navigator){
       </svg>
       <span>Log Out</span>
     </button>
-    <div class="confirm-modal-header">
-      <div class="confirm-modal-icon">⚙</div>
-      <div class="modal-title">Profile &amp; Settings</div>
+    <div class="up-header">
+      <div class="up-avatar" id="up-avatar">?</div>
+      <div class="up-email" id="up-email"></div>
     </div>
     <div class="modal-body" style="padding:0 28px 4px">
 
       <div class="us-field-group">
         <label class="us-label">Display Name</label>
-        <input id="us-name" class="us-input" type="text" placeholder="Your name" maxlength="80" autocomplete="name" />
+        <input id="up-name" class="us-input" type="text" placeholder="Your name" maxlength="80" autocomplete="name" />
       </div>
 
       <div class="us-field-group">
         <label class="us-label">Phone Number</label>
         <div class="us-phone-row">
-          <select id="us-phone-code" class="us-phone-code"></select>
-          <input id="us-phone-number" class="us-input us-phone-num" type="tel"
+          <select id="up-phone-code" class="us-phone-code"></select>
+          <input id="up-phone-number" class="us-input us-phone-num" type="tel"
                  placeholder="9876543210" maxlength="20"
                  oninput="this.value=this.value.replace(/[^\d\s\-()+]/g,'')" />
         </div>
       </div>
 
-      <div class="us-divider"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="UserProfile.close()">Cancel</button>
+      <button class="btn-submit" id="up-save-btn" onclick="UserProfile.save()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER SETTINGS MODAL -->
+<div class="modal-overlay" id="user-settings-modal" onclick="UserSettings.handleOverlayClick(event)">
+  <div class="modal us-modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon" style="background:rgba(var(--accent-rgb),0.1);border-color:rgba(var(--accent-rgb),0.25)">⚙</div>
+      <div class="modal-title">Settings</div>
+    </div>
+    <div class="modal-body" style="padding:0 28px 4px">
 
       <div class="us-field-group us-toggle-row">
         <label class="us-label">Daily Email Reminders</label>
