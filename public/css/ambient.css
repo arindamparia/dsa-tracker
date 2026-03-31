@@ -69,23 +69,48 @@
   color: var(--text);
 }
 
+.ambient-mobile-backdrop { display: none; }
+@media (max-width: 768px) {
+  .ambient-mobile-backdrop.open {
+    display: block; position: fixed; inset: 0; z-index: 85;
+    pointer-events: auto;
+  }
+}
+
+/* Panel Header */
+.ambient-panel-header { 
+  display: flex; justify-content: space-between; align-items: center; 
+  padding: 0 4px 10px; 
+  border-bottom: 1px solid var(--border); 
+}
+.ambient-panel-title { 
+  font-size: 11px; font-weight: 700; text-transform: uppercase; 
+  color: var(--text-muted); letter-spacing: 1.5px; 
+}
+.ambient-now-playing { 
+  font-size: 11px; color: var(--easy); max-width: 120px; 
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+}
+
 #ambient-panel {
   background: var(--surface-blur);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   box-shadow: 0 10px 30px var(--shadow-lg);
   opacity: 0;
   transform: translateY(10px) scale(0.95);
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: bottom left;
-  min-width: 220px;
+  min-width: 250px;
+  position: relative;
+  z-index: 90;
 }
 
 #ambient-panel.open {
@@ -96,10 +121,12 @@
 
 /* —— Scrollable track area: always shows 3×3, hidden scrollbar —— */
 .ambient-tracks-scroll {
-  /* Each button: aspect-ratio 1/1, grid gap 8px, 3 cols.
-     Button width = (panel min-width − 2*16px padding − 2*8px gap) / 3 ≈ 56px
-     Height for 3 rows = 3 * 56px + 2 * 8px gap = 184px */
-  height: 184px;
+  /* give it some internal padding so shadows aren't clipped */
+  padding: 6px;
+  /* pull it out slightly so the grid stays flush with the rest of the layout */
+  margin: -6px;
+  /* Height for 3 rows approximately */
+  height: 238px;
   overflow-y: auto;
   overflow-x: hidden;
   /* hide scrollbar on all browsers */
@@ -249,15 +276,30 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: -4px;
 }
 
-.ambient-volume span {
-  font-size: 16px;
+.ambient-mute-btn {
+  font-size: 18px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
   color: var(--text-muted);
+}
+
+.ambient-vol-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; /* Increased to prevent overlap */
 }
 
 .ambient-volume input[type="range"] {
   --slider-fill: 50%;
+  width: 100%;
   flex: 1;
   appearance: none;
   -webkit-appearance: none;
@@ -323,11 +365,12 @@
 .ambient-vol-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  width: 28px;
-  flex-shrink: 0;
-  text-align: right;
-  color: var(--text-muted);
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
   transition: color 0.2s;
+  margin-top: 4px; /* Prevent overlap with thumb */
 }
 .ambient-vol-label.boosted {
   color: var(--accent);
@@ -353,6 +396,5 @@
 /* responsive */
 @media (max-width: 768px) {
   #ambient-widget { bottom: 16px; left: 16px; }
-  #ambient-panel { min-width: 200px; padding: 12px; }
   .ambient-btn { font-size: 20px; }
 }

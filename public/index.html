@@ -866,13 +866,23 @@ if('serviceWorker' in navigator){
 
 <!-- AMBIENT SOUND WIDGET -->
 <div id="ambient-widget">
+  <!-- Mobile Backdrop -->
+  <div id="ambient-mobile-backdrop" class="ambient-mobile-backdrop"></div>
+
+  <!-- Main Panel -->
   <div id="ambient-panel">
+    <div class="ambient-panel-header">
+      <span class="ambient-panel-title">Ambient</span>
+      <span class="ambient-now-playing" id="ambient-now-playing" style="display: none;"></span>
+    </div>
+
+    <!-- Scrollable container for the tracks -->
     <div class="ambient-tracks-scroll">
       <div class="ambient-tracks">
         <!-- ── New tracks (priority) ── -->
         <button class="ambient-btn" data-track="healingSound"    title="Healing Sound">✨</button>
         <button class="ambient-btn" data-track="mandirWinds"     title="Mandir Winds">🛕</button>
-        <button class="ambient-btn" data-track="shivaMeditation" title="Shiva Meditation">🕉️</button>
+        <button class="ambient-btn" data-track="shivaMeditation" title="Shiva Meditation">🔱</button>
         <button class="ambient-btn" data-track="meditation"      title="Temple Rhythms">🪘</button>
         <button class="ambient-btn" data-track="krishnaFlute"    title="Krishna Flute">🪈</button>
         <!-- ── Nature & ambient ── -->
@@ -886,9 +896,11 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <div class="ambient-volume">
-      <span id="ambient-mute" style="cursor:pointer; user-select:none; font-size:16px; transition:transform 0.1s;" title="Mute/Unmute">🔉</span>
-      <input type="range" id="ambient-vol" min="0" max="1" step="0.002" value="0.5" title="Volume">
-      <span id="ambient-vol-label" class="ambient-vol-label">1x</span>
+      <span id="ambient-mute" class="ambient-mute-btn" title="Mute/Unmute">🔉</span>
+      <div class="ambient-vol-wrap">
+        <input type="range" id="ambient-vol" class="vol-slider" min="0" max="1" step="0.002" value="0.5" title="Volume">
+        <span id="ambient-vol-label" class="ambient-vol-label">1x</span>
+      </div>
     </div>
   </div>
   <button id="ambient-toggle" title="Ambient Sounds">

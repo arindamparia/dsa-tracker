@@ -33,6 +33,8 @@ export const AmbientSound = {
     this.toggleBtn = document.getElementById('ambient-toggle');
     this.trackBtns = document.querySelectorAll('.ambient-btn');
     this.volSlider = document.getElementById('ambient-vol');
+    this.backdrop = document.getElementById('ambient-mobile-backdrop');
+    this.nowPlayingLabel = document.getElementById('ambient-now-playing');
 
     if (!this.panel) return;
 
@@ -49,7 +51,19 @@ export const AmbientSound = {
     }
     this._updateSliderFill(parseFloat(this.volSlider.value));
 
-    this.toggleBtn.addEventListener('click', () => this.panel.classList.toggle('open'));
+    this.toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = this.panel.classList.toggle('open');
+      if (this.backdrop) this.backdrop.classList.toggle('open', isOpen);
+    });
+
+    if (this.backdrop) {
+      this.backdrop.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.panel.classList.remove('open');
+        this.backdrop.classList.remove('open');
+      });
+    }
 
     this.muteBtn = document.getElementById('ambient-mute');
     if (this.muteBtn) {
@@ -57,7 +71,10 @@ export const AmbientSound = {
     }
 
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#ambient-widget')) this.panel.classList.remove('open');
+      if (!e.target.closest('#ambient-widget')) {
+        this.panel.classList.remove('open');
+        if (this.backdrop) this.backdrop.classList.remove('open');
+      }
     });
 
     this.trackBtns.forEach(btn => {
@@ -341,14 +358,25 @@ export const AmbientSound = {
     this.trackBtns.forEach(b => b.classList.remove('playing'));
 
     if (this.isPlaying) {
-      document.querySelector(`.ambient-btn[data-track="${this.currentTrack}"]`)?.classList.add('playing');
+      const activeBtn = document.querySelector(`.ambient-btn[data-track="${this.currentTrack}"]`);
+      if (activeBtn) activeBtn.classList.add('playing');
       this.toggleBtn.classList.add('active-glow');
       // Swap toggle icon to animated live waveform
       if (iconEl) iconEl.innerHTML = '<span class="live-bars"><span></span><span></span><span></span><span></span></span>';
+      
+      if (this.nowPlayingLabel && activeBtn) {
+        const emoji = activeBtn.querySelector('.abt-icon')?.textContent || '';
+        this.nowPlayingLabel.textContent = `${emoji} ${activeBtn.title}`;
+        this.nowPlayingLabel.style.display = 'block';
+      }
     } else {
       this.toggleBtn.classList.remove('active-glow');
       // Restore static emoji
       if (iconEl) iconEl.textContent = '🎵';
+      
+      if (this.nowPlayingLabel) {
+        this.nowPlayingLabel.style.display = 'none';
+      }
     }
   }
 };
