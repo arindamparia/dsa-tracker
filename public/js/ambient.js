@@ -22,11 +22,14 @@ export const AmbientSound = {
   crossfadeDuration: 4.0,
   isFading: false,
   fadeRaf: null,
+  visualizeRaf: null,
   fadeStart: 0,
   isMuted: false,
   audioCtx: null,
   gainA: null,
   gainB: null,
+  analyser: null,
+  dataArray: null,
 
   init() {
     this.panel = document.getElementById('ambient-panel');
@@ -144,7 +147,7 @@ export const AmbientSound = {
   _connectToGain(audio, gain) {
     const source = this.audioCtx.createMediaElementSource(audio);
     source.connect(gain);
-    gain.connect(this.audioCtx.destination);
+    gain.connect(this.analyser);
   },
 
   applyVolume(vol) {
@@ -200,6 +203,12 @@ export const AmbientSound = {
 
     this._initAudioCtx();
 
+    this.analyser = this.audioCtx.createAnalyser();
+    this.analyser.fftSize = 64; 
+    this.analyser.smoothingTimeConstant = 0.85; 
+    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.connect(this.audioCtx.destination);
+
     this.audioA = new Audio();
     this.audioA.preload = 'none';
     this.audioA.loop = false;
@@ -240,6 +249,127 @@ export const AmbientSound = {
 
   _gainFor(audio) {
     return audio === this.audioA ? this.gainA : this.gainB;
+  },
+
+  attachMediaSession(trackKey) {
+    if (!('mediaSession' in navigator)) return;
+    const btn = document.querySelector(`.ambient-btn[data-track="${trackKey}"]`);
+    const label = btn ? btn.title : 'Ambient Sound';
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: label,
+      artist: 'DSA Tracker',
+      album: 'Calm Background Sounds',
+    });
+
+    navigator.mediaSession.playbackState = 'playing';
+
+    if ('setPositionState' in navigator.mediaSession) {
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: Infinity,
+          playbackRate: 1,
+          position: 0
+        });
+      } catch (e) {
+        console.warn('setPositionState not supported', e);
+      }
+    }
+
+    ['seekforward', 'seekbackward', 'seekto'].forEach(action => {
+      try { navigator.mediaSession.setActionHandler(action, () => {}); } catch {}
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      this.pause();
+      navigator.mediaSession.playbackState = 'paused';
+    });
+
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (this.currentTrack) {
+        const deck = this.activeDeck === 'A' ? this.audioA : this.audioB;
+        if (deck) {
+          deck.play().then(() => {
+            this.isPlaying = true;
+            this.updateUI();
+            this.startVisualizer();
+            navigator.mediaSession.playbackState = 'playing';
+          }).catch(() => {});
+        }
+      }
+    });
+
+    const trackBtnsArray = Array.from(this.trackBtns);
+    const idx = trackBtnsArray.findIndex(b => b.dataset.track === trackKey);
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      const nextBtn = trackBtnsArray[(idx + 1) % trackBtnsArray.length];
+      if (nextBtn) this.toggleTrack(nextBtn.dataset.track);
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      const prevBtn = trackBtnsArray[(idx - 1 + trackBtnsArray.length) % trackBtnsArray.length];
+      if (prevBtn) this.toggleTrack(prevBtn.dataset.track);
+    });
+  },
+
+  startVisualizer() {
+    if (!this.analyser) return;
+    
+    const loop = () => {
+      this.visualizeRaf = requestAnimationFrame(loop);
+      if (!this.isPlaying) return;
+
+      this.analyser.getByteFrequencyData(this.dataArray);
+      const data = this.dataArray;
+
+      const getRawPeak = (start, end) => {
+        let max = 0;
+        for (let i = start; i < end; i++) if (data[i] > max) max = data[i];
+        return max / 255; 
+      };
+
+      const raw1 = getRawPeak(0, 3);
+      const raw2 = getRawPeak(3, 7);
+      const raw3 = getRawPeak(7, 13);
+      const raw4 = getRawPeak(13, 25);
+
+      const currentMax = Math.max(0.01, raw1, raw2, raw3, raw4);
+      const multiplier = Math.min(15, 0.8 / currentMax);
+
+      const v1 = raw1 * multiplier;
+      const v2 = raw2 * multiplier;
+      const v3 = raw3 * multiplier;
+      const v4 = raw4 * multiplier;
+
+      const jt = () => Math.random() * 1.2;
+
+      const h1 = Math.min(14, 3 + (v1 * 11) + jt());
+      const h2 = Math.min(14, 3 + (v2 * 11) + jt());
+      const h3 = Math.min(14, 3 + (v3 * 11) + jt());
+      const h4 = Math.min(14, 3 + (v4 * 11) + jt());
+
+      const lh1 = Math.min(20, 4 + (v1 * 16) + jt() * 1.2);
+      const lh2 = Math.min(20, 4 + (v2 * 16) + jt() * 1.2);
+      const lh3 = Math.min(20, 4 + (v3 * 16) + jt() * 1.2);
+      const lh4 = Math.min(20, 4 + (v4 * 16) + jt() * 1.2);
+
+      const btnBars = document.querySelector('.ambient-btn.playing.reactive .abt-bars');
+      if (btnBars && btnBars.children.length === 4) {
+        btnBars.children[0].style.height = `${h1}px`;
+        btnBars.children[1].style.height = `${h2}px`;
+        btnBars.children[2].style.height = `${h3}px`;
+        btnBars.children[3].style.height = `${h4}px`;
+      }
+
+      const liveBars = document.querySelector('.live-bars.reactive');
+      if (liveBars && liveBars.children.length === 4) {
+        liveBars.children[0].style.height = `${lh1}px`;
+        liveBars.children[1].style.height = `${lh2}px`;
+        liveBars.children[2].style.height = `${lh3}px`;
+        liveBars.children[3].style.height = `${lh4}px`;
+      }
+    };
+    cancelAnimationFrame(this.visualizeRaf);
+    loop();
   },
 
   doCrossfade(fadeOutAudio, fadeInAudio) {
@@ -320,7 +450,9 @@ export const AmbientSound = {
     if (playPromise !== undefined) {
       playPromise.then(() => {
         this.isPlaying = true;
+        this.attachMediaSession(track);
         this.updateUI();
+        this.startVisualizer();
       }).catch(err => {
         this._setLoading(track, false);
         console.warn('Audio play failed:', err);
@@ -332,6 +464,7 @@ export const AmbientSound = {
   pause() {
     if (this.isPlaying) {
       cancelAnimationFrame(this.fadeRaf);
+      cancelAnimationFrame(this.visualizeRaf);
       this.isFading = false;
 
       if (this.audioA) this.audioA.pause();
@@ -344,6 +477,7 @@ export const AmbientSound = {
 
   destroy() {
     cancelAnimationFrame(this.fadeRaf);
+    cancelAnimationFrame(this.visualizeRaf);
     this.isFading = false;
     this.isPlaying = false;
     if (this.audioA) { this.audioA.pause(); this.audioA.src = ''; }
@@ -355,14 +489,15 @@ export const AmbientSound = {
 
   updateUI() {
     const iconEl = this.toggleBtn?.querySelector('.ambient-toggle-icon');
-    this.trackBtns.forEach(b => b.classList.remove('playing'));
+    this.trackBtns.forEach(b => b.classList.remove('playing', 'reactive'));
 
     if (this.isPlaying) {
+      this.panel.classList.add('playing-bg');
       const activeBtn = document.querySelector(`.ambient-btn[data-track="${this.currentTrack}"]`);
-      if (activeBtn) activeBtn.classList.add('playing');
+      if (activeBtn) activeBtn.classList.add('playing', 'reactive');
       this.toggleBtn.classList.add('active-glow');
       // Swap toggle icon to animated live waveform
-      if (iconEl) iconEl.innerHTML = '<span class="live-bars"><span></span><span></span><span></span><span></span></span>';
+      if (iconEl) iconEl.innerHTML = '<span class="live-bars reactive"><span></span><span></span><span></span><span></span></span>';
       
       if (this.nowPlayingLabel && activeBtn) {
         const emoji = activeBtn.querySelector('.abt-icon')?.textContent || '';
@@ -370,6 +505,7 @@ export const AmbientSound = {
         this.nowPlayingLabel.style.display = 'block';
       }
     } else {
+      this.panel.classList.remove('playing-bg');
       this.toggleBtn.classList.remove('active-glow');
       // Restore static emoji
       if (iconEl) iconEl.textContent = '🎵';

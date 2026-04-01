@@ -88,8 +88,19 @@
   color: var(--text-muted); letter-spacing: 1.5px; 
 }
 .ambient-now-playing { 
-  font-size: 11px; color: var(--easy); max-width: 120px; 
+  font-size: 11px; max-width: 120px; 
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+  background: linear-gradient(90deg, var(--easy) 0%, rgba(255,255,255,1) 50%, var(--easy) 100%);
+  background-size: 200% auto;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: divine-shimmer 3s linear infinite;
+  font-weight: 800;
+}
+@keyframes divine-shimmer {
+  to { background-position: 200% center; }
 }
 
 #ambient-panel {
@@ -111,12 +122,39 @@
   min-width: 250px;
   position: relative;
   z-index: 90;
+  overflow: hidden;
+}
+
+#ambient-panel::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  border-radius: inherit;
+  background: radial-gradient(circle at 100% 100%, rgba(var(--accent-rgb), 0.7), transparent 55%),
+              radial-gradient(circle at 0% 0%, rgba(var(--easy-rgb), 0.5), transparent 55%);
+  opacity: 0;
+  transition: opacity 1s ease;
+  z-index: 0;
+  pointer-events: none;
+}
+#ambient-panel.playing-bg::before {
+  opacity: 1;
+  animation: dust-spin 20s linear infinite;
+}
+@keyframes dust-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 #ambient-panel.open {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
+  animation: divine-panel-aura 4s ease-in-out infinite alternate;
+}
+@keyframes divine-panel-aura {
+  0%   { box-shadow: 0 10px 30px var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.10), 0 0 0px rgba(var(--accent-rgb), 0.0); }
+  100% { box-shadow: 0 10px 30px var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.20), 0 0 45px rgba(var(--accent-rgb), 0.50); }
 }
 
 /* —— Scrollable track area: always shows 3×3, hidden scrollbar —— */
@@ -139,6 +177,27 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+
+#ambient-panel.open .ambient-btn {
+  animation: cascade-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+#ambient-panel.open .ambient-btn:nth-child(1) { animation-delay: 0.05s; }
+#ambient-panel.open .ambient-btn:nth-child(2) { animation-delay: 0.10s; }
+#ambient-panel.open .ambient-btn:nth-child(3) { animation-delay: 0.15s; }
+#ambient-panel.open .ambient-btn:nth-child(4) { animation-delay: 0.20s; }
+#ambient-panel.open .ambient-btn:nth-child(5) { animation-delay: 0.25s; }
+#ambient-panel.open .ambient-btn:nth-child(6) { animation-delay: 0.30s; }
+#ambient-panel.open .ambient-btn:nth-child(7) { animation-delay: 0.35s; }
+#ambient-panel.open .ambient-btn:nth-child(8) { animation-delay: 0.40s; }
+#ambient-panel.open .ambient-btn:nth-child(9) { animation-delay: 0.45s; }
+#ambient-panel.open .ambient-btn:nth-child(10) { animation-delay: 0.50s; }
+#ambient-panel.open .ambient-btn:nth-child(11) { animation-delay: 0.55s; }
+#ambient-panel.open .ambient-btn:nth-child(12) { animation-delay: 0.60s; }
+
+@keyframes cascade-in {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .ambient-btn {
@@ -166,7 +225,11 @@
 }
 /* When playing: nudge icon up to make room for bars */
 .ambient-btn.playing .abt-icon {
-  transform: translateY(-7px);
+  animation: divine-levitate 1.8s ease-in-out infinite alternate;
+}
+@keyframes divine-levitate {
+  0%   { transform: translateY(-4px); filter: drop-shadow(0 0 4px rgba(var(--easy-rgb), 0.4)); }
+  100% { transform: translateY(-12px); filter: drop-shadow(0 0 14px rgba(var(--easy-rgb), 0.9)); }
 }
 
 /* Equalizer bars (absolute, at bottom of button) */
@@ -271,6 +334,12 @@
 @keyframes lb2 { from { height: 14px; } to { height: 6px;  } }
 @keyframes lb3 { from { height: 18px; } to { height: 6px;  } }
 @keyframes lb4 { from { height: 7px;  } to { height: 16px; } }
+
+.ambient-btn.playing.reactive .abt-bars span,
+.live-bars.reactive span {
+  animation: none !important;
+  transition: height 0.08s linear;
+}
 
 .ambient-volume {
   display: flex;
