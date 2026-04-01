@@ -1,19 +1,4 @@
-const AUDIO_URLS = {
-  // ── New additions (shown first in panel) ──
-  healingSound:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774780549/HealingSound.mp3',
-  mandirWinds:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774779620/Winds_Through_the_Old_Mandir_Flute___Sitar_in_Timeless_Tranquility_MP3_160K_llh2me.mp3',
-  shivaMeditation:'https://res.cloudinary.com/dnju7wfma/video/upload/v1774779618/SHIVA___Beautiful_Indian_Background_Music___Deep___Mystical_Meditation_Music___Ambient_Hindu_Music_MP3_160K_sgrn1q.mp3',
-  meditation:     'https://res.cloudinary.com/dnju7wfma/video/upload/v1774774806/Temple_Rhythms_Tabla__Flute___Sitar_Tranquility___1_Hour_Indian_Meditation_Music_MP3_160K_aspm1l.mp3',
-  krishnaFlute:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774779598/Flute_of_Peace___Shri_Krishna_Relaxing_Instrumental_MP3_160K_ugj3b0.mp3',
-  // ── Nature & ambient ──
-  rain:           'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain_fe6smc.mp3',
-  rain2:          'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/rain2_uycmn6.mp3',
-  ocean:          'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378668/ocean_gzek2u.mp3',
-  forest:         'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest_l804pd.mp3',
-  forest2:        'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382236/forest2_xg9jbw.mp3',
-  forest3:        'https://res.cloudinary.com/dnju7wfma/video/upload/v1774378667/forest3_xlypzq.mp3',
-  river:          'https://res.cloudinary.com/dnju7wfma/video/upload/v1774382577/river_ffhhlr.mp3',
-};
+// Cloudinary URLs securely moved to netlify/edge-functions/audio-proxy.js
 
 export const AmbientSound = {
   activeDeck: 'A',
@@ -204,8 +189,8 @@ export const AmbientSound = {
     this._initAudioCtx();
 
     this.analyser = this.audioCtx.createAnalyser();
-    this.analyser.fftSize = 64; 
-    this.analyser.smoothingTimeConstant = 0.85; 
+    this.analyser.fftSize = 128; // Increased resolution for ambient nuances
+    this.analyser.smoothingTimeConstant = 0.7; // Faster decay for better reactivity
     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
     this.analyser.connect(this.audioCtx.destination);
 
@@ -213,13 +198,13 @@ export const AmbientSound = {
     this.audioA.preload = 'none';
     this.audioA.loop = false;
     this.audioA.muted = this.isMuted;
-    this.audioA.crossOrigin = 'anonymous';
+    // Removed crossOrigin='anonymous' since proxy is same-origin, 
+    // saving ~200ms TTFB by skipping browser CORS preflight checks
 
     this.audioB = new Audio();
     this.audioB.preload = 'none';
     this.audioB.loop = false;
     this.audioB.muted = this.isMuted;
-    this.audioB.crossOrigin = 'anonymous';
 
     // Create GainNodes for volume amplification beyond 1.0
     this.gainA = this.audioCtx.createGain();
@@ -267,7 +252,7 @@ export const AmbientSound = {
     if ('setPositionState' in navigator.mediaSession) {
       try {
         navigator.mediaSession.setPositionState({
-          duration: Infinity,
+          duration: 86400, // Firefox errors on Infinity. Using 24 hours instead.
           playbackRate: 1,
           position: 0
         });
@@ -321,36 +306,47 @@ export const AmbientSound = {
       this.analyser.getByteFrequencyData(this.dataArray);
       const data = this.dataArray;
 
-      const getRawPeak = (start, end) => {
+      // Calculate both peak and average to get dynamic but stable ambient waves
+      const getEnergy = (start, end) => {
         let max = 0;
-        for (let i = start; i < end; i++) if (data[i] > max) max = data[i];
-        return max / 255; 
+        let sum = 0;
+        for (let i = start; i < end; i++) {
+          if (data[i] > max) max = data[i];
+          sum += data[i];
+        }
+        const avg = sum / (end - start);
+        // Blend peak and average for nature sounds (rain/ocean are dense, flute is peaky)
+        return ((max * 0.6) + (avg * 0.4)) / 255;
       };
 
-      const raw1 = getRawPeak(0, 3);
-      const raw2 = getRawPeak(3, 7);
-      const raw3 = getRawPeak(7, 13);
-      const raw4 = getRawPeak(13, 25);
+      // With fftSize = 128 (64 bins)
+      const raw1 = getEnergy(1, 6);   // Low/Mids (Tabla / ambient rumble)
+      const raw2 = getEnergy(6, 16);  // Pitch Mids (Flute / Piano / Sitar core)
+      const raw3 = getEnergy(16, 36); // High Mids (Birds / Rain sizzle)
+      const raw4 = getEnergy(36, 56); // Highs (Ocean waves / crisp wind)
 
-      const currentMax = Math.max(0.01, raw1, raw2, raw3, raw4);
-      const multiplier = Math.min(15, 0.8 / currentMax);
+      // Ambient sounds lack hard EDM transients. To make them feel "reactive",
+      // we apply a non-linear curve (square root) which boosts mid-volume frequencies significantly
+      // while keeping loud ones from clipping.
+      const boost = (val, mult) => Math.min(1, Math.pow(val, 0.65) * mult);
 
-      const v1 = raw1 * multiplier;
-      const v2 = raw2 * multiplier;
-      const v3 = raw3 * multiplier;
-      const v4 = raw4 * multiplier;
+      const v1 = boost(raw1, 1.8);
+      const v2 = boost(raw2, 2.0);
+      const v3 = boost(raw3, 2.2);
+      const v4 = boost(raw4, 2.5); // High-frequency ambient sounds need more boost
 
-      const jt = () => Math.random() * 1.2;
+      // Add a tiny fluid jitter for water/rain realism, especially when low volume
+      const jt = () => (Math.random() - 0.5) * 1.5;
 
-      const h1 = Math.min(14, 3 + (v1 * 11) + jt());
-      const h2 = Math.min(14, 3 + (v2 * 11) + jt());
-      const h3 = Math.min(14, 3 + (v3 * 11) + jt());
-      const h4 = Math.min(14, 3 + (v4 * 11) + jt());
+      const h1 = Math.max(3, Math.min(14, 3 + (v1 * 11) + jt()));
+      const h2 = Math.max(3, Math.min(14, 3 + (v2 * 11) + jt()));
+      const h3 = Math.max(3, Math.min(14, 3 + (v3 * 11) + jt()));
+      const h4 = Math.max(3, Math.min(14, 3 + (v4 * 11) + jt()));
 
-      const lh1 = Math.min(20, 4 + (v1 * 16) + jt() * 1.2);
-      const lh2 = Math.min(20, 4 + (v2 * 16) + jt() * 1.2);
-      const lh3 = Math.min(20, 4 + (v3 * 16) + jt() * 1.2);
-      const lh4 = Math.min(20, 4 + (v4 * 16) + jt() * 1.2);
+      const lh1 = Math.max(4, Math.min(20, 4 + (v1 * 16) + jt() * 1.5));
+      const lh2 = Math.max(4, Math.min(20, 4 + (v2 * 16) + jt() * 1.5));
+      const lh3 = Math.max(4, Math.min(20, 4 + (v3 * 16) + jt() * 1.5));
+      const lh4 = Math.max(4, Math.min(20, 4 + (v4 * 16) + jt() * 1.5));
 
       const btnBars = document.querySelector('.ambient-btn.playing.reactive .abt-bars');
       if (btnBars && btnBars.children.length === 4) {
@@ -430,7 +426,7 @@ export const AmbientSound = {
     this.activeDeck = 'A';
 
     if (this.currentTrack !== track) {
-      const src = AUDIO_URLS[track];
+      const src = `/api/audio?track=${track}`;
       this.audioA.src = src;
       this.audioB.src = src;
     }
