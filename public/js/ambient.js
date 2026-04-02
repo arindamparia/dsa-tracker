@@ -1,5 +1,8 @@
 const AUDIO_URLS = {
   // ── New additions (shown first in panel) ──
+  omNamahShivay:  'https://res.cloudinary.com/dnju7wfma/video/upload/v1775153821/Om_Namah_Shivay_h7hx0r.mp3',
+  aadidevMahadev: 'https://res.cloudinary.com/dnju7wfma/video/upload/v1775153339/Aadidev_Mahadev_He_Shivaya_Shambho_tkoco6.mp3',
+  ramNaam:        'https://res.cloudinary.com/dnju7wfma/video/upload/v1775154585/Shri_Ram_Naam_Sankirtanam_lnhm8t.mp3',
   healingSound:   'https://res.cloudinary.com/dnju7wfma/video/upload/v1774780549/HealingSound.mp3',
   mandirWinds:    'https://res.cloudinary.com/dnju7wfma/video/upload/v1774779620/Winds_Through_the_Old_Mandir_Flute___Sitar_in_Timeless_Tranquility_MP3_160K_llh2me.mp3',
   shivaMeditation:'https://res.cloudinary.com/dnju7wfma/video/upload/v1774779618/SHIVA___Beautiful_Indian_Background_Music___Deep___Mystical_Meditation_Music___Ambient_Hindu_Music_MP3_160K_sgrn1q.mp3',
