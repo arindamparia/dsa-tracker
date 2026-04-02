@@ -208,7 +208,9 @@ export const AmbientSound = {
 
     this.analyser = this.audioCtx.createAnalyser();
     this.analyser.fftSize = 128; // Increased resolution for ambient nuances
-    this.analyser.smoothingTimeConstant = 0.7; // Faster decay for better reactivity
+    this.analyser.smoothingTimeConstant = 0.65; // Faster decay for snappier drop
+    this.analyser.minDecibels = -90; // Standard bottom floor
+    this.analyser.maxDecibels = -10; // Prevent loud parts from getting artificially stuck at 255
     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
     this.analyser.connect(this.audioCtx.destination);
 
@@ -324,6 +326,9 @@ export const AmbientSound = {
       this.analyser.getByteFrequencyData(this.dataArray);
       const data = this.dataArray;
 
+      // Differentiate UI reactivity for vocal/chant vs atmospheric
+      const isVoice = ['omNamahShivay', 'aadidevMahadev', 'ramNaam'].includes(this.currentTrack);
+
       // Calculate both peak and average to get dynamic but stable ambient waves
       const getEnergy = (start, end) => {
         let max = 0;
@@ -333,38 +338,51 @@ export const AmbientSound = {
           sum += data[i];
         }
         const avg = sum / (end - start);
-        // Blend peak and average for nature sounds (rain/ocean are dense, flute is peaky)
-        return ((max * 0.6) + (avg * 0.4)) / 255;
+        // Rely purely on dynamic scaling. Use more peak for voice.
+        return isVoice ? ((max * 0.8) + (avg * 0.2)) / 255 : ((max * 0.6) + (avg * 0.4)) / 255;
       };
 
-      // With fftSize = 128 (64 bins)
-      const raw1 = getEnergy(1, 6);   // Low/Mids (Tabla / ambient rumble)
-      const raw2 = getEnergy(6, 16);  // Pitch Mids (Flute / Piano / Sitar core)
-      const raw3 = getEnergy(16, 36); // High Mids (Birds / Rain sizzle)
-      const raw4 = getEnergy(36, 56); // Highs (Ocean waves / crisp wind)
+      // With fftSize = 128 (64 bins), each bin is about 375 Hz.
+      // We must start from Bin 0 to catch the heavy bass, drums, and tabla beats.
+      const raw1 = getEnergy(0, 3);   // 0 - 1100Hz (Bass & Beats)
+      const raw2 = getEnergy(3, 10);  // 1100 - 3750Hz (Middle Voice)
+      const raw3 = getEnergy(10, 24); // 3750 - 9000Hz (High Pitch Voice)
+      const raw4 = getEnergy(24, 56); // 9000Hz+ (Highs / Flutes)
 
-      // Ambient sounds lack hard EDM transients. To make them feel "reactive",
-      // we apply a non-linear curve (square root) which boosts mid-volume frequencies significantly
-      // while keeping loud ones from clipping.
-      const boost = (val, mult) => Math.min(1, Math.pow(val, 0.65) * mult);
+      // Now that maxDecibels is strictly mapping the amplitude, clipping is gone.
+      // We can use a simple multiplier to scale it organically. 
+      let v1, v2, v3, v4;
+      if (isVoice) {
+         // Beats (Low frequency). Many tracks have a constant low "hum" or drone. 
+         // A pure linear multiplier makes the hum hit the roof and stay there.
+         // By using Math.pow(raw1, 2.5) we create a "noise gate" that squashes the drone
+         // down to a low height, but allows the loud drum hits to spike aggressively to the top.
+         v1 = Math.min(1, Math.pow(raw1, 2.5) * 2.5);
+         // Middle voice to middle height (soft clamp so the 2nd bar organically stays in the middle)
+         v2 = Math.min(0.65, raw2 * 1.5);
+         // Full high pitch voice to top height
+         v3 = Math.min(1, raw3 * 2.8);
+         // Highs (flutes/breaths) 
+         v4 = Math.min(1, raw4 * 2.0);
+      } else {
+         v1 = Math.min(1, raw1 * 1.4);
+         v2 = Math.min(1, raw2 * 1.6);
+         v3 = Math.min(1, raw3 * 1.8);
+         v4 = Math.min(1, raw4 * 2.0);
+      }
 
-      const v1 = boost(raw1, 1.8);
-      const v2 = boost(raw2, 2.0);
-      const v3 = boost(raw3, 2.2);
-      const v4 = boost(raw4, 2.5); // High-frequency ambient sounds need more boost
-
-      // Add a tiny fluid jitter for water/rain realism, especially when low volume
-      const jt = () => (Math.random() - 0.5) * 1.5;
+      // Remove random artificial jitter for voice so that peaks accurately map to actual audio content
+      const jt = () => isVoice ? 0 : (Math.random() - 0.5) * 1.5;
 
       const h1 = Math.max(3, Math.min(14, 3 + (v1 * 11) + jt()));
       const h2 = Math.max(3, Math.min(14, 3 + (v2 * 11) + jt()));
       const h3 = Math.max(3, Math.min(14, 3 + (v3 * 11) + jt()));
       const h4 = Math.max(3, Math.min(14, 3 + (v4 * 11) + jt()));
 
-      const lh1 = Math.max(4, Math.min(20, 4 + (v1 * 16) + jt() * 1.5));
-      const lh2 = Math.max(4, Math.min(20, 4 + (v2 * 16) + jt() * 1.5));
-      const lh3 = Math.max(4, Math.min(20, 4 + (v3 * 16) + jt() * 1.5));
-      const lh4 = Math.max(4, Math.min(20, 4 + (v4 * 16) + jt() * 1.5));
+      const lh1 = Math.max(4, Math.min(20, 4 + (v1 * 16) + (isVoice ? 0 : jt() * 1.5)));
+      const lh2 = Math.max(4, Math.min(20, 4 + (v2 * 16) + (isVoice ? 0 : jt() * 1.5)));
+      const lh3 = Math.max(4, Math.min(20, 4 + (v3 * 16) + (isVoice ? 0 : jt() * 1.5)));
+      const lh4 = Math.max(4, Math.min(20, 4 + (v4 * 16) + (isVoice ? 0 : jt() * 1.5)));
 
       const btnBars = document.querySelector('.ambient-btn.playing.reactive .abt-bars');
       if (btnBars && btnBars.children.length === 4) {
@@ -392,37 +410,43 @@ export const AmbientSound = {
 
     const fadeOutGain = this._gainFor(fadeOutAudio);
     const fadeInGain = this._gainFor(fadeInAudio);
-    fadeInGain.gain.value = 0;
+
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
 
     const playPromise = fadeInAudio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {});
     }
 
-    const duration = this.crossfadeDuration * 1000;
-    this.fadeStart = performance.now();
+    const duration = this.crossfadeDuration;
+    const targetVol = this._sliderToVol(parseFloat(this.volSlider.value));
+    
+    // Web Audio API handles transitions natively, ensuring it works
+    // perfectly even when the tab is sleeping in the background.
+    const now = this.audioCtx.currentTime;
+    
+    fadeInGain.gain.cancelScheduledValues(now);
+    fadeOutGain.gain.cancelScheduledValues(now);
 
-    cancelAnimationFrame(this.fadeRaf);
-    const tick = (now) => {
-      const elapsed = now - this.fadeStart;
-      const ratio = Math.min(elapsed / duration, 1);
+    // Linear ramp starting from slightly above 0 avoids browser glitches
+    fadeInGain.gain.setValueAtTime(0.001, now);
+    fadeInGain.gain.linearRampToValueAtTime(targetVol, now + duration);
 
-      const targetVol = this._sliderToVol(parseFloat(this.volSlider.value));
-      fadeOutGain.gain.value = Math.max(0, targetVol * (1 - ratio));
-      fadeInGain.gain.value = targetVol * ratio;
+    fadeOutGain.gain.setValueAtTime(fadeOutGain.gain.value || targetVol, now);
+    fadeOutGain.gain.linearRampToValueAtTime(0.001, now + duration);
 
-      if (ratio < 1) {
-        this.fadeRaf = requestAnimationFrame(tick);
-      } else {
-        fadeOutAudio.pause();
-        fadeOutAudio.currentTime = 0;
-        fadeOutGain.gain.value = 0;
-        fadeInGain.gain.value = targetVol;
-        this.activeDeck = this.activeDeck === 'A' ? 'B' : 'A';
-        this.isFading = false;
-      }
-    };
-    this.fadeRaf = requestAnimationFrame(tick);
+    clearTimeout(this.fadeTimeout);
+    this.fadeTimeout = setTimeout(() => {
+      fadeOutAudio.pause();
+      fadeOutAudio.currentTime = 0;
+      fadeOutGain.gain.cancelScheduledValues(this.audioCtx.currentTime);
+      fadeOutGain.gain.value = 0;
+      fadeInGain.gain.value = targetVol;
+      this.activeDeck = this.activeDeck === 'A' ? 'B' : 'A';
+      this.isFading = false;
+    }, duration * 1000 + 100);
   },
 
   toggleTrack(track) {
@@ -438,7 +462,9 @@ export const AmbientSound = {
       this.audioCtx.resume();
     }
 
-    cancelAnimationFrame(this.fadeRaf);
+    clearTimeout(this.fadeTimeout);
+    if (this.gainA) this.gainA.gain.cancelScheduledValues(this.audioCtx.currentTime);
+    if (this.gainB) this.gainB.gain.cancelScheduledValues(this.audioCtx.currentTime);
     this.isFading = false;
 
     this.activeDeck = 'A';
@@ -477,9 +503,12 @@ export const AmbientSound = {
 
   pause() {
     if (this.isPlaying) {
-      cancelAnimationFrame(this.fadeRaf);
+      clearTimeout(this.fadeTimeout);
       cancelAnimationFrame(this.visualizeRaf);
       this.isFading = false;
+      
+      if (this.gainA) this.gainA.gain.cancelScheduledValues(this.audioCtx.currentTime);
+      if (this.gainB) this.gainB.gain.cancelScheduledValues(this.audioCtx.currentTime);
 
       if (this.audioA) this.audioA.pause();
       if (this.audioB) this.audioB.pause();
@@ -490,7 +519,7 @@ export const AmbientSound = {
   },
 
   destroy() {
-    cancelAnimationFrame(this.fadeRaf);
+    clearTimeout(this.fadeTimeout);
     cancelAnimationFrame(this.visualizeRaf);
     this.isFading = false;
     this.isPlaying = false;
