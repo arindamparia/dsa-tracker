@@ -112,6 +112,7 @@ if('serviceWorker' in navigator){
 <link rel="stylesheet" href="css/mock-interview.css" />
 <link rel="stylesheet" href="css/ambient.css" />
 <link rel="stylesheet" href="css/pwa.css" />
+<link rel="stylesheet" href="css/learning-material.css" />
 </head>
 <body class="tags-hidden topic-hidden solution-hidden">
 <div id="page-loader" aria-hidden="true"></div>
@@ -176,6 +177,10 @@ if('serviceWorker' in navigator){
     <button class="btn-feature" onclick="WeaknessHeatmap.open()" title="View weakness heatmap by section & difficulty [H]">
       <span class="feature-icon">🔥</span>
       <span class="feature-text">Weakness Heatmap</span>
+    </button>
+    <button class="btn-feature" id="btn-learning-material" onclick="LearningMaterial.openList()" title="Browse learning materials">
+      <span class="feature-icon">📚</span>
+      <span class="feature-text">Learning Material</span>
     </button>
   </div>
 
@@ -912,6 +917,7 @@ if('serviceWorker' in navigator){
   </button>
 </div>
 
+<script src="js/learning-material.js" defer></script>
 <script type="module" src="js/ai.js"></script>
 <script type="module" src="js/main.js"></script>
 <script type="module" src="js/version-check.js"></script>
