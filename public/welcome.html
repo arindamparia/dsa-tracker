@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AlgoTracker - DSA Mastery by Arindam Paria</title>
+
+<!-- Standard SEO Meta Tags -->
+<link rel="canonical" href="https://algotracker.xyz/welcome.html" />
+<meta name="description" content="Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, ambient focus audio, and section mastery tracking." />
+<meta name="keywords" content="DSA tracker, algorithm problems, LeetCode tracker, coding interview prep, mock interview, focus mode, spaced repetition, review queue, company prep, Arindam Paria" />
+<meta name="author" content="Arindam Paria" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://algotracker.xyz/welcome.html" />
+<meta property="og:site_name" content="AlgoTracker" />
+<meta property="og:title" content="AlgoTracker - DSA Mastery by Arindam Paria" />
+<meta property="og:description" content="Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, ambient focus audio, and section mastery tracking." />
+<meta property="og:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content="https://algotracker.xyz/welcome.html" />
+<meta name="twitter:title" content="AlgoTracker - DSA Mastery by Arindam Paria" />
+<meta name="twitter:description" content="Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, ambient focus audio, and section mastery tracking." />
+<meta name="twitter:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
+
+<!-- JSON-LD Structured Data for Google Site Name -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "AlgoTracker",
+      "alternateName": "Algo Tracker",
+      "url": "https://algotracker.xyz/"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "AlgoTracker",
+      "operatingSystem": "Web",
+      "applicationCategory": "EducationalApplication",
+      "description": "Full-stack LeetCode tracker and DSA preparation tool featuring mock interviews, focus mode, and company readiness.",
+      "url": "https://algotracker.xyz",
+      "author": {
+        "@type": "Person",
+        "name": "Arindam Paria",
+        "url": "https://arindamparia.in"
+      }
+    }
+  ]
+}
+</script>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0a0a0f;
+    --surface: #111118;
+    --surface2:#18181f;
+    --border:  #2a2a38;
+    --text:    #e8e8f0;
+    --text-dim:#9898b0;
+    --text-muted:#6b6b85;
+    --accent:  #7c6af7;
+    --easy:    #06d6a0;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 40px 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 24px 16px;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--easy));
+  }
+
+  .logo {
+    font-size: 36px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--text) 60%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Hidden until Clerk confirms user is NOT signed in */
+  .card { opacity: 0; transition: opacity 0.2s ease; }
+  .card.ready { opacity: 1; }
+
+  button {
+    width: 100%;
+    padding: 13px 24px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  button:active { transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  #btn-signin {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  #btn-signup {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  #btn-signup:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+  .footer {
+    margin-top: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <span class="logo">⚡</span>
+  <h1>AlgoTracker</h1>
+  <p class="tagline">Track problems · Analyze solutions<br>Master algorithms · Stay consistent</p>
+
+  <div class="actions">
+    <button id="btn-signin" onclick="handleSignIn()">Sign In</button>
+    <button id="btn-signup" onclick="handleSignUp()">Create Account</button>
+  </div>
+
+  <p class="footer" style="text-transform: none; letter-spacing: 0;">AlgoTracker &copy; Created by <a href="https://arindamparia.in" target="_blank" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dotted var(--text-muted);">Arindam Paria</a></p>
+</div>
+
+<script>
+  const PK_TTL = 5 * 60 * 1000;
+  const _pkPromise = (() => {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem('_cpk') || 'null');
+      if (cached && (Date.now() - cached.t < PK_TTL)) return Promise.resolve(cached.pk);
+    } catch {}
+    return fetch('/.netlify/functions/clerk-config')
+      .then(r => r.json())
+      .then(({ pk }) => {
+        if (pk) sessionStorage.setItem('_cpk', JSON.stringify({ pk, t: Date.now() }));
+        return pk || '';
+      })
+      .catch(() => '');
+  })();
+
+  let _clerkPromise = null;
+
+  function loadClerk() {
+    if (_clerkPromise) return _clerkPromise;
+    _clerkPromise = _pkPromise.then(PK => new Promise((resolve, reject) => {
+      if (!PK || PK.startsWith('REPLACE')) {
+        document.querySelector('.card').classList.add('ready');
+        resolve(null); return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+      s.setAttribute('data-clerk-publishable-key', PK);
+      s.crossOrigin = 'anonymous';
+      s.onload = async () => {
+        const clerk = window.Clerk;
+        await clerk.load({ standardBrowser: true });
+        if (clerk.user) { window.location.replace('/'); return; }
+        // User is not signed in — safe to show the card
+        document.querySelector('.card').classList.add('ready');
+        resolve(clerk);
+      };
+      s.onerror = () => reject(new Error('Failed to load Clerk'));
+      document.head.appendChild(s);
+    }));
+    return _clerkPromise;
+  }
+
+  // Eagerly start full Clerk load so redirect happens without waiting for a button click
+  // On failure, still reveal the card so the user isn't stuck on a blank page
+  loadClerk().catch(() => {
+    document.querySelector('.card').classList.add('ready');
+  });
+
+  async function handleSignIn() {
+    const btn = document.getElementById('btn-signin');
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    try {
+      const clerk = await loadClerk();
+      if (clerk) clerk.redirectToSignIn({ fallbackRedirectUrl: window.location.origin + '/' });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  async function handleSignUp() {
+    const btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    try {
+      const clerk = await loadClerk();
+      if (clerk) clerk.redirectToSignUp({ fallbackRedirectUrl: window.location.origin + '/' });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+  }
+</script>
+</body>
+</html>

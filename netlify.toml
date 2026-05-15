@@ -1,0 +1,57 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
+
+[dev]
+  host = "0.0.0.0"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."broadcast"]
+  timeout = 30
+
+# HTTP preload hints for the index page — browser starts fetching these CSS files
+# the moment it receives the response headers, before it has even parsed the HTML.
+# Pick the 5 heaviest render-blocking stylesheets (table 19KB, controls 13KB,
+# base 12.5KB, sections 12KB, modal 9.6KB) — biggest gain per preload slot.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Link = "</css/table.css>; rel=preload; as=style, </css/controls.css>; rel=preload; as=style, </css/base.css>; rel=preload; as=style, </css/sections.css>; rel=preload; as=style, </css/modal.css>; rel=preload; as=style"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    # CSP: 'unsafe-inline' is required for script-src because the app uses hundreds of inline
+    # event handlers (onclick, onmouseenter, etc.) in dynamically generated HTML — hashing them
+    # is impractical. XSS protection comes from escapeHtml() on all DB-sourced content instead.
+    # Remaining CSP directives (connect-src, frame-src, object-src, base-uri) still provide value.
+    # Clerk requires worker-src blob: for its authentication web worker.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://*.clerk.accounts.dev https://clerk.algotracker.xyz; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.clerk.accounts.dev https://clerk.algotracker.xyz https://api.openai.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://res.cloudinary.com; img-src 'self' data: https:; media-src https://res.cloudinary.com; frame-src 'self'; object-src 'none'; base-uri 'self'; worker-src blob: 'self';"
+
+# Prevent browsers from caching API responses
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate, private"
+    Pragma = "no-cache"
+
+# cp-proxy serves proxied cp-algorithms.com HTML inside an iframe.
+# Override the global X-Frame-Options + CSP so the iframe can actually render it.
+[[headers]]
+  for = "/.netlify/functions/cp-proxy"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    Content-Security-Policy = "default-src 'self' https://cp-algorithms.com; script-src 'self' 'unsafe-inline' https://cp-algorithms.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://cp-algorithms.com https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https:; img-src 'self' data: https:; connect-src 'self' https://cp-algorithms.com https://www.google-analytics.com; frame-ancestors 'self';"
+
+# Cache static assets aggressively
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <!-- Subtle glow on root node -->
+    <filter id="g" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Gradient fill for child nodes -->
+    <radialGradient id="cg" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#a898ff"/>
+      <stop offset="100%" stop-color="#7c6af7"/>
+    </radialGradient>
+    <!-- Gradient fill for root node -->
+    <radialGradient id="rg" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#c4b8ff"/>
+      <stop offset="100%" stop-color="#7c6af7"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Dark rounded background -->
+  <rect width="32" height="32" rx="7" fill="#0e0e1a"/>
+
+  <!-- Connector lines: root → children -->
+  <line x1="16" y1="13" x2="9.5"  y2="21.5" stroke="#7c6af7" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+  <line x1="16" y1="13" x2="22.5" y2="21.5" stroke="#7c6af7" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- Root node (top, glowing) -->
+  <circle cx="16" cy="8.5" r="4.8" fill="url(#rg)" filter="url(#g)"/>
+
+  <!-- Left child -->
+  <circle cx="9.5"  cy="24" r="3.8" fill="url(#cg)"/>
+  <!-- Right child -->
+  <circle cx="22.5" cy="24" r="3.8" fill="url(#cg)"/>
+</svg>

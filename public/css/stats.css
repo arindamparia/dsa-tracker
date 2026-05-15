@@ -1,0 +1,179 @@
+/* collapsible stats board */
+.stats-section-container {
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: var(--surface2);
+}
+.stats-board-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; margin-bottom: 0;
+  cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.stats-board-header:hover { background: rgba(255,255,255,0.04); }
+.stats-board-title {
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+  color: var(--text); letter-spacing: 0.01em; flex: 1;
+}
+.stats-board-wrap {
+  max-height: 0;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+}
+.stats-board-wrap.open { max-height: 800px; border-top: 1px solid var(--border); }
+.stats-board-inner { overflow: hidden; padding: 0 16px; min-height: 0; }
+
+/* stat cards */
+.stats-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 14px 0 12px; }
+.stat-card {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--easy-bg));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 12px;
+  padding: 16px 18px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px var(--shadow-sm);
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.stat-card:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--shadow-md);
+}
+.stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.stat-value.total  { color: var(--accent); }
+.stat-value.easy   { color: var(--easy); }
+.stat-value.medium { color: var(--medium); }
+.stat-value.hard   { color: var(--hard); }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+/* overall progress bar */
+.global-progress { background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.12), var(--easy-bg)); border: 1px solid rgba(var(--accent-rgb), 0.3); border-radius: 12px; padding: 20px 24px; margin-bottom: 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 16px var(--shadow-sm); }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.progress-title { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+.progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+.progress-track { height: 8px; background: var(--surface3); border-radius: 999px; overflow: hidden; display: flex; }
+.easy-fill   { background: var(--easy);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+.medium-fill { background: var(--medium); transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.1s; position: relative; overflow: hidden; }
+.hard-fill   { background: var(--hard);   transition: width 0.8s cubic-bezier(0.4,0,0.2,1) 0.2s; position: relative; overflow: hidden; }
+.easy-fill::after, .medium-fill::after, .hard-fill::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: progressSweep 1s ease-out 1s 1 both;
+}
+@keyframes progressSweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); opacity: 0; }
+}
+
+/* top stats (today & streak) */
+.top-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.top-stats .stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.top-stats .stat-value {
+  font-size: 44px;
+  margin: 8px 0;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+[data-theme="light"] .top-stats .stat-value {
+  text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+[data-theme="light"] .stats-board-header:hover { background: rgba(0,0,0,0.04); }
+[data-theme="light"] .stat-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+[data-theme="light"] .top-stats .stat-card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+[data-theme="light"] .streak-active {
+  text-shadow: none;
+}
+[data-theme="light"] .today-active {
+  text-shadow: none;
+}
+
+/* Base states: dim unless active */
+.streak-val { color: var(--text-dim); }
+.today-val  { color: var(--text-dim); }
+
+/* Streak heartbeat when active */
+@keyframes heartbeat {
+  0%   { transform: scale(1); }
+  14%  { transform: scale(1.06); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.04); }
+  70%  { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+.streak-active {
+  color: var(--orange);
+  text-shadow: 0 0 20px rgba(var(--orange-rgb), 0.4);
+  animation: heartbeat 2.4s ease-in-out infinite;
+  display: inline-block;
+}
+
+.today-active {
+  color: var(--easy);
+  text-shadow: 0 0 20px rgba(var(--easy-rgb), 0.4);
+}
+
+.today-track {
+  width: 100%;
+  max-width: 120px;
+  height: 6px;
+  margin-top: 12px;
+  background: var(--surface3);
+}
+
+/* loading skeleton for stat cards */
+/* Applied while body.loading — removed by updateStats() when real data arrives */
+body.loading .stat-value,
+body.loading .stat-sub {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: none !important;
+  animation: none !important;
+  background: var(--surface2);
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+body.loading .stat-value::after,
+body.loading .stat-sub::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.06) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+body.loading .progress-track { opacity: 0.15; }
+[data-theme="light"] body.loading .stat-value::after,
+[data-theme="light"] body.loading .stat-sub::after {
+  background: linear-gradient(90deg, transparent 25%, rgba(0,0,0,0.04) 50%, transparent 75%);
+  background-size: 200% 100%;
+}
+body.loading #prog-pct        { visibility: hidden; }

@@ -1,0 +1,131 @@
+/* mock interview */
+
+/* Session bar — reuses focus-bar class */
+#mi-bar .mi-countdown {
+  font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700;
+  color: var(--text); letter-spacing: 0.08em;
+  padding: 2px 10px; background: var(--shadow-sm); border-radius: 6px;
+}
+#mi-bar .mi-countdown.mi-urgent { color: var(--hard); animation: urgentPulse 1s ease infinite; }
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.55; }
+}
+
+/* Config modal */
+.mi-config-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin: 16px 0;
+}
+.mi-count-group {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.mi-count-label {
+  font-size: 11px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.mi-count-label.easy   { color: var(--easy); }
+.mi-count-label.medium { color: var(--medium); }
+.mi-count-label.hard   { color: var(--hard); }
+
+.mi-filter-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;
+}
+.mi-filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.mi-filter-label {
+  font-size: 11px; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.mi-filter-select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px 10px; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none;
+  min-width: 0;
+}
+.mi-filter-select:focus { border-color: var(--accent); }
+
+.mi-time-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+}
+.mi-time-btn {
+  padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace; cursor: pointer;
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text-dim);
+  transition: transform 0.15s, opacity 0.15s, background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.mi-time-btn.active, .mi-time-btn:hover {
+  border-color: var(--accent); color: var(--accent); background: rgba(var(--accent-rgb),0.08);
+}
+
+/* Problem list sidebar */
+.mi-problem-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+}
+.mi-problem-item:last-child { border-bottom: none; }
+.mi-prob-check {
+  width: 14px; height: 14px; border-radius: 3px;
+  border: 2px solid var(--border2); flex-shrink: 0;
+}
+.mi-prob-check.solved { background: var(--easy); border-color: var(--easy); }
+.mi-prob-name {
+  flex: 1; font-size: 12px; color: var(--text);
+  text-decoration: none; font-family: 'JetBrains Mono', monospace;
+}
+.mi-prob-name:hover { color: var(--accent); }
+
+/* Hide non-essential UI during mock interview */
+body.mock-interview-active header,
+body.mock-interview-active .study-tools-bar,
+body.mock-interview-active .motivation-box,
+body.mock-interview-active .top-stats,
+body.mock-interview-active .stats-board,
+body.mock-interview-active .global-progress,
+body.mock-interview-active #review-queue,
+body.mock-interview-active #random-btn,
+body.mock-interview-active .company-stats-section,
+body.mock-interview-active .controls,
+body.mock-interview-active #timer-hang { display: none !important; }
+
+/* Show only interview sections; within them show only interview rows */
+body.mock-interview-active .section { display: none; }
+body.mock-interview-active .section.mi-section { display: block; }
+body.mock-interview-active .mi-section .q-table tbody tr { display: none; }
+body.mock-interview-active .mi-section .q-table tbody tr.mi-row { display: table-row; }
+
+/* Fix sticky offset: controls are hidden, stick below the mi-bar (~50px) */
+body.mock-interview-active .section-sticky { top: 50px !important; }
+
+/* Config modal — prevent overflow on small screens */
+#mi-config-modal .modal { max-height: 90vh; overflow-y: auto;  -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+
+@media (max-width: 600px) {
+  .mi-config-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mi-filter-row { grid-template-columns: 1fr; }
+  .mi-time-row { flex-wrap: wrap; gap: 6px; }
+  .mi-time-btn { flex: 1; text-align: center; min-width: 0; }
+}
+
+/* Summary */
+.mi-summary-header {
+  font-size: 18px; font-weight: 800; color: var(--text);
+  text-align: center; margin-bottom: 8px;
+  font-family: 'Syne', sans-serif;
+}
+.mi-rating {
+  display: inline-block; padding: 5px 16px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; margin: 0 auto 14px;
+  font-family: 'JetBrains Mono', monospace; display: block; text-align: center;
+}
+.mi-excellent { color: var(--easy);   background: rgba(var(--easy-rgb),0.12);   border: 1px solid rgba(var(--easy-rgb),0.3); }
+.mi-passed    { color: #7df; background: rgba(100,200,255,0.10); border: 1px solid rgba(100,200,255,0.2); }
+.mi-needs     { color: var(--medium); background: rgba(var(--medium-rgb),0.10);    border: 1px solid rgba(var(--medium-rgb),0.2); }
+.mi-start     { color: var(--text-dim); background: rgba(152,152,176,0.08); border: 1px solid var(--border); }
+.mi-score-big {
+  font-size: 48px; font-weight: 900; color: var(--accent);
+  text-align: center; font-family: 'Syne', sans-serif; line-height: 1;
+}
+.mi-score-sub {
+  font-size: 12px; color: var(--text-muted); text-align: center;
+  font-family: 'JetBrains Mono', monospace; margin-bottom: 4px;
+}

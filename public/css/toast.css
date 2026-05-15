@@ -1,0 +1,15 @@
+/* toast notification */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface3); border: 1px solid var(--border2); border-radius: 10px;
+  padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
+  z-index: 999; opacity: 0; transform: translateY(10px); pointer-events: none;
+}
+#toast.error   { border-color: rgba(var(--hard-rgb), 0.4);  color: var(--hard); }
+#toast.success { border-color: rgba(var(--easy-rgb), 0.4);  color: var(--easy); }
+
+/* loading states */
+.skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+.loading-msg { text-align: center; padding: 64px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.loading-dots::after { content: '...'; animation: dots 1.2s steps(4,end) infinite; }
+.error-msg   { text-align: center; padding: 48px; color: var(--hard); font-family: 'JetBrains Mono', monospace; font-size: 13px; }

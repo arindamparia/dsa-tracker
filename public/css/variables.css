@@ -1,0 +1,130 @@
+/* design tokens — edit here to retheme the entire app */
+:root {
+
+  /* base backgrounds */
+  --bg:       #0a0a0f;
+  --surface:  #111118;
+  --surface2: #18181f;
+  --surface3: #1e1e28;
+
+  /* borders */
+  --border:  #2a2a38;
+  --border2: #363648;
+
+  /* text */
+  --text:       #e8e8f0;
+  --text-dim:   #9898b0;
+  --text-muted: #6b6b85;
+
+  /* accent (purple) */
+  --accent:       #7c6af7;
+  --accent-light: #9180ff;
+  --accent-rgb:   124, 106, 247;
+  --accent-glow:  rgba(124,106,247,0.18);
+  --accent2:      #06d6a0;
+  --accent2-glow: rgba(6,214,160,0.15);
+
+  /* difficulty */
+  --easy:       #06d6a0;
+  --easy-rgb:   6, 214, 160;
+  --easy-bg:    rgba(6,214,160,0.08);
+  --easy-dark:  #00b875;
+
+  --medium:     #f8b500;
+  --medium-rgb: 248, 181, 0;
+  --medium-bg:  rgba(248,181,0,0.08);
+
+  --hard:       #ff4757;
+  --hard-light: #ff6b77;
+  --hard-rgb:   255, 71, 87;
+  --hard-bg:    rgba(255,71,87,0.08);
+
+  /* orange (streak / daily goal) */
+  --orange:     #ff9f1c;
+  --orange-rgb: 255, 159, 28;
+
+  /* done row */
+  --done-bg: rgba(6,214,160,0.05);
+
+  /* shadows */
+  --shadow-sm: rgba(0,0,0,0.25);
+  --shadow-md: rgba(0,0,0,0.35);
+  --shadow-lg: rgba(0,0,0,0.50);
+  --shadow-xl: rgba(0,0,0,0.65);
+
+  /* overlay & blur */
+  --overlay-bg:    rgba(0,0,0,0.75);
+  --surface-blur:  rgba(10,10,15,0.95);
+  --surface-blur2: rgba(12,12,22,0.90);
+
+  /* layout heights */
+  --controls-h: 126px;
+  --section-h:  55px;
+}
+
+@media (max-width: 768px) {
+  :root { --controls-h: 100px; }
+}
+
+/* light mode */
+[data-theme="light"] {
+
+  /* base backgrounds */
+  --bg:       #f0f0f8;
+  --surface:  #ffffff;
+  --surface2: #f5f5fc;
+  --surface3: #eaeaf4;
+
+  /* borders — slightly stronger for definition */
+  --border:  #cdcde2;
+  --border2: #b8b8d0;
+
+  /* text — high contrast for readability */
+  --text:       #0d0d1c;
+  --text-dim:   #2d2d4a;
+  --text-muted: #555578;
+
+  /* accent — deeper purple for WCAG AA on white (~4.5:1) */
+  --accent:       #6c5ce7;
+  --accent-light: #7f70f0;
+  --accent-rgb:   108, 92, 231;
+  --accent-glow:  rgba(108,92,231,0.12);
+  --accent2-glow: rgba(5,150,105,0.12);
+
+  /* difficulty — darkened for ≥ 4.5:1 contrast on white */
+  --easy:       #059669;
+  --easy-rgb:   5, 150, 105;
+  --easy-bg:    rgba(5, 150, 105, 0.10);
+  --easy-dark:  #047857;
+
+  --medium:     #b45309;
+  --medium-rgb: 180, 83, 9;
+  --medium-bg:  rgba(180, 83, 9, 0.10);
+
+  --hard:       #dc2626;
+  --hard-light: #ef4444;
+  --hard-rgb:   220, 38, 38;
+  --hard-bg:    rgba(220, 38, 38, 0.10);
+
+  /* orange (streak / daily goal) — darkened */
+  --orange:     #c2410c;
+  --orange-rgb: 194, 65, 12;
+
+  /* done row */
+  --done-bg: rgba(5, 150, 105, 0.07);
+
+  /* shadows — softer for light surfaces */
+  --shadow-sm: rgba(0,0,0,0.06);
+  --shadow-md: rgba(0,0,0,0.10);
+  --shadow-lg: rgba(0,0,0,0.15);
+  --shadow-xl: rgba(0,0,0,0.22);
+
+  /* overlay & blur */
+  --overlay-bg:    rgba(0,0,0,0.40);
+  --surface-blur:  rgba(240,240,248,0.96);
+  --surface-blur2: rgba(245,245,252,0.92);
+
+  /* background image overlay */
+  --bg-opacity: 0.12;
+  --bg-blend: normal;
+}

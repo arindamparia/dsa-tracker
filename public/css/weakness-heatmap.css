@@ -1,0 +1,76 @@
+/* weakness heatmap */
+.hm-grid { width: 100%; border-collapse: collapse; }
+
+.hm-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 80px 70px;
+  gap: 4px; align-items: center; margin-bottom: 4px;
+}
+.hm-header { margin-bottom: 8px; }
+
+.hm-section-col {
+  font-size: 11px; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  padding-right: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hm-diff-head {
+  font-size: 10px; font-weight: 700; text-align: center;
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+}
+.hm-diff-head.hm-diff-easy   { color: var(--easy); }
+.hm-diff-head.hm-diff-medium { color: var(--medium); }
+.hm-diff-head.hm-diff-hard   { color: var(--hard); }
+
+.hm-cell {
+  border-radius: 6px; padding: 6px 4px;
+  text-align: center; cursor: pointer;
+  transition: filter 0.15s, transform 0.12s;
+  border: 1px solid transparent;
+  min-height: 44px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+}
+.hm-cell:hover {
+  filter: brightness(1.2);
+  transform: scale(1.04);
+  border-color: rgba(255,255,255,0.1);
+}
+.hm-cell.hm-empty { cursor: default; }
+.hm-cell.hm-empty:hover { filter: none; transform: none; }
+.hm-total-cell {
+  background: var(--surface3); cursor: default;
+  border: 1px solid var(--border);
+}
+.hm-total-cell:hover { filter: none; transform: none; }
+
+.hm-num { font-size: 13px; font-weight: 700; line-height: 1; }
+.hm-sub { font-size: 9px; color: rgba(255,255,255,0.85); font-family: 'JetBrains Mono', monospace; }
+.hm-none { font-size: 12px; color: var(--text-muted); }
+
+.hm-legend {
+  display: flex; gap: 6px; align-items: center;
+  margin-top: 16px; flex-wrap: wrap;
+}
+.hm-leg-item {
+  padding: 3px 10px; border-radius: 4px;
+  font-size: 10px; color: rgba(255,255,255,0.7);
+  font-family: 'JetBrains Mono', monospace;
+}
+[data-theme="light"] .hm-sub      { color: var(--text-dim); }
+[data-theme="light"] .hm-leg-item { color: var(--text-dim); }
+[data-theme="light"] .hm-cell:hover {
+  border-color: rgba(0,0,0,0.1);
+}
+
+/* Modal sizing */
+#heatmap-modal .modal {
+  max-width: 680px; width: 96vw; max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}
+
+@media (max-width: 600px) {
+  .hm-row { grid-template-columns: 1fr 56px 56px 56px 50px; gap: 2px; }
+  .hm-cell { padding: 4px 2px; min-height: 38px; }
+  .hm-num { font-size: 11px; }
+  .hm-section-col { font-size: 10px; }
+}

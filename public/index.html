@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Preconnect: establish DNS+TLS to font domains before any other parsing.
+     Must be as early as possible — every ms here reduces the font-blocking delay. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<meta name="description" content="AlgoTracker is the ultimate Data Structures and Algorithms (DSA) tracker for MAANG & FAANG interview prep. Master competitive programming with problems from LeetCode, Codeforces, AtCoder, and CSES. Features include spaced-repetition, timed mock interviews, company readiness tracking, ambient focus modes, and integrated CP-Algorithms learning materials." />
+<meta name="theme-color" content="#7c6af7" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="AlgoTracker" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+<title>AlgoTracker - DSA Tracker & Interview Prep</title>
+
+<!-- Standard SEO Meta Tags -->
+<link rel="canonical" href="https://algotracker.xyz/" />
+<meta name="keywords" content="algo track, algo tracker, DSA tracker, data structures, algorithms, algorithm problems, LeetCode tracker, Codeforces tracker, AtCoder, CSES, cp-algorithms, competitive programming, coding interview prep, mock interview, software engineer interview, MAANG prep, FAANG prep, tech interview, focus mode, spaced repetition software, active recall, company specific coding questions, coding patterns, NeetCode alternative, blind 75 tracker, grind 75, dynamic programming, graph algorithms, Arindam Paria" />
+<meta name="author" content="Arindam Paria" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://algotracker.xyz/" />
+<meta property="og:site_name" content="AlgoTracker" />
+<meta property="og:title" content="AlgoTracker - DSA Tracker & Interview Prep" />
+<meta property="og:description" content="AlgoTracker is the ultimate DSA tracker for MAANG & FAANG interview prep. Master competitive programming with problems from LeetCode, Codeforces, AtCoder, and CSES. Features spaced-repetition, mock interviews, and CP-Algorithms integration." />
+<meta property="og:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content="https://algotracker.xyz/" />
+<meta name="twitter:title" content="AlgoTracker - DSA Tracker & Interview Prep" />
+<meta name="twitter:description" content="AlgoTracker is the ultimate DSA tracker for MAANG & FAANG interview prep. Master competitive programming with problems from LeetCode, Codeforces, AtCoder, and CSES. Features spaced-repetition, mock interviews, and CP-Algorithms integration." />
+<meta name="twitter:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
+
+<!-- JSON-LD Structured Data for Google Site Name -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "AlgoTracker",
+      "alternateName": "Algo Tracker",
+      "url": "https://algotracker.xyz/"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "AlgoTracker",
+      "operatingSystem": "Any",
+      "applicationCategory": "EducationalApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Track LeetCode, Codeforces, AtCoder, and CSES problems",
+        "Spaced-repetition review queue (Active Recall)",
+        "Timed mock interviews",
+        "Integrated CP-Algorithms documentation",
+        "Company-specific question tracking for MAANG",
+        "Ambient focus audio player",
+        "Progress analytics and Weakness Heatmap"
+      ],
+      "description": "The most comprehensive full-stack DSA tracker and preparation tool for competitive programming and tech interviews. Master Data Structures and Algorithms with built-in spaced repetition, mock interviews, and company readiness metrics.",
+      "url": "https://algotracker.xyz",
+      "author": {
+        "@type": "Person",
+        "name": "Arindam Paria",
+        "url": "https://arindamparia.in"
+      }
+    }
+  ]
+}
+</script>
+
+<script>(function(){
+  if(localStorage.getItem('dsa_theme')==='light'){document.documentElement.setAttribute('data-theme','light');}
+  var hideBg = localStorage.getItem('dsa_hide_bg');
+  if(hideBg === null) { hideBg = '1'; }
+  if(hideBg === '1'){document.documentElement.classList.add('hide-theme-bg');}
+  // Chrome is garbage at handling multiple backdrop-filters and causes massive screen tearing.
+  // Safari/Firefox are fine. We detect Chrome here and strip the blur effect before first paint.
+  // (AI helped me figure out this weird compositor bug, don't touch this detection logic).
+  var ua = navigator.userAgent;
+  var isChrome = ua.indexOf('Chrome') !== -1 && ua.indexOf('Edg') === -1 && ua.indexOf('OPR') === -1;
+  if(isChrome){document.documentElement.classList.add('chrome-blur-reduce');}
+  // Browsers cache the DOM state when you hit the back button (BFCache).
+  // We inject the loader overlay right before they cache it so the screen doesn't 
+  // flash stale data. It's hacky but it prevents the dreaded "paint hold" flicker.
+  var showLoader = function() {
+    var el = document.getElementById('page-loader');
+    if (!el) { el = document.createElement('div'); el.id = 'page-loader'; document.body.prepend(el); }
+    el.removeAttribute('class');
+    el.style.cssText = 'position:fixed;inset:0;z-index:99999;background:var(--bg,#0a0a0f);opacity:1;transition:none;';
+  };
+  window.addEventListener('pagehide', showLoader);
+  window.addEventListener('beforeunload', showLoader);
+})();</script>
+<script>
+// If I bump the service worker cache version, force the browser to reload.
+// Had to inline this because if the SW caches the JS files, we'd never get the update.
+if('serviceWorker' in navigator){
+  var reloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(!reloading){reloading=true;window.location.reload();}
+  });
+}
+</script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+<!-- Inlining the critical CSS here. If we use a <link> tag, the browser blocks rendering 
+     for 500ms, which completely ruins the cool terminal boot sequence. -->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0a0a0f}
+html[data-theme="light"],html[data-theme="light"] body{background:#f0f0f8}
+html:has(#page-loader){overflow:hidden}
+#page-loader{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background-color:#0a0a0f;background-image:linear-gradient(rgba(124,106,247,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(124,106,247,.05) 1px, transparent 1px);background-size:30px 30px;background-position:center center;animation:pl-bg-pan 15s linear infinite;overflow:hidden;display:flex;align-items:center;justify-content:center}
+@keyframes pl-bg-pan{0%{background-position:0 0}100%{background-position:30px 30px}}
+#page-loader::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(transparent,transparent 2px,rgba(124,106,247,.03) 3px,rgba(124,106,247,.03) 3px);pointer-events:none;z-index:2}
+.pl-terminal{position:relative;width:90%;max-width:500px;max-height:80vh;margin:auto;background:#111118;border-radius:10px;border:1px solid #2a2a38;box-shadow:0 12px 50px rgba(124,106,247,.15);overflow:hidden;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;display:flex;flex-direction:column;z-index:3;transform:translateZ(0);will-change:transform}
+.pl-term-header{background:#18181f;padding:0 16px;height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;border-bottom:1px solid #2a2a38}
+.pl-btn{width:12px;height:12px;border-radius:50%;flex-shrink:0}.pl-btn.r{background:#ff5f56}.pl-btn.y{background:#ffbd2e}.pl-btn.g{background:#27c93f}
+.pl-term-title{margin-left:10px;font-size:12px !important;color:#6b6b85;font-weight:600}
+.pl-term-body{padding:24px;font-size:13px;line-height:1.7;color:#9898b0;overflow-y:auto;text-shadow:0 0 2px rgba(171,157,242,.2)}
+.pl-brand{font-size:15px !important;line-height:1.2 !important;margin-bottom:16px;font-weight:600}
+.pl-b{color:#ff6188}.pl-name{color:#a9dc76}.pl-kw{color:#fc9867}.pl-class{color:#78dce8}
+.pl-prompt{color:#ab9df2;font-weight:700}.pl-cmd{color:#e8e8f0}.pl-log{color:#9898b0;margin-top:6px}
+.pl-status{color:#a9dc76}.pl-cursor{display:inline-block;width:8px;height:15px;background:#ab9df2;vertical-align:middle;margin-left:6px;animation:pl-blink 1s step-end infinite}
+@keyframes pl-blink{50%{opacity:0}}
+</style>
+<!-- CSS design tokens inlined — zero HTTP request, available the moment this byte arrives.
+     All 15 external CSS files depend on these custom properties, so having them here
+     means every stylesheet can resolve its var() references without waiting for a separate file. -->
+<style>:root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--surface3:#1e1e28;--border:#2a2a38;--border2:#363648;--text:#e8e8f0;--text-dim:#9898b0;--text-muted:#6b6b85;--accent:#7c6af7;--accent-light:#9180ff;--accent-rgb:124,106,247;--accent-glow:rgba(124,106,247,0.18);--accent2:#06d6a0;--accent2-glow:rgba(6,214,160,0.15);--easy:#06d6a0;--easy-rgb:6,214,160;--easy-bg:rgba(6,214,160,0.08);--easy-dark:#00b875;--medium:#f8b500;--medium-rgb:248,181,0;--medium-bg:rgba(248,181,0,0.08);--hard:#ff4757;--hard-light:#ff6b77;--hard-rgb:255,71,87;--hard-bg:rgba(255,71,87,0.08);--orange:#ff9f1c;--orange-rgb:255,159,28;--done-bg:rgba(6,214,160,0.05);--shadow-sm:rgba(0,0,0,0.25);--shadow-md:rgba(0,0,0,0.35);--shadow-lg:rgba(0,0,0,0.50);--shadow-xl:rgba(0,0,0,0.65);--overlay-bg:rgba(0,0,0,0.75);--surface-blur:rgba(10,10,15,0.95);--surface-blur2:rgba(12,12,22,0.90);--controls-h:126px;--section-h:55px}@media(max-width:768px){:root{--controls-h:100px}}[data-theme="light"]{--bg:#f0f0f8;--surface:#ffffff;--surface2:#f5f5fc;--surface3:#eaeaf4;--border:#cdcde2;--border2:#b8b8d0;--text:#0d0d1c;--text-dim:#2d2d4a;--text-muted:#555578;--accent:#6c5ce7;--accent-light:#7f70f0;--accent-rgb:108,92,231;--accent-glow:rgba(108,92,231,0.12);--accent2-glow:rgba(5,150,105,0.12);--easy:#059669;--easy-rgb:5,150,105;--easy-bg:rgba(5,150,105,0.10);--easy-dark:#047857;--medium:#b45309;--medium-rgb:180,83,9;--medium-bg:rgba(180,83,9,0.10);--hard:#dc2626;--hard-light:#ef4444;--hard-rgb:220,38,38;--hard-bg:rgba(220,38,38,0.10);--orange:#c2410c;--orange-rgb:194,65,12;--done-bg:rgba(5,150,105,0.07);--shadow-sm:rgba(0,0,0,0.06);--shadow-md:rgba(0,0,0,0.10);--shadow-lg:rgba(0,0,0,0.15);--shadow-xl:rgba(0,0,0,0.22);--overlay-bg:rgba(0,0,0,0.40);--surface-blur:rgba(240,240,248,0.96);--surface-blur2:rgba(245,245,252,0.92);--bg-opacity:0.12;--bg-blend:normal}</style>
+<!-- Performance tier detection: runs synchronously before CSS so data-perf is set before first paint.
+       lite     : saveData / 2G-3G connection  OR  ≤2 GB RAM  OR  ≤2 cores
+       standard : anything that doesn't qualify for lite or full
+       full     : WiFi/Ethernet (or unknown — Safari/Firefox)  AND  ≥4 GB RAM  AND  ≥4 cores -->
+<script>(function(){
+  var ov=localStorage.getItem('perf-override');
+  if(ov){document.documentElement.dataset.perf=ov;window.__perfTier=ov;return;}
+  var mem=navigator.deviceMemory||4; // capped at 8 by browser even on 12GB+ phones
+  var cpu=navigator.hardwareConcurrency||4; // often reports 8 on Snapdragon flagships
+  var conn=navigator.connection||{};
+  var eff=conn.effectiveType||'';
+  var type=conn.type||''; // 'wifi', 'cellular', 'ethernet', etc.
+  var saveData=!!conn.saveData;
+
+  // Lite: save-data ON, or clearly slow connection, or genuinely weak hardware
+  var connSlow=saveData||eff==='slow-2g'||eff==='2g'||eff==='3g';
+  var hwWeak=mem<=2||cpu<=2;
+  var isLite=connSlow||hwWeak;
+
+  // Full: flagship hardware (>=4GB, >=4 cores) with a fast connection.
+  // WiFi / Ethernet are always fast. Cellular "4g" is also fine for a local-first app.
+  // Safari/Firefox have no Connection API (eff==='', type==='') — let hardware decide.
+  var hwFull=mem>=4&&cpu>=4;
+  var connOk=!connSlow&&(type==='wifi'||type==='ethernet'||eff===''||eff==='4g');
+
+  var tier=isLite?'lite':hwFull&&connOk?'full':'standard';
+  document.documentElement.dataset.perf=tier;
+  window.__perfTier=tier;
+})();</script>
+<!-- Google Fonts: non-blocking. preload downloads the CSS without blocking render;
+     onload swaps rel to stylesheet once it arrives. display=swap already on the URL
+     so text renders in system font immediately, swaps when custom font is ready.
+     noscript fallback for the rare JS-disabled browser. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" /></noscript>
+<!-- variables.css is now inlined above — no separate request needed -->
+<!-- All CSS is non-blocking: preload downloads at high priority without stalling the first paint.
+     onload swaps rel to stylesheet once parsed. The loader (inlined above) stays visible until
+     revealPage() confirms all sheets are applied — so no FOUC is possible. -->
+<link rel="preload" as="style" href="css/base.css"       onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/header.css"     onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/buttons.css"    onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/stats.css"      onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/controls.css"   onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/sections.css"   onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/table.css"      onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/modal.css"      onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/report.css"     onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/toast.css"      onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/review-queue.css" onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/daily-goal.css" onload="this.onload=null;this.rel='stylesheet'" />
+<!-- smart-queue.css deferred — card is injected dynamically, never visible on load -->
+<link rel="preload" as="style" href="css/pwa.css"        onload="this.onload=null;this.rel='stylesheet'" />
+<!-- Feature CSS is loaded dynamically after first render (saves ~80KB from critical path) -->
+</head>
+<body class="tags-hidden topic-hidden">
+<div id="page-loader" aria-hidden="true">
+  <div class="pl-terminal">
+    <div class="pl-term-header">
+      <span class="pl-btn r"></span><span class="pl-btn y"></span><span class="pl-btn g"></span>
+      <span class="pl-term-title" id="pl-term-title"></span>
+    </div>
+    <div class="pl-term-body">
+      <div class="pl-brand" id="pl-brand">
+        <span class="pl-kw" data-txt="const"></span><span data-txt=" "></span><span class="pl-name" data-txt="app"></span><span data-txt=" = "></span><span class="pl-b" data-txt="new"></span><span data-txt=" "></span><span class="pl-class" data-txt="AlgoTracker"></span><span data-txt="();"></span>
+      </div>
+      <div id="pl-lines" class="pl-lines">
+        <div><span class="pl-prompt">~</span> <span class="pl-cmd">npm run interview-prep</span></div>
+        <div class="pl-log">> initializing environment... <span class="pl-status">[OK]</span></div>
+        <div class="pl-log">> mounting data structures... <span class="pl-status">[OK]</span></div>
+        <!-- JS will inject typing lines here -->
+        <span id="pl-cursor" class="pl-cursor"></span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var msgs = [
+    'allocating memory for arrays...',
+    'balancing binary search trees...',
+    'optimizing graph traversals...',
+    'warming up recursion engines...',
+    'resolving DP state transitions...',
+    'calculating big-O complexities...'
+  ];
+  var linesContainer = document.getElementById('pl-lines');
+  var cursor = document.getElementById('pl-cursor');
+  if (!linesContainer || !cursor) return;
+
+  // Scramble decode effect for title and brand text
+  var chars = "!<>-_\\/[]{}—=+*^?#_";
+  var scrambleTargets = document.querySelectorAll('#pl-term-title, #pl-brand span[data-txt]');
+  scrambleTargets.forEach(function(el) {
+    var finalStr = el.getAttribute('data-txt') || "bash - algotracker";
+    var iter = 0;
+    var decodeInterval = setInterval(function() {
+      el.textContent = finalStr.split('').map(function(c, i) {
+        if (c === ' ') return ' ';
+        if (i < iter) return c;
+        return chars[Math.floor(Math.random() * chars.length)];
+      }).join('');
+      iter += 1/2.5;
+      if (iter >= finalStr.length) {
+        el.textContent = finalStr;
+        clearInterval(decodeInterval);
+      }
+    }, 35);
+  });
+  
+  var msgIdx = Math.floor(Math.random() * msgs.length);
+  var charIdx = 0;
+  var isTyping = true;
+
+  // Create initial line
+  var activeSpan = document.createElement('span');
+  var lineDiv = document.createElement('div');
+  lineDiv.className = 'pl-log';
+  lineDiv.appendChild(document.createTextNode('> '));
+  lineDiv.appendChild(activeSpan);
+  linesContainer.insertBefore(lineDiv, cursor);
+  lineDiv.appendChild(cursor);
+
+  var t = setInterval(function() {
+    if (!linesContainer.parentNode) { clearInterval(t); return; }
+    if (isTyping) {
+      activeSpan.textContent = msgs[msgIdx].substring(0, charIdx++);
+      if (charIdx > msgs[msgIdx].length) {
+        isTyping = false;
+        
+        // Append [OK]
+        var statusSpan = document.createElement('span');
+        statusSpan.className = 'pl-status';
+        statusSpan.textContent = ' [OK]';
+        lineDiv.insertBefore(statusSpan, cursor);
+
+        setTimeout(function() {
+          charIdx = 0;
+          var nextIdx;
+          do {
+            nextIdx = Math.floor(Math.random() * msgs.length);
+          } while (nextIdx === msgIdx && msgs.length > 1);
+          msgIdx = nextIdx;
+          
+          // Clear the current line for the next message
+          activeSpan.textContent = '';
+          if (statusSpan && statusSpan.parentNode) {
+            statusSpan.parentNode.removeChild(statusSpan);
+          }
+
+          isTyping = true;
+        }, 800); // pause so user can read before it changes
+      }
+    }
+  }, 20); // extremely fast typing (20ms/char)
+})();
+</script>
+<div id="watermark" aria-hidden="true"></div>
+<div class="wrapper">
+
+  <!-- HANGING TIMER WIDGET -->
+  <div class="timer-hang" id="timer-hang">
+    <div class="timer-rope timer-rope-left"></div>
+    <div class="timer-rope timer-rope-right"></div>
+    <div class="timer-body">
+      <div id="sw-display">00:00</div>
+      <div class="timer-controls">
+        <button class="sw-btn" id="sw-start" title="Start/Pause">▶</button>
+        <button class="sw-btn" id="sw-reset" title="Reset">↺</button>
+        <button class="sw-btn mode-btn" id="sw-mode" title="Toggle Mode">⏱</button>
+        <button class="sw-btn sw-minimize-btn" id="sw-minimize" title="Minimize">−</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="header-badge">2025–2026 Interview Prep</div>
+        <h1>AlgoTracker</h1>
+        <div class="header-meta">
+          <span>📦 <b>Total:</b> <span id="hdr-total">—</span> Questions</span>
+          <span id="hdr-user-meta" class="hdr-user-chip" title="Signed in user"></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-admin-panel" class="btn-admin-panel" onclick="AdminPanel.open()" style="display:none">
+          <span class="btn-admin-panel-icon">⚙</span> Admin Panel
+        </button>
+        <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
+        <button class="btn-action" onclick="RefreshModal.open()" title="Sync latest questions">↺ Hard Refresh</button>
+        <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
+        <button class="btn-settings" onclick="UserSettings.open()" title="Profile &amp; Settings">⚙ Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="study-tools-bar">
+    <button class="btn-feature" onclick="FocusMode.openPicker()" title="Start a focused study session [F]">
+      <span class="feature-icon">🎯</span>
+      <span class="feature-text">Start Focus Session</span>
+    </button>
+    <button class="btn-feature" onclick="MasteryChart.open()" title="View Section Mastery Map">
+      <span class="feature-icon">🧠</span>
+      <span class="feature-text">Section Mastery Map</span>
+    </button>
+    <button class="btn-feature" onclick="CompanyFilter.openPicker()" title="Start a company-focused prep session">
+      <span class="feature-icon">🏢</span>
+      <span class="feature-text">Company Prep Mode</span>
+    </button>
+    <button class="btn-feature" onclick="MockInterview.openConfig()" title="Simulate a timed interview [M]">
+      <span class="feature-icon">🎤</span>
+      <span class="feature-text">Mock Interview</span>
+    </button>
+    <button class="btn-feature" onclick="WeaknessHeatmap.open()" title="View weakness heatmap by section & difficulty [H]">
+      <span class="feature-icon">🔥</span>
+      <span class="feature-text">Weakness Heatmap</span>
+    </button>
+    <button class="btn-feature" id="btn-learning-material" onclick="LearningMaterial.openList()" title="Browse learning materials">
+      <span class="feature-icon">📚</span>
+      <span class="feature-text">Learning Material</span>
+    </button>
+  </div>
+
+  <!-- MOTIVATION BOX -->
+  <div class="motivation-box">
+    <div class="motivation-inner">
+      <div id="motivation-text"></div>
+      <button id="quote-shuffle-btn" title="New quote" aria-label="Shuffle quote">↻</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="top-stats">
+    <div class="stat-card streak-card">
+      <div class="stat-label">Current Streak</div>
+      <div class="stat-value streak-val" id="hdr-streak">0 Days</div>
+      <div class="stat-sub">keep it burning 🔥</div>
+    </div>
+    <div class="stat-card today-card" onclick="DailyGoal.openEditor()" style="cursor:pointer" title="Click to set daily goal">
+      <div class="stat-label">Solved Today</div>
+      <div class="daily-goal-ring-wrap" id="daily-goal-ring"></div>
+      <div class="stat-value today-val" id="hdr-today">0</div>
+      <div class="stat-sub" id="daily-goal-label">click to set goal</div>
+      <div class="stat-sub progress-track today-track"><div class="progress-fill easy-fill" id="today-fill" style="width: 0%"></div></div>
+    </div>
+  </div>
+
+  <!-- STATS BOARD (collapsible card) -->
+  <div class="stats-section-container">
+  <div class="stats-board-header" onclick="window.toggleStatsBoard()">
+    <span class="stats-board-title">📊 Statistics</span>
+    <span class="cs-chevron" id="stats-board-chevron">▾</span>
+  </div>
+
+  <div id="stats-board-wrap" class="stats-board-wrap">
+    <div class="stats-board-inner">
+      <div class="stats-board">
+        <div class="stat-card"><div class="stat-label">Completed</div><div class="stat-value done" id="stat-done">—</div><div class="stat-sub" id="stat-of">of —</div></div>
+        <div class="stat-card"><div class="stat-label">Easy Done</div><div class="stat-value easy" id="stat-easy">—</div><div class="stat-sub" id="stat-easy-of">of —</div></div>
+        <div class="stat-card"><div class="stat-label">Medium Done</div><div class="stat-value medium" id="stat-medium">—</div><div class="stat-sub" id="stat-med-of">of —</div></div>
+        <div class="stat-card"><div class="stat-label">Hard Done</div><div class="stat-value hard" id="stat-hard">—</div><div class="stat-sub" id="stat-hard-of">of —</div></div>
+        <div class="stat-card"><div class="stat-label">With Notes</div><div class="stat-value total" id="stat-notes">—</div><div class="stat-sub">solutions saved</div></div>
+        <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-value" id="stat-rem" style="color:var(--text-dim)">—</div><div class="stat-sub">to go</div></div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="global-progress">
+        <div class="progress-header">
+          <span class="progress-title">Overall Progress</span>
+          <span class="progress-pct" id="prog-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill easy-fill" id="prog-easy" style="width:0%"></div>
+          <div class="progress-fill medium-fill" id="prog-medium" style="width:0%"></div>
+          <div class="progress-fill hard-fill" id="prog-hard" style="width:0%"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)">
+          <span style="color:var(--easy)">■ Easy</span>
+          <span style="color:var(--medium)">■ Medium</span>
+          <span style="color:var(--hard)">■ Hard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /.stats-section-container -->
+  <script>
+    (function() {
+      if (localStorage.getItem('stats_collapsed') === '0') {
+        var el = document.getElementById('stats-board-wrap');
+        var ch = document.getElementById('stats-board-chevron');
+        if (el) el.classList.add('open');
+        if (ch) ch.classList.add('rotated');
+      }
+    })();
+  </script>
+
+  <!-- COMPANY READINESS STATS -->
+  <div class="company-stats-section">
+    <div class="company-stats-header" onclick="CompanyStats.toggle()">
+      <span class="cs-title">🏢 Company Readiness</span>
+      <span class="cs-count" id="company-stats-count">—</span>
+      <span class="cs-chevron" id="company-stats-chevron">▾</span>
+    </div>
+    <div class="company-stats-body" id="company-stats-body"></div>
+  </div>
+
+  <!-- REVIEW QUEUE -->
+  <div id="review-queue"></div>
+
+  <!-- FOCUS SESSION BAR -->
+  <div id="focus-bar" class="focus-bar hidden">
+    <div class="focus-bar-inner">
+      <span class="focus-bar-label">🎯 <strong>Focus Session:</strong> <span id="focus-topic-label"></span></span>
+      <span class="focus-bar-count" id="focus-solved-count">0 solved</span>
+      <button class="focus-end-btn" onclick="FocusMode.end()">End Session</button>
+    </div>
+  </div>
+
+  <!-- COMPANY PREP SESSION BAR (sticky, shown only during prep) -->
+  <div id="company-prep-bar" class="focus-bar hidden">
+    <div class="focus-bar-inner">
+      <span class="focus-bar-label">🏢 <strong>Company Prep:</strong> <span id="company-prep-label"></span></span>
+      <span class="focus-bar-count" id="company-prep-count">0 solved</span>
+      <button class="focus-end-btn" onclick="CompanyFilter.endPrep()">End Prep</button>
+    </div>
+  </div>
+
+  <!-- MOCK INTERVIEW BAR (sticky, shown during mock session) -->
+  <div id="mi-bar" class="focus-bar hidden">
+    <div class="focus-bar-inner">
+      <span class="focus-bar-label" id="mi-bar-label">🎤 <strong>Mock Interview</strong></span>
+      <span class="mi-countdown" id="mi-countdown">00:00</span>
+      <button class="focus-end-btn" onclick="MockInterview.end(false)">Submit Interview</button>
+    </div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="search-wrap">
+      <input type="text" class="search-box" id="search" placeholder="Search by name, ID, topic..." oninput="applyFilters()" onmouseenter="if(window.innerWidth > 768) this.focus()" />
+      <button class="search-clear-btn hidden" id="search-clear-btn" onclick="clearSearch()" title="Clear search">×</button>
+    </div>
+
+    <!-- Difficulty filter dropdown -->
+    <div class="filter-group">
+      <div class="filter-dropdown-wrap" id="diff-dropdown-wrap">
+        <button class="filter-btn dropdown-btn active" id="diff-filter-btn" onclick="toggleCustomDropdown('diff-dropdown')">
+          <span id="diff-filter-label">Difficulty: All</span>
+        </button>
+        <div class="filter-dropdown" id="diff-dropdown">
+          <div class="filter-list">
+            <div class="filter-list-item active" data-val="all" onclick="setDiffFilter('all')">All</div>
+            <div class="filter-list-item easy" data-val="Easy" onclick="setDiffFilter('Easy')">Easy</div>
+            <div class="filter-list-item medium" data-val="Medium" onclick="setDiffFilter('Medium')">Medium</div>
+            <div class="filter-list-item hard" data-val="Hard" onclick="setDiffFilter('Hard')">Hard</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status filter dropdown -->
+    <div class="filter-group">
+      <div class="filter-dropdown-wrap" id="status-dropdown-wrap">
+        <button class="filter-btn dropdown-btn active" id="status-filter-btn" onclick="toggleCustomDropdown('status-dropdown')">
+          <span id="status-filter-label">Status: All</span>
+        </button>
+        <div class="filter-dropdown" id="status-dropdown">
+          <div class="filter-list">
+            <div class="filter-list-item active" data-val="all" onclick="setStatusFilter('all')">All</div>
+            <div class="filter-list-item done-item" data-val="done" onclick="setStatusFilter('done')">✓ Done</div>
+            <div class="filter-list-item undone-item" data-val="undone" onclick="setStatusFilter('undone')">◻ Undone</div>
+            <div class="filter-list-item review-item" data-val="review" onclick="setStatusFilter('review')">★ Review</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-divider"></div>
+
+    <button class="btn-smart-pick" id="random-btn" onclick="pickRandom()" title="Smart pick: priority-scored unsolved problem [R]">🧬 Smart Pick</button>
+
+    <!-- Company filter dropdown -->
+    <div class="company-filter-wrap" id="company-filter-wrap">
+      <button class="btn-company-filter dropdown-btn" id="company-filter-btn" onclick="CompanyFilter.toggle()">
+        <span id="company-filter-label">🏢 Company</span>
+      </button>
+      <button class="company-clear-x hidden" id="company-clear-btn" onclick="CompanyFilter.clear()" title="Clear company filter">×</button>
+      <div class="company-dropdown" id="company-dropdown">
+        <input type="text" class="company-search-input" id="company-search-input"
+               placeholder="Search company..."
+               oninput="CompanyFilter.search(this.value)"
+               onmouseenter="if(window.innerWidth > 768) this.focus()" />
+        <div class="company-list" id="company-list" data-lenis-prevent></div>
+      </div>
+    </div>
+
+    <div class="filter-divider view-toggles"></div>
+    <div class="filter-group view-toggles">
+      <button class="filter-btn view-toggle" id="toggle-tags" onclick="toggleTags(this)">⊞ Topics & Tags</button>
+      <button class="filter-btn view-toggle" id="toggle-sol" onclick="toggleSolution(this)">⊞ Solution</button>
+      <button class="filter-btn view-toggle active" id="toggle-notes" onclick="toggleNotes(this)">⊞ Notes</button>
+      <button class="filter-btn view-toggle" id="toggle-companies" onclick="toggleCompanies(this)">⊞ Companies</button>
+    </div>
+  </div>
+
+  <!-- THEME FAB (fixed bottom-right) -->
+  <button class="theme-fab" id="toggle-theme" onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle theme">
+    <!-- Sun: shown in dark mode (click → go light) -->
+    <svg class="theme-icon icon-sun" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4.5"/>
+      <line x1="12" y1="2"    x2="12" y2="5"/>
+      <line x1="12" y1="19"   x2="12" y2="22"/>
+      <line x1="2"  y1="12"   x2="5"  y2="12"/>
+      <line x1="19" y1="12"   x2="22" y2="12"/>
+      <line x1="4.93" y1="4.93" x2="7.05" y2="7.05"/>
+      <line x1="16.95" y1="16.95" x2="19.07" y2="19.07"/>
+      <line x1="19.07" y1="4.93" x2="16.95" y2="7.05"/>
+      <line x1="7.05"  y1="16.95" x2="4.93" y2="19.07"/>
+    </svg>
+    <!-- Moon: shown in light mode (click → go dark) -->
+    <svg class="theme-icon icon-moon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  </button>
+
+  <!-- SECTIONS -->
+  <div id="sections">
+    <div class="loading-msg"><span class="loading-dots">Loading questions</span></div>
+  </div>
+
+  </div>
+</div>
+
+<!-- ADMIN PANEL MODAL -->
+<div class="modal-overlay" id="admin-panel-modal" onclick="AdminPanel.handleOverlayClick(event)">
+  <div class="modal" style="max-width:460px;">
+    <div class="admin-panel-header">
+      <div class="admin-panel-badge">Admin</div>
+      <div class="modal-title" style="margin-bottom:2px;">Admin Panel</div>
+      <div class="modal-sub" style="margin-bottom:0;">Restricted controls — visible to admins only</div>
+    </div>
+    <div class="admin-panel-grid">
+      <div class="admin-action-card">
+        <div class="admin-action-icon admin-action-icon--green">+</div>
+        <div class="admin-action-body">
+          <div class="admin-action-label">Add Question</div>
+          <div class="admin-action-desc">Add a new problem to the tracker</div>
+        </div>
+        <button class="btn-submit admin-action-btn" onclick="AdminPanel.close(); setTimeout(openModal, 120)">Open</button>
+      </div>
+      <div class="admin-action-card">
+        <div class="admin-action-icon admin-action-icon--red">📡</div>
+        <div class="admin-action-body">
+          <div class="admin-action-label">Send Broadcast</div>
+          <div class="admin-action-desc">Email blast to all subscribers</div>
+        </div>
+        <button id="ap-broadcast-btn" class="btn-submit admin-action-btn admin-action-btn--danger" onclick="AdminPanel.sendBroadcast()">Send</button>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-cancel" onclick="AdminPanel.close()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">Add New Question</div>
+    <div class="modal-sub">Problem ID must be unique across all questions</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Problem ID *</label>
+        <input type="number" class="form-input" id="f-lc" placeholder="e.g. 2404" min="1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Difficulty *</label>
+        <select class="form-select" id="f-diff">
+          <option value="">Select...</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Problem Name *</label>
+        <input type="text" class="form-input" id="f-name" placeholder="e.g. Count Subarrays With Score Less Than K" />
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Problem URL *</label>
+        <input type="url" class="form-input" id="f-url" placeholder="https://leetcode.com/... or https://geeksforgeeks.org/..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic / Pattern *</label>
+        <input type="text" class="form-input" id="f-topic" placeholder="e.g. Sliding Window" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Section *</label>
+        <select class="form-select" id="f-section">
+          <option value="">Select or type below...</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">New Section Name (if not in list)</label>
+        <input type="text" class="form-input" id="f-section-new" placeholder="Leave blank to use selection above" />
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Tags <span style="color:var(--text-muted)">(optional, comma-separated)</span></label>
+        <input type="text" class="form-input" id="f-tags" placeholder="e.g. prefix-sum, interview-favorite, goldman-sachs" />
+        <span class="form-hint">These appear as purple pills on the question row</span>
+      </div>
+    </div>
+    <div class="form-error" id="f-error"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" id="f-submit" onclick="submitQuestion()">Add Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER PROFILE MODAL -->
+<div class="modal-overlay" id="user-profile-modal" onclick="UserProfile.handleOverlayClick(event)">
+  <div class="modal us-modal" style="max-width:420px">
+    <button class="us-logout-btn" onclick="confirmLogout()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span>Log Out</span>
+    </button>
+    <div class="up-header">
+      <div class="up-avatar" id="up-avatar">?</div>
+      <div class="up-email" id="up-email"></div>
+    </div>
+    <div class="modal-body" style="padding:0 28px 4px">
+
+      <div class="us-field-group">
+        <label class="us-label">Display Name</label>
+        <input id="up-name" class="us-input" type="text" placeholder="Your name" maxlength="80" autocomplete="name" />
+      </div>
+
+      <div class="us-field-group">
+        <label class="us-label">Phone Number</label>
+        <div class="us-phone-row">
+          <select id="up-phone-code" class="us-phone-code"></select>
+          <input id="up-phone-number" class="us-input us-phone-num" type="tel"
+                 placeholder="9876543210" maxlength="20"
+                 oninput="this.value=this.value.replace(/[^\d\s\-()+]/g,'')" />
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="UserProfile.close()">Cancel</button>
+      <button class="btn-submit" id="up-save-btn" onclick="UserProfile.save()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER SETTINGS MODAL -->
+<div class="modal-overlay" id="user-settings-modal" onclick="UserSettings.handleOverlayClick(event)">
+  <div class="modal us-modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon" style="background:rgba(var(--accent-rgb),0.1);border-color:rgba(var(--accent-rgb),0.25)">⚙</div>
+      <div class="modal-title">Settings</div>
+    </div>
+    <div class="modal-body" style="padding:0 28px 4px">
+
+      <div class="us-field-group us-toggle-row">
+        <label class="us-label">Daily Email Reminders</label>
+        <label class="us-switch">
+          <input id="us-reminders-toggle" type="checkbox" onchange="UserSettings.onReminderToggle()" />
+          <span class="us-slider"></span>
+        </label>
+      </div>
+
+      <div class="us-field-group us-toggle-row">
+        <label class="us-label">Show Background Artwork</label>
+        <label class="us-switch">
+          <input id="us-bg-toggle" type="checkbox" onchange="UserSettings.onThemeBgToggle()" />
+          <span class="us-slider"></span>
+        </label>
+      </div>
+
+      <div class="us-field-group">
+        <label class="us-label">Performance Mode <span class="us-hint" id="us-perf-hint"></span></label>
+        <select id="us-perf-select" class="us-input">
+          <option value="auto">Auto (recommended)</option>
+          <option value="lite">Lite — instant, no effects</option>
+          <option value="standard">Standard — balanced</option>
+          <option value="full">Full — all effects</option>
+        </select>
+      </div>
+
+      <div id="us-reminder-email-row" class="us-field-group hidden">
+        <label class="us-label">Reminder Email <span class="us-hint">(leave blank to use account email)</span></label>
+        <input id="us-reminder-email" class="us-input" type="email"
+               placeholder="your@email.com" maxlength="120" autocomplete="email" />
+      </div>
+
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="UserSettings.close()">Cancel</button>
+      <button class="btn-submit" id="us-save-btn" onclick="UserSettings.save()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOUT CONFIRMATION MODAL -->
+<div class="modal-overlay" id="logout-modal" onclick="Logout.handleOverlayClick(event)">
+  <div class="modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon">⎋</div>
+      <div class="modal-title">Log Out?</div>
+    </div>
+    <div class="confirm-modal-body">
+      Your session will be ended and you'll be signed out.<br>
+      You'll be redirected to the sign-in page.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="Logout.close()">Cancel</button>
+      <button class="btn-danger" onclick="Logout.confirm()">Log Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- REFRESH CONFIRMATION MODAL -->
+<div class="modal-overlay" id="refresh-modal" onclick="RefreshModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon">↺</div>
+      <div class="modal-title">Hard Refresh?</div>
+    </div>
+    <div class="confirm-modal-body">
+      Sync the latest questions and problem list?<br>
+      Any unsaved local changes will be replaced.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="RefreshModal.close()">Cancel</button>
+      <button class="btn-submit" onclick="RefreshModal.confirm()" style="background:var(--accent)">Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PROGRESS CONFIRMATION MODAL -->
+<div class="modal-overlay" id="reset-modal" onclick="ResetModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:420px">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon" style="color:var(--hard)">⚠️</div>
+      <div class="modal-title">Reset All Progress?</div>
+    </div>
+    <div class="confirm-modal-body">
+      This will permanently erase <strong>all</strong> checkboxes, solutions, and notes.<br>
+      Your problem list will remain intact.
+    </div>
+    <div class="reset-confirm-field">
+      <label class="reset-confirm-label">Type <strong>RESET</strong> to confirm</label>
+      <input id="reset-confirm-input" class="form-input reset-confirm-input"
+             type="text" placeholder="RESET" autocomplete="off" spellcheck="false"
+             oninput="ResetModal.onType(this.value)" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="ResetModal.close()">Cancel</button>
+      <button id="reset-confirm-btn" class="btn-danger" disabled
+              style="background:var(--hard); color:#fff; border-color:var(--hard);"
+              onclick="ResetModal.confirm()">Reset Progress</button>
+    </div>
+  </div>
+</div>
+
+<!-- POMODORO EDIT MODAL -->
+<div class="modal-overlay" id="pomodoro-modal" onclick="PomodoroModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:340px">
+    <div class="confirm-modal-header" style="justify-content:center; margin-bottom: 20px;">
+      <div class="modal-title">Edit Pomodoro</div>
+    </div>
+    <div class="form-group full" style="text-align:center">
+      <label class="form-label" style="text-align:center; margin-bottom:18px; display:block;">Duration</label>
+      <div style="display:flex; align-items:center; justify-content:center; gap:14px;">
+
+        <!-- HOURS -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div class="pomo-stepper">
+            <input type="number" class="form-input pomo-input" id="f-pomodoro-hrs"
+              min="0" max="5" step="1" placeholder="0" />
+            <div class="pomo-step-col">
+              <button class="pomo-step-btn" data-target="f-pomodoro-hrs" data-dir="1">▲</button>
+              <button class="pomo-step-btn" data-target="f-pomodoro-hrs" data-dir="-1">▼</button>
+            </div>
+          </div>
+          <span class="pomo-unit-label">Hours</span>
+        </div>
+
+        <span class="pomo-colon">:</span>
+
+        <!-- MINUTES -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div class="pomo-stepper">
+            <input type="number" class="form-input pomo-input" id="f-pomodoro-mins"
+              min="0" max="59" step="1" placeholder="25" />
+            <div class="pomo-step-col">
+              <button class="pomo-step-btn" data-target="f-pomodoro-mins" data-dir="1">▲</button>
+              <button class="pomo-step-btn" data-target="f-pomodoro-mins" data-dir="-1">▼</button>
+            </div>
+          </div>
+          <span class="pomo-unit-label">Minutes</span>
+        </div>
+
+      </div>
+      <div id="f-pomodoro-error" style="color:var(--hard); font-size:12px; font-family:'JetBrains Mono',monospace; margin-top:12px; min-height:18px;"></div>
+    </div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-cancel" onclick="PomodoroModal.close()">Cancel</button>
+      <button class="btn-submit" onclick="PomodoroModal.confirm()" style="background:var(--accent)">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- SOLUTION EDIT MODAL -->
+<div class="modal-overlay" id="solution-modal" onclick="SolutionModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:800px; width: 90%; height: 80vh; display: flex; flex-direction: column;">
+    <div class="modal-title" style="margin-bottom: 8px;" id="sol-modal-title">Edit Solution</div>
+    <div class="modal-sub" style="margin-bottom: 20px;" id="sol-modal-sub"></div>
+    <div class="form-group full" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+      <textarea class="form-input" id="f-sol-text" style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; resize: none; padding: 16px;"></textarea>
+    </div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-cancel" onclick="SolutionModal.close()">Cancel</button>
+      <button class="btn-submit" onclick="SolutionModal.save()" style="background:var(--accent)">Save Solution</button>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="report-modal" onclick="ReportModal.handleOverlayClick(event)">
+  <div class="modal heatmap-modal">
+    <div class="modal-title" style="margin-bottom: 24px;">Contribution Activity</div>
+    <div class="heatmap-container">
+      <div class="heatmap-scroll">
+        <div id="heatmap-grid" class="heatmap-grid"></div>
+        <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
+      </div>
+      <div class="heatmap-legend">
+        <span>Less</span>
+        <div class="legend-box" style="background: var(--surface2);"></div>
+        <div class="legend-box" style="background: var(--easy-bg);"></div>
+        <div class="legend-box" style="background: var(--easy);"></div>
+        <div class="legend-box" style="background: #00b875;"></div>
+        <span>More</span>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top: 24px; justify-content: flex-end;">
+      <button class="btn-cancel" onclick="ReportModal.close()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MASTERY CHART MODAL -->
+<div class="modal-overlay" id="mastery-modal" onclick="MasteryChart.handleOverlayClick(event)">
+  <div class="modal mastery-modal">
+    <div class="modal-title" style="margin-bottom: 8px;">Section Mastery Map</div>
+    <div class="modal-sub" style="margin-bottom: 20px;">Radar chart showing your proficiency across all DSA sections</div>
+    <div class="mastery-canvas-wrap">
+      <canvas id="mastery-canvas" width="500" height="500"></canvas>
+    </div>
+    <div id="mastery-legend" class="mastery-legend"></div>
+    <div class="modal-actions" style="margin-top: 20px; justify-content: flex-end;">
+      <button class="btn-cancel" onclick="MasteryChart.close()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPANY PREP PICKER -->
+<div class="modal-overlay" id="company-prep-modal" onclick="CompanyFilter.handlePickerOverlay(event)">
+  <div class="modal auth-modal" style="max-width:400px;">
+    <div class="modal-title" style="margin-bottom:8px;">🏢 Company Prep Mode</div>
+    <div class="modal-sub" style="margin-bottom:16px;">Pick a company to focus your prep session. Sorted by question count.</div>
+    <input type="text" class="company-search-input" id="company-prep-search"
+           placeholder="Search company..."
+           oninput="CompanyFilter.filterPicker(this.value)"
+           onmouseenter="if(window.innerWidth > 768) this.focus()"
+           style="border-radius:8px;margin-bottom:12px;" />
+    <div class="focus-topic-list" id="company-prep-list">
+      <!-- Injected by company-filter.js -->
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-cancel" onclick="CompanyFilter.closePicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPANY READINESS CONFIRM MODAL -->
+<div class="modal-overlay" id="company-readiness-confirm-modal" onclick="if(event.target===this)CompanyFilter.closeReadinessConfirm()">
+  <div class="modal" style="max-width:360px;text-align:center;">
+    <div class="confirm-modal-header" style="justify-content:center;margin-bottom:4px;">
+      <div class="confirm-modal-icon">🏢</div>
+      <div class="modal-title">Company Readiness</div>
+    </div>
+    <div id="company-readiness-confirm-body"></div>
+  </div>
+</div>
+
+<!-- COMPANY PREP SESSION SUMMARY -->
+<div class="modal-overlay" id="company-prep-summary-modal" onclick="CompanyFilter.handleSummaryOverlay(event)">
+  <div class="modal" style="max-width:420px;">
+    <div class="confirm-modal-header" style="justify-content:center;margin-bottom:16px;">
+      <div class="confirm-modal-icon">🏢</div>
+      <div class="modal-title">Prep Session Complete</div>
+    </div>
+    <div id="company-prep-summary-body" class="focus-summary-body"></div>
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn-submit" onclick="CompanyFilter.closeSummary()" style="background:var(--accent)">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS TOPIC PICKER -->
+<div class="modal-overlay" id="focus-picker-modal" onclick="FocusMode.handlePickerOverlay(event)">
+  <div class="modal auth-modal" style="max-width:600px;">
+    <div class="modal-title" style="margin-bottom: 4px;">Pick Sections</div>
+    <div class="modal-sub" style="margin-bottom: 16px;">Tap sections to select. You can pick multiple.</div>
+    <div style="margin-bottom: 14px;">
+      <select id="focus-type-select" class="form-select" onchange="FocusMode.refreshList()">
+        <option value="unsolved" selected>Target: Unsolved Problems</option>
+        <option value="solved">Target: Solved Problems</option>
+        <option value="all">Target: All Problems (Review)</option>
+      </select>
+    </div>
+    <div class="focus-topic-list" id="focus-topic-list">
+      <!-- Injected by focus-mode.js -->
+    </div>
+    <div class="modal-actions" style="margin-top: 20px;">
+      <button class="btn-cancel" onclick="FocusMode.closePicker()">Cancel</button>
+      <button class="btn-submit" id="focus-start-btn" onclick="FocusMode.startSelected()" disabled style="background:var(--accent)">Start Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS SESSION SUMMARY -->
+<div class="modal-overlay" id="focus-summary-modal" onclick="FocusMode.handleSummaryOverlay(event)">
+  <div class="modal" style="max-width:420px;">
+    <div class="confirm-modal-header" style="justify-content:center; margin-bottom: 16px;">
+      <div class="confirm-modal-icon">🎯</div>
+      <div class="modal-title">Session Complete</div>
+    </div>
+    <div id="focus-summary-body" class="focus-summary-body"></div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-submit" onclick="FocusMode.closeSummary()" style="background:var(--accent)">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEAKNESS HEATMAP MODAL -->
+<div class="modal-overlay" id="heatmap-modal" onclick="WeaknessHeatmap.handleOverlay(event)">
+  <div class="modal" style="max-width:680px;width:96vw;max-height:80vh;overflow-y:auto;">
+    <div class="modal-title" style="margin-bottom:4px;">🔥 Weakness Heatmap</div>
+    <div class="modal-sub" style="margin-bottom:20px;">Click any cell to start a <strong style="color:var(--accent)">Focus Session</strong> for that section + difficulty. Redder = more unsolved.</div>
+    <div id="heatmap-body"></div>
+    <div class="modal-actions" style="margin-top:20px;justify-content:flex-end;">
+      <button class="btn-cancel" onclick="WeaknessHeatmap.close()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOCK INTERVIEW CONFIG -->
+<div class="modal-overlay" id="mi-config-modal" onclick="MockInterview.handleConfigOverlay(event)">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-title" style="margin-bottom:4px;">🎤 Mock Interview</div>
+    <div class="modal-sub" style="margin-bottom:16px;">Configure your timed interview session. AI hints and analysis are disabled during the session.</div>
+
+    <div class="mi-config-grid">
+      <div class="mi-count-group">
+        <div class="mi-count-label easy">Easy</div>
+        <div class="pomo-stepper">
+          <input type="number" class="pomo-input" id="mi-easy-count" min="0" max="10" value="1" />
+          <div class="pomo-step-col">
+            <button class="pomo-step-btn" onclick="MockInterview.step('mi-easy-count',1)">▲</button>
+            <button class="pomo-step-btn" onclick="MockInterview.step('mi-easy-count',-1)">▼</button>
+          </div>
+        </div>
+      </div>
+      <div class="mi-count-group">
+        <div class="mi-count-label medium">Medium</div>
+        <div class="pomo-stepper">
+          <input type="number" class="pomo-input" id="mi-medium-count" min="0" max="10" value="2" />
+          <div class="pomo-step-col">
+            <button class="pomo-step-btn" onclick="MockInterview.step('mi-medium-count',1)">▲</button>
+            <button class="pomo-step-btn" onclick="MockInterview.step('mi-medium-count',-1)">▼</button>
+          </div>
+        </div>
+      </div>
+      <div class="mi-count-group">
+        <div class="mi-count-label hard">Hard</div>
+        <div class="pomo-stepper">
+          <input type="number" class="pomo-input" id="mi-hard-count" min="0" max="10" value="1" />
+          <div class="pomo-step-col">
+            <button class="pomo-step-btn" onclick="MockInterview.step('mi-hard-count',1)">▲</button>
+            <button class="pomo-step-btn" onclick="MockInterview.step('mi-hard-count',-1)">▼</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
+      <input type="checkbox" id="mi-include-solved" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;flex-shrink:0;" />
+      <span style="font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">Include already-solved problems</span>
+    </label>
+
+    <div class="mi-filter-row">
+      <div class="mi-filter-group">
+        <div class="mi-filter-label">Company (optional)</div>
+        <select class="mi-filter-select" id="mi-company-select"></select>
+      </div>
+      <div class="mi-filter-group">
+        <div class="mi-filter-label">Section (optional)</div>
+        <select class="mi-filter-select" id="mi-section-select"></select>
+      </div>
+    </div>
+
+    <div class="mi-filter-group" style="margin-bottom:18px;">
+      <div class="mi-filter-label" style="margin-bottom:8px;">Time Limit</div>
+      <select class="mi-filter-select" id="mi-time-select" style="width:100%">
+        <option value="30">30 minutes</option>
+        <option value="45">45 minutes</option>
+        <option value="60" selected>60 minutes</option>
+        <option value="90">90 minutes</option>
+        <option value="120">120 minutes</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="MockInterview.closeConfig()">Cancel</button>
+      <button class="btn-submit" onclick="MockInterview.start()" style="background:var(--accent)">Start Interview</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOCK INTERVIEW SUMMARY -->
+<div class="modal-overlay" id="mi-summary-modal" onclick="MockInterview.handleSummaryOverlay(event)">
+  <div class="modal" style="max-width:420px;">
+    <div id="mi-summary-body"></div>
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn-submit" onclick="MockInterview.closeSummary()" style="background:var(--accent)">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY GOAL EDITOR -->
+<div class="modal-overlay" id="goal-editor-modal" onclick="DailyGoal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-title" style="margin-bottom: 6px;">Daily Goal</div>
+    <div class="modal-sub" style="margin-bottom: 20px;">How many problems per day?</div>
+    <div class="goal-editor-body">
+      <div class="goal-stepper">
+        <button class="goal-step-btn" onclick="DailyGoal.adjust(-1)">−</button>
+        <input type="number" class="goal-input" id="goal-input" min="1" max="20" value="3" />
+        <button class="goal-step-btn" onclick="DailyGoal.adjust(1)">+</button>
+      </div>
+      <div class="goal-hint">problems / day</div>
+    </div>
+    <div class="modal-actions" style="margin-top: 24px;">
+      <button class="btn-cancel" onclick="DailyGoal.closeEditor()">Cancel</button>
+      <button class="btn-submit" onclick="DailyGoal.saveFromEditor()" style="background:var(--accent)">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- AMBIENT SOUND WIDGET -->
+<div id="ambient-widget">
+  <!-- Mobile Backdrop -->
+  <div id="ambient-mobile-backdrop" class="ambient-mobile-backdrop"></div>
+
+  <!-- Main Panel -->
+  <div id="ambient-panel">
+    <div class="ambient-panel-header">
+      <span class="ambient-panel-title">Ambient</span>
+      <span class="ambient-now-playing" id="ambient-now-playing" style="display: none;"></span>
+    </div>
+
+    <!-- Scrollable container for the tracks -->
+    <div class="ambient-tracks-scroll">
+      <div class="ambient-tracks">
+        <!-- ── New tracks (priority) ── -->
+        <button class="ambient-btn" data-track="omNamahShivay"   title="Om Namah Shivay">🕉️</button>
+        <button class="ambient-btn" data-track="aadidevMahadev"  title="Aadidev Mahadev">🌙</button>
+        <button class="ambient-btn" data-track="ramNaam"         title="Ram Naam Sankirtan">🪷</button>
+        <button class="ambient-btn" data-track="healingSound"    title="Healing Sound">✨</button>
+        <button class="ambient-btn" data-track="mandirWinds"     title="Mandir Winds">🛕</button>
+        <button class="ambient-btn" data-track="shivaMeditation" title="Shiva Meditation">🔱</button>
+        <button class="ambient-btn" data-track="meditation"      title="Temple Rhythms">🪘</button>
+        <button class="ambient-btn" data-track="krishnaFlute"    title="Krishna Flute">🪈</button>
+        <!-- ── Nature & ambient ── -->
+        <button class="ambient-btn" data-track="rain"    title="Calming Rain">🌧️</button>
+        <button class="ambient-btn" data-track="rain2"   title="Thunderstorm">⛈️</button>
+        <button class="ambient-btn" data-track="ocean"   title="Ocean Waves">🌊</button>
+        <button class="ambient-btn" data-track="forest"  title="Forest Ambience">🌲</button>
+        <button class="ambient-btn" data-track="forest2" title="Wind & Crickets">🍃</button>
+        <button class="ambient-btn" data-track="forest3" title="Nature Birds">🐦</button>
+        <button class="ambient-btn" data-track="river"   title="River & Birds">🛶</button>
+      </div>
+    </div>
+    <div class="ambient-volume">
+      <span id="ambient-mute" class="ambient-mute-btn" title="Mute/Unmute">🔉</span>
+      <div class="ambient-vol-wrap">
+        <input type="range" id="ambient-vol" class="vol-slider" min="0" max="1" step="0.002" value="0.5" title="Volume">
+        <span id="ambient-vol-label" class="ambient-vol-label">1x</span>
+      </div>
+    </div>
+  </div>
+  <button id="ambient-toggle" title="Ambient Sounds">
+    <span class="ambient-toggle-icon">🎵</span>
+    <span class="ambient-toggle-text">Focus Audio</span>
+  </button>
+</div>
+
+<script src="js/learning-material.js" defer></script>
+<script src="js/cp-resources.js" defer></script>
+<script type="module" src="js/ai.js"></script>
+<script type="module" src="js/main.js"></script>
+<script type="module" src="js/version-check.js"></script>
+
+<!-- FOOTER CREDIT -->
+<footer class="site-footer">
+  <span>Made with <span class="footer-heart">♥</span> by <a href="https://arindamparia.in" target="_blank" rel="noopener noreferrer">Arindam</a></span>
+</footer>
+</body>
+</html>

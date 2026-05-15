@@ -1,0 +1,31 @@
+{
+  "name": "AlgoTracker - DSA Mastery by Arindam Paria",
+  "short_name": "AlgoTracker",
+  "description": "Master Data Structures and Algorithms with AlgoTracker. Features timed mock interviews, company prep mode, spaced-repetition review queue, focus sessions with ambient audio, and section mastery charts. Built by Arindam Paria.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#7c6af7",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

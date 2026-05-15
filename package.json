@@ -1,0 +1,17 @@
+{
+  "name": "algotracker",
+  "version": "1.0.0",
+  "description": "LeetCode Algorithm Mastery Tracker with Neon DB",
+  "scripts": {
+    "dev": "netlify dev",
+    "ping-index": "node scripts/ping-indexnow.js"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.2.2",
+    "@neondatabase/serverless": "^1.0.2",
+    "resend": "^6.9.4"
+  },
+  "devDependencies": {
+    "netlify-cli": "^24.3.0"
+  }
+}

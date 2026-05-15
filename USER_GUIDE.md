@@ -1,0 +1,214 @@
+# DSA Mastery Tracker — Comprehensive User Guide
+
+Welcome to the **DSA Mastery Tracker**! This application is designed meticulously to help you track, optimize, and master your Data Structures and Algorithms journey. 
+
+This guide details every single feature and interaction available in the application so you can utilize it to its fullest potential.
+
+---
+
+## 🔐 1. Authentication & Access
+The application is strictly protected to ensure your data stays private.
+- **Login**: Upon visiting the site, you will be prompted for a password. Enter your configured `SITE_PASSWORD` to gain access.
+- **Persistent Sessions**: Once logged in, your session is securely saved in a cookie. You won't need to log in again unless you explicitly log out.
+- **Logout**: To secure your session, click the **Log Out** button located in the top-right header corner.
+
+---
+
+## 📊 2. Dashboard Analytics
+At the very top of your application, you have an eagle-eye view of your progress.
+- **Stats Counter**: Real-time counters showing how many Easy, Medium, and Hard problems you've conquered, along with your overall completion percentage.
+- **Current Streak**: Tracks consecutive days you've solved at least one problem. Don't break the chain!
+- **Daily Goal Ring**:
+  - Click the **🎯 Goal: X** button to set your target number of problems for the current day.
+  - As you check off problems, the circular SVG ring dynamically fills up.
+  - **Confetti Celebration**: Hitting your exact goal triggers a physics-based confetti explosion across your screen!
+  - **Overachievement**: Surpassing your goal creates a glowing secondary "ghost" ring tracking bonus problems.
+- **Mastery Radar Chart**: A dynamic polygon chart visualizing your proficiency across different underlying topics (e.g., Arrays, Graphs, DP).
+- **Activity Heatmap**: A GitHub-style contribution grid displaying your activity concentration over the past several months. Hover over any square to see exactly how many problems were solved that day.
+- **Daily Quotes**: Whenever you need a mental boost, glance at the Daily Quote widget. Click the refresh (`⟳`) icon to spin an animation and load a new curated quote from atomic habits and deep work psychologies.
+
+---
+
+## 🧠 3. Spaced Repetition System (SRS)
+To prevent forgetting older solutions, the app implements a mastery review queue.
+- **The Review Queue Bar**: Located prominently at the top of the interface. If the system calculates you are due to review a specific problem again based on spaced intervals (1 day, 3 days, 1 week, etc.), it appears here.
+- **Reviewing**: Clicking a problem in the queue jumps you right to it.
+- **Marking as Reviewed**: Click the **✓ Mark Reviewed** button within the queue banner to reset its neural-decay timer and push it to the next maturity interval.
+
+---
+
+## 🗂 4. Navigation & Filtering
+Finding the right problem at the right time is crucial.
+- **Global Search**: Type any Name, UI ID, Topic, or Tag into the top text box. The table dynamically filters out non-matches instantly.
+- **Difficulty Toggles**: Click the `All`, `Easy`, `Medium`, or `Hard` circular pills to isolate problems by structural complexity.
+- **Status Toggles**: Filter by `All`, `Done` (finished), `Undone` (unsolved), or `Review` (flagged for later). Clicking an active pill again resets the filter to `All`.
+- **🏢 Company Filter**: A dropdown listing every company that has tagged questions, sorted by question count (FAANG/high-frequency companies appear first). Each entry shows a progress bar and `solved/total` count.
+  - Click a company to filter the entire list to that company's questions.
+  - Click the same company again, or the **×** button that appears beside the dropdown, to clear the filter.
+- **Active Filter Behaviour**: Whenever any filter (difficulty, status, company, or search) is active:
+  - Each section header updates its count to show `matching/total` in purple.
+  - Sections with **zero** matching questions are hidden entirely.
+  - Only the first matching section is auto-expanded.
+- **🧬 Smart Pick**: Not sure what to solve next? Click the **Smart Pick** button (or press `R`)!
+  - Uses the adaptive scoring algorithm (see Section 9) to pick the highest-priority unsolved problem — not random.
+  - Clears all active filters first, then scrolls to the row with a highlight and a **"👉 Solve this!"** pointer that tracks the row for 6 seconds.
+  - Hidden during Focus Mode and Company Prep sessions.
+- **Section Accordions**: Problems are grouped cleanly by patterns (e.g., "Two Pointers", "Greedy"). Click any thick section header to collapse or expand its contents.
+
+---
+
+## 📝 5. Table Rows & Problem Mechanics
+The core interface where you will spend the majority of your time interacting with questions.
+
+### Execution & Logging
+- **The Checkbox (Marking Done)**: 
+  - Clicking the left-most animated checkbox marks a problem as completed, striking out the title and coloring the row mint green.
+  - **The Boss Battle (Hard Celebration)**: If you check off a problem flagged as `Hard`, brace yourself! The screen will erupt into a special darkened modal featuring rising fire embers, intense quotes, and radial screen flashes to reward your mental effort!
+- **Review Star (★)**: Click the star next to the status to explicitly flag a problem as "Needs Review" (turning it gold). This overrides default filters so you can easily pull it back up later.
+- **Add Question (+)**: Click the **Add Question** button in the top right to manually inject a new Leetcode problem into your tracker, mapping its URLs and metadata.
+
+### Deep Work 
+- **Solution Textarea**: A resizeable code editor box to paste your optimal solution.
+  - **Syntax Validation Heuristics**: You *cannot* paste plain English into this box. It verifies that your text contains structural brackets `{}` and code keywords (`public`, `def`, `let`) before it allows saving to the database, actively preventing junk data.
+  - **Auto-Save**: You don't need to click save. Stop typing for `800ms`, and it will silently sync to the cloud (showing a green checkmark toast).
+- **Notes Textarea**: A resizeable text box for plain-English conceptual breakdowns, algorithm walkthroughs, or edge-case reminders.
+- **Company Pills**: Each row shows the companies that have asked that question as small purple pills, sorted by frequency (most common first). Clicking any pill activates the company filter for that company.
+- **View Toggles (Clean UI)**: Use the top-right toggle switches to completely hide Solutions, Notes, Topic Tags, or Company Pills from the screen for a distraction-free scanning layout.
+
+### AI Integration 🤖
+The application features a deeply integrated Algorithm Engine (OpenAI).
+- **AI Hint**: Stuck? Click the `Hint` button to generate a subtle, 1-2 sentence nudge giving you a conceptual direction without spoiling the codebase.
+- **AI Code Analyze**: Paste your code into the Solution box and click **🤖 Analyze Code**.
+  - **Complexity Extraction**: The AI calculates your exact Time and Space complexities. It natively handles standard limits (`O(N log N)`) and highly custom bounds (`O(N * K)`), appending them safely to your dropdown menus.
+  - **Leetcode-Style Breakdown**: Unfurls a beautifully formatted, color-coded dashboard specifically matching LeetCode's syntax.
+  - **Approach Section (Purple)**: Details your current algorithm vs. the absolute most optimal sequence, alongside the "Key Idea" and a "Consideration" question pointing out edge cases.
+  - **Efficiency Section (Green)**: Verifies if your code hit the optimal theoretical bound and gives a direct verdict on performance!
+
+### Complexity Dropdowns
+- Independent dropdowns to manually select `Time` and `Space` complexity (e.g., `O(1)`, `O(n!)`, `O(V+E)`). Hand-curated to feature 16 of the most common Big-O limit formats.
+
+### Similar Problems Graph 🕸
+- **Similar Button**: Beside the complexity box lies a "Similar" button.
+- **AI Resolution Engine**: Clicking it drops down a UI tray. The system calculates base heuristic matches and then asks the AI to confirm the top 3 equivalent structural patterns. 
+- It caches these directly to your row. Clicking these nodes immediately navigates you to that equivalent problem within the app to reinforce the specific pattern you just learned!
+
+---
+
+## ⏱ 6. Time Management & Deep Focus
+
+### Standard Stopwatch & Pomodoro
+- Located in the top header. Click it to open the Timer modal.
+- **Stopwatch**: A standard incremental timer tracking how many minutes you're spending on the codebase.
+- **Pomodoro (Tomato)**: A strict countdown logic. Use the stacked custom `+`/`-` buttons to configure explicit hours and minutes bindings.
+- **Hover Physics**: Mousing over the timer button pushes it dynamically like a real-world suspended sign.
+
+### 🌌 Focus Mode
+- The ultimate tool for uninterrupted studying! Click the **Focus Mode** button in the header.
+- **Setup**: Select a specific category/topic you want to grind.
+- **The Execution**: 
+  - The UI will aggressively strip away all Navigation, Headers, Charts, Tags, and Dropboxes.
+  - Only the *Unsolved* problems of your selected category remain on the screen.
+  - The stopwatch automatically initiates to track your exact working time.
+- **Completion Benchmark**: Once you finish and click "Exit Focus", a summary modal breaks down explicitly how many minutes you spent in the zone and a mathematical breakdown of exactly how many problems (sorted by difficulty) you successfully crushed during that specific session.
+
+---
+
+### 🏢 Company Prep Mode
+The company equivalent of Focus Mode — a structured interview prep session targeting a single company's question set.
+
+- **Starting**: Click the **🏢 Prep** button in the controls bar to open the company picker. Select any company to begin.
+- **During the session**:
+  - The list is filtered to only that company's questions.
+  - Header, stats, charts, review queue, and other non-essential UI are hidden.
+  - A sticky **Company Prep** bar appears at the top showing the company name, how many problems you've solved this session, and the elapsed time.
+  - The stopwatch auto-starts and is locked (controls greyed out) to prevent accidental resets.
+  - The **×** clear button next to the company dropdown is also hidden so you can't accidentally kill the session.
+- **Ending**: Click **End Prep** in the sticky bar. A summary modal appears with:
+  - Total session duration
+  - Easy / Medium / Hard breakdown of newly solved problems
+  - List of every problem solved during the session
+- Ending the session automatically clears the company filter and restores the full UI.
+
+---
+
+## 🎤 7. Mock Interview Mode
+Simulate a real timed interview from inside the tracker — no AI crutches, just you and the clock.
+
+- **Setup**: Click **🎤 Mock Interview** in the study tools bar. Configure:
+  - Number of Easy / Medium / Hard problems (e.g. 1 + 2 + 1)
+  - Optional company or section filter (leave blank for random pool)
+  - Time limit: 30 / 45 / 60 / 90 / 120 minutes
+- **During the session**:
+  - Only your selected problems are visible — everything else is hidden
+  - A sticky bar shows the countdown timer, turning **red** in the final 5 minutes
+  - **AI Hint and Analyze Code buttons are disabled** — this is an honest simulation
+  - You can still write solutions and notes normally
+- **Submitting**: Click **Submit Interview** (or wait for time to expire) to end the session
+- **Report card**: Shows your score (`solved / total`), a rating label (🏆 Excellent / ✅ Passed / 📈 Needs Practice), time taken, Easy/Medium/Hard breakdown, and a list of solved vs unsolved problems
+
+> **Tip**: Run a mock interview after finishing a company prep session to test yourself under real conditions.
+
+---
+
+## 🔥 8. Weakness Heatmap
+A section × difficulty grid that instantly shows you where your biggest gaps are.
+
+- **Opening**: Click **🔥 Weakness Heatmap** in the study tools bar or press `H`
+- **Reading the grid**: Each cell shows completion % for that section + difficulty combination
+  - 🟥 Red (0–25%) — large gap, prioritize this
+  - 🟧 Orange-red (25–50%) — needs work
+  - 🟨 Yellow (50–70%) — making progress
+  - 🟩 Light green (70–90%) — nearly there
+  - 🟢 Green (90–100%) — mastered
+- **Drill-down**: Click any cell to instantly filter the main list to that section's difficulty. Cells marked `—` mean no questions exist for that combination.
+- The rightmost **Total** column shows your overall completion % per section.
+
+---
+
+## 🧬 9. Smart Pick (Adaptive Learning Algorithm)
+An intelligent problem picker that replaces pure-random selection with a priority-scored recommendation.
+
+**How it works** — each unsolved problem receives a score across 5 weighted factors:
+
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| Section weakness | 35% | Sections with more unsolved problems score higher |
+| Difficulty progression | 25% | Prefer Easy → Medium → Hard within a section |
+| SRS urgency | 20% | Problems due for spaced-repetition review float to the top |
+| Company relevance | 15% | Boosts problems matching your active company filter |
+| Never attempted | 5% | Small bonus for problems with no solution or notes yet |
+
+- **Smart Pick button**: Click **🧬 Smart Pick** or press `Q` to jump to the highest-priority problem
+- **Next suggestion card**: After you mark a problem done, a slide-in card appears at the bottom-right corner suggesting the next best problem. Click **Go →** to jump to it, or dismiss it (auto-hides after 8 seconds)
+
+---
+
+## ✨ 10. Other Enhancements
+
+### Solved Today Highlight
+Problems you solved today show a **green left border** on their row, so you can instantly see today's progress at a glance without checking the date.
+
+### Interview Readiness Score (Company Stats)
+Each company card in the **Company Stats** panel now shows a weighted readiness label:
+- **Interview Ready** (≥ 80%) — Hard problems count 3×, Medium 2×, Easy 1×
+- **On Track** (≥ 55%)
+- **Needs Work** (≥ 30%)
+- **Just Starting** (< 30%)
+
+This gives a more accurate sense of readiness than raw completion percentage, since a Hard problem solved is worth more than an Easy one.
+
+### Keyboard Shortcuts
+All shortcuts are inactive when typing in a text field.
+
+| Key | Action |
+|-----|--------|
+| `S` or `/` | Focus the search box |
+| `R` | Smart Pick (adaptive algorithm) |
+| `F` | Open Focus Mode picker |
+| `M` | Open Mock Interview config |
+| `H` | Open Weakness Heatmap |
+| `Esc` | Close any open modal |
+
+---
+
+*End of Guide. Best of luck on your mastering of Data Structures & Algorithms!*

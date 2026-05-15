@@ -1,0 +1,78 @@
+
+> dsa-tracker@1.0.0 dev
+> netlify dev
+
+⬥ Injecting environment variable values for all scopes
+⬥ AI Gateway is disabled for this account
+⬥ Ignored general context env var: LANG (defined in process)
+⬥ Injected project settings env vars: NEON_DATABASE_URL, RESEND_API_KEY, SITE_PASSWORD
+⬥ Injected .env file env vars: OPENAI_API_KEY
+⬥ No app server detected. Using simple static server
+⬥ Running static server from "dsa-tracker/public"
+⬥ Setting up local dev server
+[36m[1m​[22m[39m
+[36m[1m❯ Installing extensions[22m[39m
+   - neon
+
+⬥ Static server listening to 3999
+
+   ╭─────────────────────── ⬥  ────────────────────────╮
+   │                                                   │
+   │   Local dev server ready: http://localhost:8888   │
+   │                                                   │
+   ╰───────────────────────────────────────────────────╯
+
+⬥ Loaded function get-questions in Lambda compatibility mode (https://ntl.fyi/lambda-compat)
+⬥ Loaded function update-progress in Lambda compatibility mode (https://ntl.fyi/lambda-compat)
+⬥ Loaded function add-question in Lambda compatibility mode (https://ntl.fyi/lambda-compat)
+⬥ Loaded function db in Lambda compatibility mode (https://ntl.fyi/lambda-compat)
+⬥ Loaded edge function auth
+(node:88376) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+⬥ Loaded function analyze-code in Lambda compatibility mode (https://ntl.fyi/lambda-compat)
+⬥ Loaded function daily-reminder with warnings:
+  - The function is using the legacy CommonJS format. To start using ES modules, rename the function file to daily-reminder.mjs. Refer to https://ntl.fyi/functions-runtime for more information.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 2174 ms.
+Request from ::1: POST /.netlify/functions/analyze-code
+(node:88376) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:88376) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Response with status 200 in 8677 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 383 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 2006 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 107 ms.
+Request from ::1: POST /.netlify/functions/analyze-code
+Response with status 200 in 8500 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 289 ms.
+Request from ::1: GET /.netlify/functions/get-questions
+Response with status 200 in 1785 ms.
+Request from ::1: POST /.netlify/functions/analyze-code
+Response with status 200 in 8140 ms.
+Request from ::1: POST /.netlify/functions/analyze-code
+Response with status 200 in 5534 ms.
+⬥ Reloading function update-progress...
+⬥ Reloaded function update-progress
+Request from ::1: POST /.netlify/functions/analyze-code
+Response with status 200 in 10711 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+update-progress error: column "ai_analysis" of relation "progress" does not exist NeonDbError: column "ai_analysis" of relation "progress" does not exist
+    at dr2.execute (/Users/arindam/Downloads/dsa-tracker/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Object.handler (/Users/arindam/Downloads/dsa-tracker/netlify/functions/update-progress.js:18:5)
+Response with status 500 in 1443 ms.
+Request from ::1: POST /.netlify/functions/analyze-code
+Response with status 200 in 7532 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 406 ms.
+Request from ::1: GET /.netlify/functions/get-questions
+Response with status 200 in 1364 ms.
+Request from ::1: GET /.netlify/functions/get-questions
+Response with status 200 in 1326 ms.
+Request from ::1: POST /.netlify/functions/analyze-code
+Response with status 200 in 8123 ms.
+Request from ::1: POST /.netlify/functions/update-progress
+Response with status 200 in 283 ms.
