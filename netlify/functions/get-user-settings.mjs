@@ -1,6 +1,15 @@
 import { getAuthInfo, unauthorized } from "./clerk-auth.mjs";
+import { createClerkClient } from "@clerk/backend";
 import { getDb, initSchema } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
+
+let _clerk = null;
+function getClerk() {
+  if (!_clerk && process.env.CLERK_SECRET_KEY) {
+    _clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+  }
+  return _clerk;
+}
 
 // Runs once per warm Lambda container — skipped on subsequent warm invocations
 let schemaInitialized = false;
@@ -23,16 +32,28 @@ export const handler = async (event, context) => {
       schemaInitialized = true;
     }
 
-    // upsert user on every login — backfills clerk_name if missing
+    // Fetch fresh imageUrl from Clerk API on every login so DB stays in sync
+    // when the user updates their profile picture.
+    let imageUrl = null;
+    try {
+      const clerk = getClerk();
+      if (clerk && clerkId) {
+        const clerkUser = await clerk.users.getUser(clerkId);
+        imageUrl = clerkUser.imageUrl || null;
+      }
+    } catch { /* non-fatal — continue without imageUrl */ }
+
+    // upsert user on every login — backfills clerk_name and image_url
     const [row] = await sql`
-      INSERT INTO users (email, clerk_id, name, clerk_name, last_active)
-      VALUES (${userEmail}, ${clerkId}, ${clerkName}, ${clerkName}, NOW())
+      INSERT INTO users (email, clerk_id, name, clerk_name, image_url, last_active)
+      VALUES (${userEmail}, ${clerkId}, ${clerkName}, ${clerkName}, ${imageUrl}, NOW())
       ON CONFLICT (email) DO UPDATE SET
         clerk_id   = EXCLUDED.clerk_id,
         clerk_name = COALESCE(EXCLUDED.clerk_name, users.clerk_name),
         name       = COALESCE(NULLIF(users.name, ''), EXCLUDED.clerk_name),
+        image_url  = COALESCE(EXCLUDED.image_url, users.image_url),
         last_active = NOW()
-      RETURNING is_subscribed, reminders_enabled, reminder_email, name, phone, role, clerk_name
+      RETURNING is_subscribed, reminders_enabled, reminder_email, name, phone, role, clerk_name, image_url
     `;
 
     if (!row) {
@@ -51,6 +72,7 @@ export const handler = async (event, context) => {
         user_phone:        row.phone             ?? null,
         user_role:         row.role              ?? 'USER',
         clerk_name:        row.clerk_name        ?? null,
+        image_url:         row.image_url         ?? null,
       }),
     };
   } catch (err) {

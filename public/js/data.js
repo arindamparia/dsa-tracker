@@ -43,6 +43,7 @@ function applyUserProfile(data) {
   state.userPhone        = data.user_phone        ?? null;
   state.userRole         = data.user_role         ?? 'USER';
   state.clerkName        = data.clerk_name        ?? null;
+  state.imageUrl         = data.image_url         ?? null;
 }
 
 export async function refreshUserSettings() {
@@ -60,9 +61,36 @@ export async function refreshUserSettings() {
       user_phone:        data.user_phone,
       clerk_name:        data.clerk_name,
       user_role:         data.user_role,
+      image_url:         data.image_url ?? null,
     });
-    const metaEl = document.getElementById('hdr-user-meta');
-    if (metaEl && state.userName) metaEl.textContent = state.userName;
+    if (state.userName) {
+      const nameSpan = document.querySelector('#hdr-user-meta .hdr-chip-name');
+      if (nameSpan) nameSpan.textContent = state.userName;
+    }
+    // Update header avatar with DB-persisted image_url (always fresh from Clerk)
+    if (state.imageUrl) {
+      const existingAvatar = document.querySelector('#hdr-user-meta .hdr-avatar');
+      if (existingAvatar && existingAvatar.tagName !== 'IMG') {
+        // Replace initials span with real photo
+        const img = document.createElement('img');
+        img.className = 'hdr-avatar';
+        img.src = state.imageUrl;
+        img.alt = '';
+        existingAvatar.replaceWith(img);
+      } else if (existingAvatar && existingAvatar.src !== state.imageUrl) {
+        existingAvatar.src = state.imageUrl;
+      }
+    }
+    // Show admin panel button immediately once role is known — handles first load
+    // where UserCache was empty and the check in main.js ran before this resolved.
+    const isAdmin = state.userRole === 'ADMIN';
+    const adminBtn = document.getElementById('btn-admin-panel');
+    if (adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
+    // Admins don't submit feedback — they receive it
+    const fbHeader   = document.getElementById('btn-feedback-header');
+    const fbSettings = document.getElementById('btn-feedback-settings-wrap');
+    if (fbHeader)   fbHeader.style.display   = isAdmin ? 'none' : '';
+    if (fbSettings) fbSettings.style.display = isAdmin ? 'none' : '';
   } catch {}
 }
 

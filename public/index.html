@@ -329,6 +329,7 @@ html:has(#page-loader){overflow:hidden}
         <button id="btn-admin-panel" class="btn-admin-panel" onclick="AdminPanel.open()" style="display:none">
           <span class="btn-admin-panel-icon">⚙</span> Admin Panel
         </button>
+        <button id="btn-feedback-header" class="btn-action" onclick="FeedbackModal.open()" title="Submit Feedback">💬 Feedback</button>
         <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
         <button class="btn-action" onclick="RefreshModal.open()" title="Sync latest questions">↺ Hard Refresh</button>
         <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
@@ -599,6 +600,14 @@ html:has(#page-loader){overflow:hidden}
         </div>
         <button id="ap-broadcast-btn" class="btn-submit admin-action-btn admin-action-btn--danger" onclick="AdminPanel.sendBroadcast()">Send</button>
       </div>
+      <div class="admin-action-card">
+        <div class="admin-action-icon" style="background:rgba(248,181,0,0.1);border:1px solid rgba(248,181,0,0.3);color:#f8b500;">💬</div>
+        <div class="admin-action-body">
+          <div class="admin-action-label">View Feedback</div>
+          <div class="admin-action-desc">See all user-submitted feedback</div>
+        </div>
+        <button class="btn-submit admin-action-btn" style="background:rgba(248,181,0,0.1);border:1px solid rgba(248,181,0,0.3);color:#f8b500;" onclick="AdminPanel.close(); setTimeout(() => ViewFeedbackModal.open(), 120)">View</button>
+      </div>
     </div>
     <div class="modal-actions" style="margin-top:20px;">
       <button class="btn-cancel" onclick="AdminPanel.close()">Close</button>
@@ -743,10 +752,60 @@ html:has(#page-loader){overflow:hidden}
                placeholder="your@email.com" maxlength="120" autocomplete="email" />
       </div>
 
+      <div id="btn-feedback-settings-wrap" class="us-field-group" style="padding-top:4px;">
+        <hr class="us-divider" />
+        <button class="btn-cancel" style="width:100%;text-align:left;color:var(--text-muted);font-size:12px;padding:8px 0;"
+                onclick="UserSettings.close(); setTimeout(() => FeedbackModal.open(), 120)">
+          💬 Submit Feedback
+        </button>
+      </div>
+
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="UserSettings.close()">Cancel</button>
       <button class="btn-submit" id="us-save-btn" onclick="UserSettings.save()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT FEEDBACK MODAL -->
+<div class="modal-overlay" id="feedback-modal" onclick="FeedbackModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:480px;">
+    <div class="confirm-modal-header">
+      <div class="confirm-modal-icon" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.25);">💬</div>
+      <div>
+        <div class="modal-title">Submit Feedback</div>
+        <div style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-top:2px;">Help us improve AlgoTracker</div>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:20px;">
+      <label class="form-label">Your Feedback</label>
+      <textarea id="fb-message" class="form-textarea" rows="5"
+        placeholder="Bug report, feature request, general thoughts — anything helps!"></textarea>
+      <div class="form-error" id="fb-error"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="FeedbackModal.close()">Cancel</button>
+      <button class="btn-submit" id="fb-submit-btn" onclick="FeedbackModal.submit()">Send Feedback</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW FEEDBACK MODAL (admin only) -->
+<div class="modal-overlay" id="view-feedback-modal" onclick="ViewFeedbackModal.handleOverlayClick(event)">
+  <div class="modal" style="max-width:620px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="confirm-modal-header" style="margin-bottom:0;">
+        <div class="confirm-modal-icon" style="background:rgba(248,181,0,0.1);border-color:rgba(248,181,0,0.3);color:#f8b500;">💬</div>
+        <div class="modal-title" style="margin-bottom:0;">User Feedback</div>
+      </div>
+      <span id="vf-count" style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);"></span>
+    </div>
+    <div id="vf-list" style="max-height:62vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:2px;">
+      <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:32px 0;">Loading…</div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel" onclick="ViewFeedbackModal.close()">Close</button>
     </div>
   </div>
 </div>

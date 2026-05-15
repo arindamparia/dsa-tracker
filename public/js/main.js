@@ -32,6 +32,7 @@ import { restoreSession } from './mock-interview.js';
 import { AmbientSound } from './ambient.js';
 import { initPWAInstall, registerSW } from './pwa-install.js';
 import { startPerfWatch } from './perf-watch.js';
+import { FeedbackModal, ViewFeedbackModal } from './feedback.js';
 
 /* ── Admin Panel ──────────────────────────────────────────────────
    I got tired of deploying to send an announcement. This adds a button 
@@ -145,6 +146,8 @@ window.CompanyStats      = CompanyStats;
 window.UserSettings      = UserSettings;
 window.UserProfile       = UserProfile;
 window.AdminPanel        = AdminPanel;
+window.FeedbackModal     = FeedbackModal;
+window.ViewFeedbackModal = ViewFeedbackModal;
 window.state             = state;
 
 document.addEventListener('keydown', e => {
@@ -152,6 +155,8 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'Escape') {
     AdminPanel.close();
+    FeedbackModal.close();
+    ViewFeedbackModal.close();
     AddQuestionModal.close();
     Logout.close();
     MasteryChart.close();
@@ -301,7 +306,15 @@ initPWAInstall();
   const name  = getUserName();
   const metaEl = document.getElementById('hdr-user-meta');
   if (metaEl && email) {
-    metaEl.textContent = name || email;
+    // Prefer DB-cached image_url (persisted from Clerk, updated on every login)
+    // Fall back to live Clerk session imageUrl, then initials.
+    const cachedProfile = UserCache.get();
+    const imgUrl  = cachedProfile?.image_url || window._clerk?.user?.imageUrl || null;
+    const initial = (name || email || '?')[0].toUpperCase();
+    const avatar  = imgUrl
+      ? `<img class="hdr-avatar" src="${imgUrl}" alt="" />`
+      : `<span class="hdr-avatar hdr-avatar-init">${initial}</span>`;
+    metaEl.innerHTML = `${avatar}<span class="hdr-chip-name">${name || email}</span>`;
     metaEl.title = email;
     metaEl.style.cursor = 'pointer';
     metaEl.addEventListener('click', () => UserProfile.open());

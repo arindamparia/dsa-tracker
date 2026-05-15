@@ -89,6 +89,7 @@ export async function initSchema(sql) {
   try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS clerk_name TEXT`; } catch (e) {}
   try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active TIMESTAMPTZ`; } catch (e) {}
   try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS broadcast_unsubscribed BOOLEAN DEFAULT FALSE`; } catch (e) {}
+  try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS image_url TEXT`; } catch (e) {}
   // Backfill: set last_active to created_at for existing users where it is null
   try { await sql`UPDATE users SET last_active = created_at WHERE last_active IS NULL`; } catch (e) {}
   // Backfill: copy name → clerk_name for existing users who don't have it yet
@@ -126,6 +127,20 @@ export async function initSchema(sql) {
     // Covers reminders "done count per user" aggregation
     await sql`CREATE INDEX IF NOT EXISTS idx_progress_user_is_done ON progress(user_email) WHERE is_done = TRUE`;
   } catch (e) { /* ignore — indexes may already exist */ }
+
+  // ── Feedback table ──────────────────────────────────────────────────────
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS feedback (
+        id         SERIAL PRIMARY KEY,
+        user_email TEXT NOT NULL,
+        user_name  TEXT,
+        message    TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at DESC)`;
+  } catch (e) { /* ignore */ }
 
   // ── AI rate-limiting table ───────────────────────────────────────────────
   try {
