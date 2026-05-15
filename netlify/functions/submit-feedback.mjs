@@ -89,14 +89,14 @@ export const handler = async (event, context) => {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: "Message too long (max 2000 chars)" }) };
   }
 
-  // ── Per-user spam guard: max 50 submissions per 24 hours (relaxed for testing) ──
+  // ── Per-user spam guard: max 2 submissions per 24 hours ──
   try {
     const [countRow] = await sql`
       SELECT COUNT(*) AS cnt FROM feedback
       WHERE user_email = ${userEmail}
         AND created_at > NOW() - INTERVAL '24 hours'
     `;
-    if (parseInt(countRow?.cnt ?? 0, 10) >= 50) {
+    if (parseInt(countRow?.cnt ?? 0, 10) >= 2) {
       return {
         statusCode: 429,
         headers: CORS,
