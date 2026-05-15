@@ -171,6 +171,20 @@ ${SITE_CONTEXT}`,
               }),
             };
           }
+
+          // Feature already exists — inform user but don't save to DB
+          if (alreadyImpl) {
+            return {
+              statusCode: 200,
+              headers: { ...CORS, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ok: true,
+                already_implemented: true,
+                feature_location:    featureLocation,
+                ai_reply:            aiReply,
+              }),
+            };
+          }
         }
       } else {
         const errText = await aiRes.text().catch(() => '');
