@@ -329,7 +329,7 @@ html:has(#page-loader){overflow:hidden}
         <button id="btn-admin-panel" class="btn-admin-panel" onclick="AdminPanel.open()" style="display:none">
           <span class="btn-admin-panel-icon">⚙</span> Admin Panel
         </button>
-        <button id="btn-feedback-header" class="btn-action" onclick="FeedbackModal.open()" title="Submit Feedback">💬 Feedback</button>
+        <button id="btn-feedback-header" class="btn-action" onclick="FeedbackModal.open()" title="Submit Feedback" style="display:none">💬 Feedback</button>
         <button class="btn-action" onclick="ReportModal.open()" title="View Contribution Graph">📊 Report</button>
         <button class="btn-action" onclick="RefreshModal.open()" title="Sync latest questions">↺ Hard Refresh</button>
         <button class="btn-action btn-action-danger" onclick="ResetModal.open()">⚠️ Reset Progress</button>
@@ -752,7 +752,7 @@ html:has(#page-loader){overflow:hidden}
                placeholder="your@email.com" maxlength="120" autocomplete="email" />
       </div>
 
-      <div id="btn-feedback-settings-wrap" class="us-field-group" style="padding-top:4px;">
+      <div id="btn-feedback-settings-wrap" class="us-field-group" style="padding-top:4px;display:none;">
         <hr class="us-divider" />
         <button class="btn-cancel" style="width:100%;text-align:left;color:var(--text-muted);font-size:12px;padding:8px 0;"
                 onclick="UserSettings.close(); setTimeout(() => FeedbackModal.open(), 120)">

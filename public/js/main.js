@@ -422,6 +422,9 @@ initPWAInstall();
 
   if (state.userRole === 'ADMIN') {
     document.getElementById('btn-admin-panel')?.style.setProperty('display', '');
+  } else {
+    document.getElementById('btn-feedback-header')?.style.setProperty('display', '');
+    document.getElementById('btn-feedback-settings-wrap')?.style.setProperty('display', '');
   }
   SRS.init();
   CompanyFilter.init();
