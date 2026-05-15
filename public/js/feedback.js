@@ -14,10 +14,12 @@ export const FeedbackModal = {
   close() {
     document.getElementById(this._id).classList.remove('open');
     unlockScroll();
-    const msg = document.getElementById('fb-message');
-    const err = document.getElementById('fb-error');
-    if (msg) msg.value = '';
-    if (err) { err.textContent = ''; err.classList.remove('show'); }
+    const msg  = document.getElementById('fb-message');
+    const err  = document.getElementById('fb-error');
+    const info = document.getElementById('fb-ai-info');
+    if (msg)  msg.value = '';
+    if (err)  { err.textContent  = ''; err.classList.remove('show'); }
+    if (info) { info.textContent = ''; info.classList.remove('show'); }
   },
 
   handleOverlayClick(e) {
@@ -25,19 +27,28 @@ export const FeedbackModal = {
   },
 
   async submit() {
-    const msgEl  = document.getElementById('fb-message');
-    const errEl  = document.getElementById('fb-error');
-    const btn    = document.getElementById('fb-submit-btn');
+    const msgEl   = document.getElementById('fb-message');
+    const errEl   = document.getElementById('fb-error');
+    const infoEl  = document.getElementById('fb-ai-info');
+    const btn     = document.getElementById('fb-submit-btn');
     const message = (msgEl?.value || '').trim();
 
-    if (errEl) { errEl.textContent = ''; errEl.classList.remove('show'); }
+    if (errEl)  { errEl.textContent  = ''; errEl.classList.remove('show'); }
+    if (infoEl) { infoEl.textContent = ''; infoEl.classList.remove('show'); }
 
     if (!message) {
       if (errEl) { errEl.textContent = 'Please write something before submitting.'; errEl.classList.add('show'); }
       return;
     }
 
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    // Client-side word count guard (mirrors server)
+    const wordCount = message.split(/\s+/).filter(Boolean).length;
+    if (wordCount < 5) {
+      if (errEl) { errEl.textContent = 'Please write at least 5 words so we understand your feedback.'; errEl.classList.add('show'); }
+      return;
+    }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
     try {
       const res  = await fetch('/.netlify/functions/submit-feedback', {
         method: 'POST',
@@ -45,16 +56,34 @@ export const FeedbackModal = {
         body: JSON.stringify({ message }),
       });
       const data = await res.json();
-      if (data.ok) {
-        this.close();
-        showToast('Feedback sent — thank you!', 'success');
-      } else {
-        if (errEl) { errEl.textContent = data.error || 'Failed to send feedback.'; errEl.classList.add('show'); }
+
+      if (!data.ok) {
+        // ai_rejected = feedback was not genuine; show AI's reply as the error
+        const msg = data.error || 'Failed to send feedback.';
+        if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+        return;
       }
+
+      // Feature already exists — show AI info banner, don't close yet so user can read it
+      if (data.already_implemented) {
+        const loc = data.feature_location ? ` — ${data.feature_location}` : '';
+        const reply = data.ai_reply || `This feature already exists${loc}!`;
+        if (infoEl) {
+          infoEl.textContent = reply;
+          infoEl.classList.add('show');
+        }
+        if (msgEl) msgEl.value = '';
+        if (btn)   { btn.disabled = false; btn.textContent = 'Send Feedback'; }
+        return;
+      }
+
+      // Genuine new feedback
+      this.close();
+      showToast(data.ai_reply || 'Feedback sent — thank you!', 'success');
     } catch {
       if (errEl) { errEl.textContent = 'Network error. Please try again.'; errEl.classList.add('show'); }
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = 'Send Feedback'; }
+      if (btn && btn.disabled) { btn.disabled = false; btn.textContent = 'Send Feedback'; }
     }
   },
 };

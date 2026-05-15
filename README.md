@@ -145,7 +145,7 @@ Set these in Netlify → Site settings → Environment variables:
 | `CLERK_PUBLISHABLE_KEY` | Clerk publishable key (`pk_live_...`) |
 | `CLERK_SECRET_KEY` | Clerk secret key (`sk_live_...`) |
 | `CLERK_JWT_KEY` | Clerk JWT public key for networkless verification |
-| `OpenAI_API_KEY` | OpenAI API key for AI hint + code analysis |
+| `OPENAI_API_KEY` | OpenAI API key for AI hint + code analysis |
 | `RESEND_API_KEY` | Resend API key for broadcasting and daily emails |
 | `RESEND_FROM_EMAIL` | The verified sender email address for Resend |
 | `REMINDER_SECRET` | Secret key to manually trigger the Netlify cron jobs |
