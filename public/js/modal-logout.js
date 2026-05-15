@@ -4,7 +4,6 @@
  * Clerk clears the session cookie; after signOut() the page reloads
  * and Clerk JS redirects to the sign-in page automatically.
  */
-import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
 import { signOut } from './auth.js';
 import { lockScroll, unlockScroll } from './utils.js';
 
@@ -26,10 +25,7 @@ export const Logout = {
   },
 
   async confirm() {
-    Cache.clear();
-    UserCache.clear();
-    HintCache.clear();
-    SimilarCache.clear();
+    localStorage.clear();
     await signOut();
   },
 };
