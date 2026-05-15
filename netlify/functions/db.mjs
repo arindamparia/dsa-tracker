@@ -142,6 +142,9 @@ export async function initSchema(sql) {
     await sql`CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback(created_at DESC)`;
   } catch (e) { /* ignore */ }
 
+  try { await sql`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS is_genuine BOOLEAN DEFAULT TRUE`; } catch (e) {}
+  try { await sql`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS ai_category TEXT`; } catch (e) {}
+
   // ── AI rate-limiting table ───────────────────────────────────────────────
   try {
     await sql`

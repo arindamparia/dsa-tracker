@@ -143,14 +143,25 @@ export const ViewFeedbackModal = {
         const avatarHtml = f.image_url
           ? `<img src="${_esc(f.image_url)}" alt="" style="flex-shrink:0;width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(124,106,247,0.3);" />`
           : `<div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#9d8ff7;font-family:'JetBrains Mono',monospace;">${_esc(initials)}</div>`;
+        const categoryColors = {
+          feature_request: { bg: 'rgba(124,106,247,0.12)', color: '#a78bfa', border: 'rgba(124,106,247,0.3)',  label: 'Feature Request' },
+          bug_report:      { bg: 'rgba(239,68,68,0.1)',    color: '#f87171', border: 'rgba(239,68,68,0.25)',   label: 'Bug Report' },
+          suggestion:      { bg: 'rgba(59,130,246,0.1)',   color: '#60a5fa', border: 'rgba(59,130,246,0.25)',  label: 'Suggestion' },
+          already_exists:  { bg: 'rgba(234,179,8,0.1)',    color: '#facc15', border: 'rgba(234,179,8,0.25)',   label: 'Already Exists' },
+        };
+        const cat = f.ai_category && categoryColors[f.ai_category];
+        const categoryBadge = cat
+          ? `<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:${cat.bg};color:${cat.color};border:1px solid ${cat.border};">${cat.label}</span>`
+          : '';
         return `
           <div style="display:flex;gap:12px;align-items:flex-start;">
             ${avatarHtml}
             <div style="flex:1;min-width:0;background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-                <div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                   <span style="font-size:13px;font-weight:700;color:var(--text);">${_esc(name)}</span>
-                  ${email ? `<span style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-left:8px;">${_esc(email)}</span>` : ''}
+                  ${email ? `<span style="font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">${_esc(email)}</span>` : ''}
+                  ${categoryBadge}
                 </div>
                 <span style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;">${date} · ${time}</span>
               </div>

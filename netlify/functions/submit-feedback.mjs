@@ -106,9 +106,11 @@ export const handler = async (event, context) => {
   } catch { /* non-fatal — proceed */ }
 
   // ── AI evaluation ─────────────────────────────────────────────────────────
-  let aiReply   = null;
-  let alreadyImpl = false;
+  let aiReply        = null;
+  let alreadyImpl    = false;
   let featureLocation = null;
+  let isGenuine      = true; // default true; set false only when AI explicitly says not genuine
+  let aiCategory     = null; // feature_request | bug_report | suggestion | already_exists | spam | off_topic
 
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   if (OPENAI_API_KEY) {
@@ -121,7 +123,7 @@ export const handler = async (event, context) => {
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          max_tokens: 250,
+          max_tokens: 320,
           response_format: { type: "json_object" },
           messages: [
             {
@@ -129,13 +131,15 @@ export const handler = async (event, context) => {
               content: `You are a feedback classifier for AlgoTracker (algotracker.xyz). Classify the user message and output JSON only.
 
 OUTPUT FORMAT (strict JSON, no markdown, no extra keys):
-{"genuine":<bool>,"already_implemented":<bool>,"feature_location":<str|null>,"reply":<str>}
+{"genuine":<bool>,"category":<str>,"already_implemented":<bool>,"feature_location":<str|null>,"spam_reason":<str|null>,"reply":<str>}
 
 CLASSIFICATION RULES — follow these exactly:
-1. "genuine": true if the message is a real feature request, bug report, or suggestion specifically about AlgoTracker. False for gibberish, random text, abuse, off-topic content (general DSA questions, unrelated topics), meaningless test inputs like "hello", "test", "asdf".
-2. "already_implemented": true if the feature or concept the user describes ALREADY EXISTS in AlgoTracker (see feature list below). Match by concept and intent — not just exact words. If the user asks for something that exists under a different name, still mark it true.
-3. "feature_location": if already_implemented, write max 6 words describing where it is in the app. Otherwise null.
-4. "reply": one sentence, max 20 words, shown to the user.
+1. "genuine": true if the message is a real feature request, bug report, or suggestion specifically about AlgoTracker. False for gibberish, random text, abuse, off-topic content, meaningless test inputs like "hello", "test", "asdf".
+2. "category": classify into exactly one of these — "feature_request" | "bug_report" | "suggestion" | "already_exists" | "spam" | "off_topic". Use "already_exists" when genuine but already implemented. Use "spam" when not genuine AND looks like intentional spam/abuse. Use "off_topic" when not genuine but not spam (e.g. general DSA questions).
+3. "already_implemented": true if the feature or concept the user describes ALREADY EXISTS in AlgoTracker (see feature list below). Match by concept and intent — not just exact words.
+4. "feature_location": if already_implemented, write max 6 words describing where it is in the app. Otherwise null.
+5. "spam_reason": if not genuine, write max 8 words explaining why (e.g. "random characters", "unrelated DSA question", "abusive language"). Otherwise null.
+6. "reply": one sentence, max 20 words, shown to the user.
    - If not genuine: politely ask them to send real AlgoTracker feedback.
    - If already_implemented: tell them the feature exists and where to find it.
    - If genuine new idea: thank them briefly.
@@ -155,36 +159,12 @@ ${SITE_CONTEXT}`,
         // If the model hit the token cap the JSON will be truncated — treat as no AI response
         if (raw && choice?.finish_reason !== "length") {
           const parsed = JSON.parse(raw);
-          aiReply        = parsed.reply         ?? null;
-          alreadyImpl    = parsed.already_implemented === true;
-          featureLocation = parsed.feature_location  ?? null;
-
-          // Reject non-genuine feedback — don't save it
-          if (parsed.genuine === false) {
-            return {
-              statusCode: 400,
-              headers: { ...CORS, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ok: false,
-                ai_rejected: true,
-                error: aiReply || "Please write a clear, meaningful feedback so we can improve.",
-              }),
-            };
-          }
-
-          // Feature already exists — inform user but don't save to DB
-          if (alreadyImpl) {
-            return {
-              statusCode: 200,
-              headers: { ...CORS, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ok: true,
-                already_implemented: true,
-                feature_location:    featureLocation,
-                ai_reply:            aiReply,
-              }),
-            };
-          }
+          aiReply         = parsed.reply              ?? null;
+          alreadyImpl     = parsed.already_implemented === true;
+          featureLocation = parsed.feature_location    ?? null;
+          isGenuine       = parsed.genuine !== false;
+          aiCategory      = parsed.category            ?? null;
+          // all cases fall through to save — counts toward daily limit
         }
       } else {
         const errText = await aiRes.text().catch(() => '');
@@ -206,9 +186,23 @@ ${SITE_CONTEXT}`,
       displayName = row?.stored_name || null;
     }
     await sql`
-      INSERT INTO feedback (user_email, user_name, message)
-      VALUES (${userEmail}, ${displayName}, ${trimmed})
+      INSERT INTO feedback (user_email, user_name, message, is_genuine, ai_category)
+      VALUES (${userEmail}, ${displayName}, ${trimmed}, ${isGenuine}, ${aiCategory})
     `;
+
+    // Non-genuine: saved (counts toward limit) but tell user to write real feedback
+    if (!isGenuine) {
+      return {
+        statusCode: 400,
+        headers: { ...CORS, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ok: false,
+          ai_rejected: true,
+          error: aiReply || "Please write a clear, meaningful feedback so we can improve.",
+        }),
+      };
+    }
+
     return {
       statusCode: 200,
       headers: { ...CORS, "Content-Type": "application/json" },

@@ -35,9 +35,12 @@ export const handler = async (event, context) => {
              ) AS user_name,
              u.image_url,
              f.message,
+             f.is_genuine,
+             f.ai_category,
              f.created_at
       FROM   feedback f
       LEFT JOIN users u ON u.email = f.user_email
+      WHERE  f.is_genuine = TRUE
       ORDER  BY f.created_at DESC
       LIMIT  200
     `;
