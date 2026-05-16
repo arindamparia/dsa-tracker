@@ -176,9 +176,56 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
+  /* ── Preparing overlay ── */
+  .prep-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    z-index: 10;
+    transition: opacity 0.35s ease;
+  }
+  .prep-overlay.hidden { opacity: 0; pointer-events: none; }
+  .prep-logo { font-size: 42px; animation: prep-pulse 2s ease-in-out infinite; }
+  @keyframes prep-pulse {
+    0%, 100% { transform: scale(1);   opacity: 1; }
+    50%        { transform: scale(1.1); opacity: 0.7; }
+  }
+  .prep-title {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text) 60%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .prep-status {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted);
+    min-height: 18px; display: flex; align-items: center; gap: 6px;
+  }
+  .prep-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: prep-blink 1s step-end infinite; }
+  @keyframes prep-blink { 50% { opacity: 0; } }
+  .prep-bar { width: 160px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prep-bar-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--easy));
+    border-radius: 2px; width: 0%; animation: prep-progress 2s ease-out forwards;
+  }
+  @keyframes prep-progress { to { width: 85%; } }
 </style>
 </head>
 <body>
+
+<!-- Preparing overlay: visible while Clerk script loads -->
+<div class="prep-overlay" id="prep-overlay">
+  <span class="prep-logo">⚡</span>
+  <span class="prep-title">AlgoTracker</span>
+  <div class="prep-bar"><div class="prep-bar-fill" id="prep-bar-fill"></div></div>
+  <div class="prep-status">
+    <span class="prep-dot"></span>
+    <span id="prep-status-txt">initializing auth module...</span>
+  </div>
+</div>
 
 <div class="card">
   <span class="logo">⚡</span>
@@ -194,6 +241,32 @@
 </div>
 
 <script>
+  // Typewriter status messages shown on the overlay while Clerk loads
+  var statusMsgs = [
+    'initializing auth module...',
+    'loading encryption keys...',
+    'connecting to identity provider...',
+    'preparing your login page...'
+  ];
+  var statusEl = document.getElementById('prep-status-txt');
+  var sMsgIdx = 0;
+  var statusInterval = setInterval(function() {
+    sMsgIdx = (sMsgIdx + 1) % statusMsgs.length;
+    if (statusEl) statusEl.textContent = statusMsgs[sMsgIdx];
+  }, 900);
+
+  function revealCard() {
+    clearInterval(statusInterval);
+    // Animate progress bar to 100% before hiding
+    var fill = document.getElementById('prep-bar-fill');
+    if (fill) { fill.style.animation = 'none'; fill.style.width = '100%'; fill.style.transition = 'width 0.2s ease'; }
+    setTimeout(function() {
+      var overlay = document.getElementById('prep-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      document.querySelector('.card').classList.add('ready');
+    }, 220);
+  }
+
   const PK_TTL = 5 * 60 * 1000;
   const _pkPromise = (() => {
     try {
@@ -226,8 +299,8 @@
         const clerk = window.Clerk;
         await clerk.load({ standardBrowser: true });
         if (clerk.user) { window.location.replace('/'); return; }
-        // User is not signed in — safe to show the card
-        document.querySelector('.card').classList.add('ready');
+        // User is not signed in — hide overlay, reveal the card
+        revealCard();
         resolve(clerk);
       };
       s.onerror = () => reject(new Error('Failed to load Clerk'));
@@ -239,7 +312,12 @@
   // Eagerly start full Clerk load so redirect happens without waiting for a button click
   // On failure, still reveal the card so the user isn't stuck on a blank page
   loadClerk().catch(() => {
-    document.querySelector('.card').classList.add('ready');
+    revealCard();
+  });
+
+  // Also reveal if no PK configured (dev mode)
+  _pkPromise.then(pk => {
+    if (!pk || pk.startsWith('REPLACE')) revealCard();
   });
 
   async function handleSignIn() {

@@ -127,7 +127,11 @@ html:has(#page-loader){overflow:hidden}
 .pl-terminal{position:relative;width:90%;max-width:500px;max-height:80vh;margin:auto;background:#111118;border-radius:10px;border:1px solid #2a2a38;box-shadow:0 12px 50px rgba(124,106,247,.15);overflow:hidden;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;display:flex;flex-direction:column;z-index:3;transform:translateZ(0);will-change:transform}
 .pl-term-header{background:#18181f;padding:0 16px;height:36px;box-sizing:border-box;display:flex;align-items:center;gap:8px;border-bottom:1px solid #2a2a38}
 .pl-btn{width:12px;height:12px;border-radius:50%;flex-shrink:0}.pl-btn.r{background:#ff5f56}.pl-btn.y{background:#ffbd2e}.pl-btn.g{background:#27c93f}
-.pl-term-title{margin-left:10px;font-size:12px !important;color:#6b6b85;font-weight:600}
+.pl-term-title{margin-left:10px;font-size:11px !important;color:#c0b8f8;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:7px;text-transform:uppercase}
+.pl-term-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.35);border-radius:20px;padding:1px 8px;font-size:10px;color:#ab9df2;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
+.pl-term-badge.auth{background:rgba(248,181,0,0.1);border-color:rgba(248,181,0,0.3);color:#f8b500}
+.pl-term-badge-dot{width:5px;height:5px;border-radius:50%;background:#7c6af7;animation:pl-blink 1.4s ease-in-out infinite}
+.pl-term-badge.auth .pl-term-badge-dot{background:#f8b500}
 .pl-term-body{padding:24px;font-size:13px;line-height:1.7;color:#9898b0;overflow-y:auto;text-shadow:0 0 2px rgba(171,157,242,.2)}
 .pl-brand{font-size:15px !important;line-height:1.2 !important;margin-bottom:16px;font-weight:600}
 .pl-b{color:#ff6188}.pl-name{color:#a9dc76}.pl-kw{color:#fc9867}.pl-class{color:#78dce8}
@@ -217,7 +221,15 @@ html:has(#page-loader){overflow:hidden}
 </div>
 <script>
 (function(){
-  var msgs = [
+  // Two message pools — swapped dynamically by auth.js when it knows the user state
+  var loginMsgs = [
+    'verifying session tokens...',
+    'loading authentication layer...',
+    'checking your credentials...',
+    'preparing login gateway...',
+    'connecting to auth server...'
+  ];
+  var homeMsgs = [
     'allocating memory for arrays...',
     'balancing binary search trees...',
     'optimizing graph traversals...',
@@ -225,15 +237,32 @@ html:has(#page-loader){overflow:hidden}
     'resolving DP state transitions...',
     'calculating big-O complexities...'
   ];
+
+  // Start with login context — auth.js will call window.__setLoaderCtx('home') if user is signed in
+  window.__setLoaderCtx = function(ctx) {
+    window.__loaderCtx = ctx;
+    var titleEl = document.getElementById('pl-term-title');
+    if (!titleEl) return;
+    if (ctx === 'home') {
+      titleEl.innerHTML = 'AlgoTracker <span class="pl-term-badge"><span class="pl-term-badge-dot"></span>Loading Workspace</span>';
+    } else {
+      titleEl.innerHTML = 'AlgoTracker <span class="pl-term-badge auth"><span class="pl-term-badge-dot"></span>Authenticating</span>';
+    }
+  };
+  // Fast hint: if we've seen a logged-in user before, start in 'home' context immediately
+  // so returning users never see the 'authenticating' flash. auth.js will confirm or correct this.
+  var _hasSession = !!localStorage.getItem('dsa_last_user');
+  window.__loaderCtx = _hasSession ? 'home' : 'login';
+
   var linesContainer = document.getElementById('pl-lines');
   var cursor = document.getElementById('pl-cursor');
   if (!linesContainer || !cursor) return;
 
-  // Scramble decode effect for title and brand text
+  // Scramble decode effect for brand text (title is set dynamically above)
   var chars = "!<>-_\\/[]{}—=+*^?#_";
-  var scrambleTargets = document.querySelectorAll('#pl-term-title, #pl-brand span[data-txt]');
+  var scrambleTargets = document.querySelectorAll('#pl-brand span[data-txt]');
   scrambleTargets.forEach(function(el) {
-    var finalStr = el.getAttribute('data-txt') || "bash - algotracker";
+    var finalStr = el.getAttribute('data-txt') || '';
     var iter = 0;
     var decodeInterval = setInterval(function() {
       el.textContent = finalStr.split('').map(function(c, i) {
@@ -248,7 +277,15 @@ html:has(#page-loader){overflow:hidden}
       }
     }, 35);
   });
-  
+
+  // Set initial title based on session hint (already computed above)
+  window.__setLoaderCtx(window.__loaderCtx);
+
+  var getMsgs = function() {
+    return window.__loaderCtx === 'home' ? homeMsgs : loginMsgs;
+  };
+
+  var msgs = getMsgs();
   var msgIdx = Math.floor(Math.random() * msgs.length);
   var charIdx = 0;
   var isTyping = true;
@@ -265,10 +302,11 @@ html:has(#page-loader){overflow:hidden}
   var t = setInterval(function() {
     if (!linesContainer.parentNode) { clearInterval(t); return; }
     if (isTyping) {
-      activeSpan.textContent = msgs[msgIdx].substring(0, charIdx++);
-      if (charIdx > msgs[msgIdx].length) {
+      var currentMsgs = getMsgs();
+      activeSpan.textContent = currentMsgs[msgIdx % currentMsgs.length].substring(0, charIdx++);
+      if (charIdx > currentMsgs[msgIdx % currentMsgs.length].length) {
         isTyping = false;
-        
+
         // Append [OK]
         var statusSpan = document.createElement('span');
         statusSpan.className = 'pl-status';
@@ -277,12 +315,13 @@ html:has(#page-loader){overflow:hidden}
 
         setTimeout(function() {
           charIdx = 0;
+          var nextMsgs = getMsgs();
           var nextIdx;
           do {
-            nextIdx = Math.floor(Math.random() * msgs.length);
-          } while (nextIdx === msgIdx && msgs.length > 1);
+            nextIdx = Math.floor(Math.random() * nextMsgs.length);
+          } while (nextIdx === msgIdx % nextMsgs.length && nextMsgs.length > 1);
           msgIdx = nextIdx;
-          
+
           // Clear the current line for the next message
           activeSpan.textContent = '';
           if (statusSpan && statusSpan.parentNode) {
@@ -290,10 +329,10 @@ html:has(#page-loader){overflow:hidden}
           }
 
           isTyping = true;
-        }, 800); // pause so user can read before it changes
+        }, 800);
       }
     }
-  }, 20); // extremely fast typing (20ms/char)
+  }, 20);
 })();
 </script>
 <div id="watermark" aria-hidden="true"></div>

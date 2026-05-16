@@ -72,9 +72,14 @@ async function loadClerk() {
 export async function initAuth() {
   try {
     const clerk = await loadClerk();
-    if (!clerk) return true;
+    if (!clerk) {
+      // No Clerk configured — treat as authed (dev mode)
+      if (window.__setLoaderCtx) window.__setLoaderCtx('home');
+      return true;
+    }
 
     if (!clerk.user) {
+      // Not signed in — loader stays in 'login' context, redirect immediately (no artificial delay)
       window.location.href = '/welcome.html';
       return false;
     }
@@ -90,6 +95,8 @@ export async function initAuth() {
       return false;
     }
 
+    // User is confirmed signed in — switch loader to 'home' workspace context
+    if (window.__setLoaderCtx) window.__setLoaderCtx('home');
     return true;
   } catch {
     window.location.href = '/welcome.html';
