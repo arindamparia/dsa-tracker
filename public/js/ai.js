@@ -234,6 +234,29 @@ export const AI = {
     if (window.showToast) window.showToast('🔒 AI features require a subscription.', 'error');
   },
 
+  _showMismatchWarning(lc, reason) {
+    const solWrap = document.querySelector(`#row-${lc} .sol-cell-wrap`);
+    if (!solWrap) return;
+
+    // Remove previous warning if any
+    document.getElementById(`ai-mismatch-${lc}`)?.remove();
+
+    const el = document.createElement('div');
+    el.id = `ai-mismatch-${lc}`;
+    el.style.cssText = 'margin-top:8px;padding:12px 14px;background:rgba(255,71,87,0.08);border:1px solid rgba(255,71,87,0.28);border-radius:8px;display:flex;align-items:flex-start;gap:10px;';
+    el.innerHTML = `
+      <span style="font-size:18px;flex-shrink:0;line-height:1.2;">⚠️</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:#ff4757;margin-bottom:3px;letter-spacing:0.02em;">Wrong Solution Detected</div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">${reason || 'This code does not appear to solve this problem.'} Please paste your actual solution and try again.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;opacity:0.7;">1 daily analysis used.</div>
+      </div>
+      <button onclick="this.closest('[id^=ai-mismatch]').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:0;line-height:1;flex-shrink:0;" title="Dismiss">×</button>
+    `;
+    solWrap.appendChild(el);
+    if (window.animate) animate(el, { opacity: [0, 1], y: [-6, 0] }, { duration: 0.25 });
+  },
+
   async fetchAI(action, lc_number, code = '') {
     if (!state.isSubscribed && action !== 'hint') { this._notSubscribedToast(); return null; }
 
@@ -244,12 +267,29 @@ export const AI = {
     }
 
     try {
-      if (window.showToast) window.showToast('🤖 Asking AI...', 'info');
+      if (window.showToast) window.showToast(action === 'analyze' ? '🤖 Checking solution…' : '🤖 Asking AI…', 'info');
+
+      // Derive platform name from the question URL (mirrors render.js logic)
+      const _u = (q.url || '').toLowerCase();
+      let platform = 'LeetCode';
+      if (_u.includes('codeforces'))      platform = 'Codeforces';
+      else if (_u.includes('atcoder'))    platform = 'AtCoder';
+      else if (_u.includes('cses'))       platform = 'CSES';
+      else if (_u.includes('geeksforgeeks')) platform = 'GeeksforGeeks';
+      else if (_u.includes('spoj'))       platform = 'SPOJ';
+      else if (_u.includes('hackerrank')) platform = 'HackerRank';
+      else if (_u.includes('hackerearth')) platform = 'HackerEarth';
+      else if (_u.includes('codewars'))   platform = 'Codewars';
+      else if (_u.includes('exercism'))   platform = 'Exercism';
+      else if (_u.includes('codingame'))  platform = 'CodinGame';
+      else if (_u.includes('projecteuler')) platform = 'Project Euler';
+      else if (_u.includes('codechef'))   platform = 'CodeChef';
+      else if (_u.includes('codingninjas') || _u.includes('naukri.com/code360')) platform = 'CodingNinjas';
 
       const res = await fetch('/.netlify/functions/analyze-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, title: q.name, code })
+        body: JSON.stringify({ action, title: q.name, code, platform })
       });
 
       const data = await res.json();
@@ -259,9 +299,17 @@ export const AI = {
           this._notSubscribedToast();
           return null;
         }
+        if (res.status === 429) {
+          const msg = data.error === 'daily_limit_reached'
+            ? (data.message || 'Daily AI limit reached. Resets at midnight UTC.')
+            : 'Too many requests. Please wait a moment.';
+          if (window.showToast) window.showToast(msg, 'error');
+          return null;
+        }
         throw new Error(data.error || 'Failed to fetch AI response');
       }
 
+      // Mismatch detected — return the full data object so analyze() can handle it
       return data.data;
 
     } catch (err) {
@@ -363,7 +411,7 @@ export const AI = {
     }
 
     const analysis = await this.fetchAI('analyze', lc, code);
-    
+
     if (analyzeBtn) {
       analyzeBtn.disabled = false;
       analyzeBtn.innerHTML = originalText;
@@ -371,6 +419,13 @@ export const AI = {
     }
 
     if (!analysis) return;
+
+    // Mismatch: wrong solution pasted — show inline warning, do NOT save or render full panel
+    if (analysis.mismatch) {
+      this._showMismatchWarning(lc, analysis.reason);
+      if (window.showToast) window.showToast('⚠️ Wrong solution detected — 1 daily use spent', 'error');
+      return;
+    }
 
     // Normalize AI complexity output to our accepted option values before applying
     const timeNorm  = normalizeComplexity(analysis.time_complexity);

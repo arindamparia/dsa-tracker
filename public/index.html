@@ -616,7 +616,7 @@ html:has(#page-loader){overflow:hidden}
 
 <!-- ADMIN PANEL MODAL -->
 <div class="modal-overlay" id="admin-panel-modal" onclick="AdminPanel.handleOverlayClick(event)">
-  <div class="modal" style="max-width:460px;">
+  <div class="modal" style="max-width:700px;">
     <div class="admin-panel-header">
       <div class="admin-panel-badge">Admin</div>
       <div class="modal-title" style="margin-bottom:2px;">Admin Panel</div>
@@ -647,7 +647,37 @@ html:has(#page-loader){overflow:hidden}
         </div>
         <button class="btn-submit admin-action-btn" style="background:rgba(248,181,0,0.1);border:1px solid rgba(248,181,0,0.3);color:#f8b500;" onclick="AdminPanel.close(); setTimeout(() => ViewFeedbackModal.open(), 120)">View</button>
       </div>
+      <div class="admin-action-card">
+        <div class="admin-action-icon" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;">👥</div>
+        <div class="admin-action-body">
+          <div class="admin-action-label">Manage Users</div>
+          <div class="admin-action-desc">Search users & grant AI access</div>
+        </div>
+        <button class="btn-submit admin-action-btn" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:#7c6af7;" onclick="AdminPanel.openUserManager()">Open</button>
+      </div>
     </div>
+
+    <!-- User Manager Drawer -->
+    <div id="ap-user-manager" style="display:none;margin-top:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <button onclick="AdminPanel.closeUserManager()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:4px;line-height:1;" title="Back">←</button>
+        <span style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.02em;">User Manager</span>
+        <span id="ap-user-total" style="font-size:11px;color:var(--text-muted);margin-left:auto;"></span>
+      </div>
+      <div style="position:relative;margin-bottom:14px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;">🔍</span>
+        <input id="ap-user-search" type="text" placeholder="Search by name or email…"
+          style="width:100%;padding:10px 12px 10px 36px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color 0.2s;"
+          oninput="AdminPanel.onSearchInput(this.value)"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border)'"
+        />
+      </div>
+      <div id="ap-user-list" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+        <div style="text-align:center;padding:28px;color:var(--text-muted);font-size:13px;">Loading users…</div>
+      </div>
+    </div>
+
     <div class="modal-actions" style="margin-top:20px;">
       <button class="btn-cancel" onclick="AdminPanel.close()">Close</button>
     </div>

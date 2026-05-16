@@ -41,20 +41,160 @@ import { FeedbackModal, ViewFeedbackModal } from './feedback.js';
    ─────────────────────────────────────────────────────────────── */
 const AdminPanel = {
   _id: 'admin-panel-modal',
+  _searchTimer: null,
+  _userCache: null,
+
   open() {
     lockScroll();
     document.getElementById(this._id).classList.add('open');
   },
   close() {
+    this.closeUserManager();
     document.getElementById(this._id).classList.remove('open');
     unlockScroll();
   },
   handleOverlayClick(e) {
     if (e.target === document.getElementById(this._id)) this.close();
   },
+
+  openUserManager() {
+    const drawer = document.getElementById('ap-user-manager');
+    const grid   = document.querySelector('.admin-panel-grid');
+    if (drawer) drawer.style.display = 'block';
+    if (grid)   grid.style.display   = 'none';
+    this._userCache = null;
+    const searchEl = document.getElementById('ap-user-search');
+    if (searchEl) searchEl.value = '';
+    this.searchUsers('');
+  },
+
+  closeUserManager() {
+    const drawer = document.getElementById('ap-user-manager');
+    const grid   = document.querySelector('.admin-panel-grid');
+    if (drawer) drawer.style.display = 'none';
+    if (grid)   grid.style.display   = '';
+  },
+
+  onSearchInput(val) {
+    clearTimeout(this._searchTimer);
+    this._searchTimer = setTimeout(() => this.searchUsers(val.trim()), 300);
+  },
+
+  async searchUsers(q) {
+    const list = document.getElementById('ap-user-list');
+    if (!list) return;
+    list.innerHTML = `<div style="text-align:center;padding:28px;color:var(--text-muted);font-size:13px;">Searching\u2026</div>`;
+    try {
+      const url  = '/.netlify/functions/admin-users' + (q ? `?q=${encodeURIComponent(q)}` : '');
+      const res  = await fetch(url);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      this._userCache = data.users;
+      this.renderUsers(data.users);
+    } catch (err) {
+      list.innerHTML = `<div style="text-align:center;padding:28px;color:var(--hard);font-size:13px;">\u26a0 ${err.message}</div>`;
+    }
+  },
+
+  renderUsers(users) {
+    const list  = document.getElementById('ap-user-list');
+    const total = document.getElementById('ap-user-total');
+    if (!list) return;
+    if (total) total.textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
+
+    if (users.length === 0) {
+      list.innerHTML = `<div style="text-align:center;padding:28px;color:var(--text-muted);font-size:13px;">No users found</div>`;
+      return;
+    }
+
+    list.innerHTML = users.map(u => {
+      const initial  = (u.name || u.email || '?')[0].toUpperCase();
+      const name     = u.name || '\u2014';
+      const lastSeen = u.last_active ? _apTimeAgo(new Date(u.last_active)) : 'never';
+      const aiOn     = u.ai_access;
+      const dailyLim = u.ai_daily_limit ?? 4;
+      const roleChip = u.role === 'ADMIN'
+        ? `<span style="font-size:9px;font-weight:700;letter-spacing:0.05em;background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:1px 7px;">ADMIN</span>`
+        : '';
+      const safeKey  = u.email.replace(/[^a-z0-9]/gi, '_');
+      return `
+        <div style="display:flex;align-items:center;gap:12px;background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#7c6af7;flex-shrink:0;">${initial}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <span style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${name}">${name}</span>
+              ${roleChip}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${u.email}">${u.email}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:0.65;">Active ${lastSeen} &nbsp;&middot;&nbsp; Daily limit: <b style="color:var(--text-dim);">${dailyLim}/day</b></div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">AI</span>
+              <button onclick="AdminPanel.setAIAccess('${u.email}', ${!aiOn})"
+                style="width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;transition:background 0.25s;background:${aiOn ? '#06d6a0' : 'var(--border2)'};position:relative;outline:none;"
+                title="${aiOn ? 'Revoke AI access' : 'Grant AI access'}"
+                id="ap-ai-tog-${safeKey}"
+              ><span style="position:absolute;top:2px;left:${aiOn ? '22px' : '2px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3);" id="ap-ai-knob-${safeKey}"></span></button>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Limit</span>
+              <select onchange="AdminPanel.setDailyLimit('${u.email}', +this.value)"
+                style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:2px 5px;outline:none;cursor:pointer;">
+                ${[1,2,3,4,5,6,8,10,15,20].map(n => `<option value="${n}"${n === dailyLim ? ' selected' : ''}>${n}/day</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  },
+
+  async setAIAccess(email, value) {
+    const safeKey = email.replace(/[^a-z0-9]/gi, '_');
+    const btn = document.getElementById(`ap-ai-tog-${safeKey}`);
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+    try {
+      const res  = await fetch('/.netlify/functions/admin-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_ai_access', target_email: email, value }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      if (this._userCache) {
+        const u = this._userCache.find(x => x.email === email);
+        if (u) u.ai_access = value;
+        this.renderUsers(this._userCache);
+      }
+      showToast(`AI access ${value ? 'granted \u2713' : 'revoked'} \u2014 ${email}`, value ? 'success' : 'info');
+    } catch (err) {
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      showToast(`Failed: ${err.message}`, 'error');
+    }
+  },
+
+  async setDailyLimit(email, limit) {
+    try {
+      const res  = await fetch('/.netlify/functions/admin-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_daily_limit', target_email: email, value: limit }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      if (this._userCache) {
+        const u = this._userCache.find(x => x.email === email);
+        if (u) u.ai_daily_limit = limit;
+      }
+      showToast(`Daily limit \u2192 ${limit}/day \u2014 ${email}`, 'success');
+    } catch (err) {
+      showToast(`Failed: ${err.message}`, 'error');
+    }
+  },
+
   async sendBroadcast() {
     const btn = document.getElementById('ap-broadcast-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending\u2026'; }
     try {
       const res  = await fetch('/.netlify/functions/trigger-broadcast', { method: 'POST' });
       const data = await res.json();
@@ -70,6 +210,15 @@ const AdminPanel = {
     }
   },
 };
+
+function _apTimeAgo(date) {
+  const s = Math.floor((Date.now() - date) / 1000);
+  if (s < 60)      return 'just now';
+  if (s < 3600)    return `${Math.floor(s/60)}m ago`;
+  if (s < 86400)   return `${Math.floor(s/3600)}h ago`;
+  if (s < 2592000) return `${Math.floor(s/86400)}d ago`;
+  return `${Math.floor(s/2592000)}mo ago`;
+}
 
 /* ── Deferred CSS loader ──────────────────────────────────────────
    Lighthouse was yelling at me about render-blocking CSS. We rip out 

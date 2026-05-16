@@ -90,6 +90,13 @@ export async function initSchema(sql) {
   try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active TIMESTAMPTZ`; } catch (e) {}
   try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS broadcast_unsubscribed BOOLEAN DEFAULT FALSE`; } catch (e) {}
   try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS image_url TEXT`; } catch (e) {}
+  // ai_access: admin-granted flag for AI code analysis. Separate from is_subscribed.
+  // Backfill: existing subscribers automatically get ai_access so they don't lose access.
+  try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_access BOOLEAN NOT NULL DEFAULT FALSE`; } catch (e) {}
+  try { await sql`UPDATE users SET ai_access = TRUE WHERE is_subscribed = TRUE AND ai_access = FALSE`; } catch (e) {}
+  try { await sql`CREATE INDEX IF NOT EXISTS idx_users_ai_access ON users(ai_access) WHERE ai_access = TRUE`; } catch (e) {}
+  // ai_daily_limit: per-user daily cap for AI analyses (default 4). Admin-configurable per user.
+  try { await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_daily_limit INTEGER NOT NULL DEFAULT 4`; } catch (e) {}
   // Backfill: set last_active to created_at for existing users where it is null
   try { await sql`UPDATE users SET last_active = created_at WHERE last_active IS NULL`; } catch (e) {}
   // Backfill: copy name → clerk_name for existing users who don't have it yet
