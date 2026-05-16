@@ -83,7 +83,27 @@ const AdminPanel = {
   async searchUsers(q) {
     const list = document.getElementById('ap-user-list');
     if (!list) return;
-    list.innerHTML = `<div style="text-align:center;padding:28px;color:var(--text-muted);font-size:13px;">Searching\u2026</div>`;
+
+    // Show skeleton shimmer while fetching
+    list.innerHTML = Array(4).fill(0).map(() => `
+      <div class="ap-skeleton-row" style="display:flex;align-items:center;gap:12px;background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--skeleton-base, rgba(255,255,255,0.06));flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="height:12px;width:55%;border-radius:4px;background:var(--skeleton-base, rgba(255,255,255,0.06));margin-bottom:7px;"></div>
+          <div style="height:10px;width:75%;border-radius:4px;background:var(--skeleton-base, rgba(255,255,255,0.04));"></div>
+        </div>
+        <div style="width:44px;height:24px;border-radius:12px;background:var(--skeleton-base, rgba(255,255,255,0.06));flex-shrink:0;"></div>
+      </div>`
+    ).join('');
+
+    // Pulse the skeletons
+    list.querySelectorAll('.ap-skeleton-row').forEach((el, i) => {
+      el.animate(
+        [{ opacity: 0.4 }, { opacity: 1 }, { opacity: 0.4 }],
+        { duration: 1400, delay: i * 120, iterations: Infinity, easing: 'ease-in-out' }
+      );
+    });
+
     try {
       const url  = '/.netlify/functions/admin-users' + (q ? `?q=${encodeURIComponent(q)}` : '');
       const res  = await fetch(url);
@@ -94,6 +114,49 @@ const AdminPanel = {
     } catch (err) {
       list.innerHTML = `<div style="text-align:center;padding:28px;color:var(--hard);font-size:13px;">\u26a0 ${err.message}</div>`;
     }
+  },
+
+  _buildUserCard(u) {
+    const initial  = (u.name || u.email || '?')[0].toUpperCase();
+    const name     = u.name || '\u2014';
+    const lastSeen = u.last_active ? _apTimeAgo(new Date(u.last_active)) : 'never';
+    const aiOn     = u.ai_access;
+    const dailyLim = u.ai_daily_limit ?? 4;
+    const safeKey  = u.email.replace(/[^a-z0-9]/gi, '_');
+    const roleChip = u.role === 'ADMIN'
+      ? `<span style="font-size:9px;font-weight:700;letter-spacing:0.05em;background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:1px 7px;">ADMIN</span>`
+      : '';
+
+    const el = document.createElement('div');
+    el.style.cssText = 'display:flex;align-items:center;gap:12px;background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;opacity:0;transform:translateY(8px);transition:opacity 0.22s ease,transform 0.22s ease;';
+    el.innerHTML = `
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#7c6af7;flex-shrink:0;">${initial}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${name}">${name}</span>
+          ${roleChip}
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${u.email}">${u.email}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:0.65;">Active ${lastSeen} &nbsp;&middot;&nbsp; Daily limit: <b style="color:var(--text-dim);">${dailyLim}/day</b></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">AI</span>
+          <button onclick="AdminPanel.setAIAccess('${u.email}', ${!aiOn})"
+            style="width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;transition:background 0.25s;background:${aiOn ? '#06d6a0' : 'var(--border2)'};position:relative;outline:none;"
+            title="${aiOn ? 'Revoke AI access' : 'Grant AI access'}"
+            id="ap-ai-tog-${safeKey}"
+          ><span style="position:absolute;top:2px;left:${aiOn ? '22px' : '2px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3);" id="ap-ai-knob-${safeKey}"></span></button>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Limit</span>
+          <select onchange="AdminPanel.setDailyLimit('${u.email}', +this.value)"
+            style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:2px 5px;outline:none;cursor:pointer;">
+            ${[1,2,3,4,5,6,8,10,15,20].map(n => `<option value="${n}"${n === dailyLim ? ' selected' : ''}>${n}/day</option>`).join('')}
+          </select>
+        </div>
+      </div>`;
+    return el;
   },
 
   renderUsers(users) {
@@ -107,46 +170,22 @@ const AdminPanel = {
       return;
     }
 
-    list.innerHTML = users.map(u => {
-      const initial  = (u.name || u.email || '?')[0].toUpperCase();
-      const name     = u.name || '\u2014';
-      const lastSeen = u.last_active ? _apTimeAgo(new Date(u.last_active)) : 'never';
-      const aiOn     = u.ai_access;
-      const dailyLim = u.ai_daily_limit ?? 4;
-      const roleChip = u.role === 'ADMIN'
-        ? `<span style="font-size:9px;font-weight:700;letter-spacing:0.05em;background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.3);border-radius:10px;padding:1px 7px;">ADMIN</span>`
-        : '';
-      const safeKey  = u.email.replace(/[^a-z0-9]/gi, '_');
-      return `
-        <div style="display:flex;align-items:center;gap:12px;background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
-          <div style="width:36px;height:36px;border-radius:50%;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#7c6af7;flex-shrink:0;">${initial}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-              <span style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${name}">${name}</span>
-              ${roleChip}
-            </div>
-            <div style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${u.email}">${u.email}</div>
-            <div style="font-size:10px;color:var(--text-muted);margin-top:2px;opacity:0.65;">Active ${lastSeen} &nbsp;&middot;&nbsp; Daily limit: <b style="color:var(--text-dim);">${dailyLim}/day</b></div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">AI</span>
-              <button onclick="AdminPanel.setAIAccess('${u.email}', ${!aiOn})"
-                style="width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;transition:background 0.25s;background:${aiOn ? '#06d6a0' : 'var(--border2)'};position:relative;outline:none;"
-                title="${aiOn ? 'Revoke AI access' : 'Grant AI access'}"
-                id="ap-ai-tog-${safeKey}"
-              ><span style="position:absolute;top:2px;left:${aiOn ? '22px' : '2px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3);" id="ap-ai-knob-${safeKey}"></span></button>
-            </div>
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Limit</span>
-              <select onchange="AdminPanel.setDailyLimit('${u.email}', +this.value)"
-                style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:11px;padding:2px 5px;outline:none;cursor:pointer;">
-                ${[1,2,3,4,5,6,8,10,15,20].map(n => `<option value="${n}"${n === dailyLim ? ' selected' : ''}>${n}/day</option>`).join('')}
-              </select>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
+    // Clear list and insert cards staggered via RAF — no layout thrashing
+    list.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    const cards = users.map(u => this._buildUserCard(u));
+    cards.forEach(c => fragment.appendChild(c));
+    list.appendChild(fragment); // single DOM write
+
+    // Animate in each card with a staggered delay using RAF
+    cards.forEach((card, i) => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, i * 40); // 40ms stagger — fast enough to feel fluid, slow enough to see
+      });
+    });
   },
 
   async setAIAccess(email, value) {

@@ -120,6 +120,11 @@
   background: rgba(255,71,87,0.16) !important;
 }
 
+/* Admin panel modal — wider */
+#admin-panel-modal .modal {
+  max-width: 700px;
+}
+
 /* pomodoro stepper */
 .pomo-stepper {
   display: flex;

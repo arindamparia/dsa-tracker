@@ -89,6 +89,14 @@ html.chrome-blur-reduce:not(.hide-theme-bg) .focus-bar {
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--border); }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: var(--border2); }
 
+/* Admin user manager list — no inner scroll, modal overlay handles scrolling */
+.ap-user-list-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+
 /* page loader */
 #page-loader {
   position: fixed; inset: 0; z-index: 99999;
