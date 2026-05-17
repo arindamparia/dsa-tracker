@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { saveComplexity, saveAIAnalysis } from './progress.js';
+import { saveComplexity, saveAIAnalysis, toggleCheck } from './progress.js';
 import { HintCache, Cache } from './cache.js';
 import { handleError } from './errors.js';
 import { animate } from './motion.js';
@@ -482,6 +482,15 @@ export const AI = {
         q.time_complexity = tVal;
         q.space_complexity = sVal;
         saveComplexity(lc);
+      }
+    }
+
+    // Auto-mark done if AI confirmed the solution is correct and not already marked
+    if (analysis.is_correct_solution === true && q && !q.is_done) {
+      const chkDiv = document.getElementById(`chk-${lc}`);
+      if (chkDiv && !chkDiv.classList.contains('checked')) {
+        await toggleCheck(lc, 0);
+        if (window.showToast) window.showToast('✅ Solution verified — question marked as done!', 'success');
       }
     }
 

@@ -156,6 +156,7 @@ Reply ONLY with valid JSON: { "match": true/false, "reason": "<one sentence>" }
 Be direct, specific, and encouraging — like a senior engineer doing a real code review.
 Respond ONLY with valid JSON using exactly this schema (no extra keys, no markdown):
 {
+  "is_correct_solution": <true if the code logic is correct and would pass test cases for this problem; false if it has bugs, wrong logic, or would fail>,
   "time_complexity": "<Big-O string using standard notation, e.g. 'O(n)'>",
   "space_complexity": "<Big-O string>",
   "summary": "<1-2 sentence overall verdict. Start with 'Congratulations!' if current_time_complexity equals suggested_time_complexity (already optimal), or 'Good attempt!' if a strictly better complexity exists. Name the specific algorithm and what was impressive or what can improve.>",
