@@ -34,6 +34,21 @@ export const GhostEngine = {
           </div>
           
           <div class="ghost-body" id="ghost-body">
+            <div id="ghost-lang-picker" class="ghost-lang-picker hidden">
+              <div class="ghost-lang-picker-title">Choose your weapon</div>
+              <div class="ghost-lang-grid">
+                <button class="ghost-lang-card" onclick="GhostEngine._pickLanguage('C++')">
+                  <span class="ghost-lang-icon">⚡</span>
+                  <span class="ghost-lang-name">C++</span>
+                  <span class="ghost-lang-desc">Blazing Fast</span>
+                </button>
+                <button class="ghost-lang-card" onclick="GhostEngine._pickLanguage('Java')">
+                  <span class="ghost-lang-icon">☕</span>
+                  <span class="ghost-lang-name">Java</span>
+                  <span class="ghost-lang-desc">Battle-Tested</span>
+                </button>
+              </div>
+            </div>
             <div id="ghost-loading" class="ghost-loading hidden">
               <div class="ghost-spinner"></div>
               <div class="ghost-loading-text">Summoning optimal ghost...</div>
@@ -80,6 +95,7 @@ export const GhostEngine = {
       overlay: document.getElementById('ghost-overlay'),
       title: document.getElementById('ghost-title-text'),
       langBadge: document.getElementById('ghost-lang-badge'),
+      langPicker: document.getElementById('ghost-lang-picker'),
       loading: document.getElementById('ghost-loading'),
       output: document.getElementById('ghost-code-output'),
       intuitionPanel: document.getElementById('ghost-intuition-panel'),
@@ -124,30 +140,55 @@ export const GhostEngine = {
   close() {
     this.UI.overlay.classList.remove('open');
     this.stopPlayback();
+    this.UI.langPicker?.classList.add('hidden');
+    this._pendingSummon = null;
     unlockScroll();
   },
 
-  async summon(lcNumber, title, language, platform = 'LeetCode', difficulty = 'Medium') {
+  async summon(lcNumber, title, language = null, platform = 'LeetCode', difficulty = 'Medium') {
     this.init();
     lockScroll();
     this.UI.overlay.classList.add('open');
     this.UI.title.textContent = '- ' + title;
+    this.UI.langBadge.textContent = '';
+    this.UI.annotation.classList.remove('visible');
+    this.UI.intuitionPanel.classList.add('hidden');
+    this.state = { isPlaying: false, speed: 1, code: '', pauses: [], charIndex: 0, currentLine: 1, isPausedForThought: false };
+    this.updateControls();
+
+    if (!language) {
+      this._pendingSummon = { lcNumber, title, platform, difficulty };
+      this._showLangPicker();
+      return;
+    }
+
+    await this._doSummon(lcNumber, title, language, platform, difficulty);
+  },
+
+  _showLangPicker() {
+    this.UI.langPicker.classList.remove('hidden');
+    this.UI.loading.classList.add('hidden');
+    document.getElementById('ghost-body').classList.remove('is-typing');
+    this.UI.output.textContent = '';
+    this.setControlsEnabled(false);
+  },
+
+  async _pickLanguage(lang) {
+    if (!this._pendingSummon) return;
+    const { lcNumber, title, platform, difficulty } = this._pendingSummon;
+    this._pendingSummon = null;
+    this.UI.langPicker.classList.add('hidden');
+    await this._doSummon(lcNumber, title, lang, platform, difficulty);
+  },
+
+  async _doSummon(lcNumber, title, language, platform, difficulty) {
     this.UI.langBadge.textContent = language.toUpperCase();
     this.UI.loading.classList.remove('hidden');
     document.getElementById('ghost-body').classList.remove('is-typing');
     this.UI.output.parentElement.classList.remove('interactive');
     this.startLoadingAnimation(language);
     this.UI.output.textContent = '';
-    this.UI.annotation.classList.remove('visible');
-    this.UI.intuitionPanel.classList.add('hidden');
-    this.setControlsEnabled(false); // Disable all buttons while fetching
-    
-    // Reset state
-    this.state = {
-      isPlaying: false, speed: 1, code: '', pauses: [], 
-      charIndex: 0, currentLine: 1, isPausedForThought: false
-    };
-    this.updateControls();
+    this.setControlsEnabled(false);
 
     try {
       const res = await fetch('/.netlify/functions/generate-ghost', {
@@ -156,8 +197,7 @@ export const GhostEngine = {
         body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
       });
       const data = await res.json();
-      
-      // Handle the case where AI doesn't know the problem solution
+
       if (data?.error === 'NO_SOLUTION') {
         this.stopLoadingAnimation();
         this.setControlsEnabled(true);
@@ -165,12 +205,11 @@ export const GhostEngine = {
         showToast(data.message || "Ghost Engine has no solution for this problem yet. Try a different problem!", 'info');
         return;
       }
-      
+
       if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed to summon ghost');
 
       this.state.code = (data.data.optimal_code || '').trimStart();
-      
-      // Populate Intuition Panel if it exists in the data
+
       if (data.data.intuition) {
         this.UI.intuitionText.textContent = data.data.intuition;
         this.UI.timeBadge.textContent = `⏳ ${data.data.time_complexity || 'O(?)'}`;
@@ -178,16 +217,15 @@ export const GhostEngine = {
         this.UI.intuitionPanel.classList.remove('hidden');
       }
 
-      // Convert map for O(1) lookup: pauses[line_number] = pauseData
       this.state.pauses = (data.data.thought_pauses || []).reduce((acc, p) => {
         acc[p.line_number] = p;
         return acc;
       }, {});
-      
+
       this.stopLoadingAnimation();
       this.UI.loading.classList.add('hidden');
-      this.setControlsEnabled(true); // Re-enable all buttons
-      this.play(); // Auto-start
+      this.setControlsEnabled(true);
+      this.play();
     } catch (err) {
       this.stopLoadingAnimation();
       this.setControlsEnabled(true);

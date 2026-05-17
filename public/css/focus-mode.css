@@ -198,8 +198,7 @@ body.focus-active .focus-btn { background: var(--accent-glow); border-color: rgb
 }
 
 .hard-modal {
-  position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%,-50%) translateZ(0);
+  position: fixed; inset: 0; margin: auto; height: fit-content;
   z-index: 10002; opacity: 0;
   will-change: opacity;
   min-width: 300px; max-width: 440px; width: 88vw;

@@ -248,13 +248,7 @@ export function buildRow(q, si) {
       <div class="sol-cell-wrap">
         <div class="sol-actions-row">
           <button class="ai-btn ai-analyze-btn" id="ai-analyze-btn-${q.lc_number}" onclick="AI.analyze(${q.lc_number})" title="Analyze Complexity &amp; Quality">🤖 Analyze Code</button>
-          ${q.difficulty === 'Hard' ? `<div style="display:flex;align-items:center;gap:4px;margin-left:auto;">
-            <select id="ghost-lang-${q.lc_number}" class="form-select" style="padding:4px 8px;font-size:11px;min-height:26px;border-color:rgba(124,106,247,0.3);width:auto;">
-              <option value="C++" selected>C++</option>
-              <option value="Java">Java</option>
-            </select>
-            <button class="ai-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.4);color:#c4baff;" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', document.getElementById('ghost-lang-${q.lc_number}').value, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>
-          </div>` : ''}
+          <button class="ai-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.4);color:#c4baff;margin-left:auto;" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>
         </div>
         <div style="position: relative;">
           <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
