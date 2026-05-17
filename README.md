@@ -11,6 +11,7 @@
 I built this because existing trackers were either too simple (just a spreadsheet) or too bloated. Here is every feature currently packed into this codebase:
 
 ### 🧠 AI & Smart Suggestions
+- **Temporal Ghost Engine (AI Tutor) (`ghost.js`)**: Stuck on a problem? Summon the Ghost Engine to watch a simulated Staff Engineer AI write the optimal solution *live*. The engine uses "Cognitive Pauses" to stop typing at complex lines and explain the core intuition behind the math or data structure used.
 - **AI Code Review (`analyze-code.mjs`)**: Paste your solution and get instant feedback on correctness, edge cases, and Time/Space complexity powered by OpenAI. No more waiting for LeetCode or Codeforces judging servers.
 - **AI Hints (`ai.js`)**: Get a contextual nudge to unblock yourself without reading the full spoiler solution.
 - **Smart Pick Engine (`smart-queue.js`)**: Priority-scored algorithm that suggests exactly what you should solve next based on your history.

@@ -12,6 +12,9 @@
 [functions."broadcast"]
   timeout = 30
 
+[functions."generate-ghost"]
+  timeout = 120
+
 # HTTP preload hints for the index page — browser starts fetching these CSS files
 # the moment it receives the response headers, before it has even parsed the HTML.
 # Pick the 5 heaviest render-blocking stylesheets (table 19KB, controls 13KB,

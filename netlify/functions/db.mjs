@@ -166,4 +166,19 @@ export async function initSchema(sql) {
     // Purge windows older than 1 hour to keep the table lean
     await sql`DELETE FROM ai_rate_limits WHERE window_start < NOW() - INTERVAL '1 hour'`;
   } catch (e) { /* ignore */ }
+
+  // ── Ghost AI Cache table ────────────────────────────────────────────────
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS ghost_cache (
+        id SERIAL PRIMARY KEY,
+        lc_number INTEGER NOT NULL REFERENCES questions(lc_number) ON DELETE CASCADE,
+        language TEXT NOT NULL,
+        json_data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE (lc_number, language)
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_ghost_cache_lookup ON ghost_cache(lc_number, language)`;
+  } catch (e) { console.error("Ghost Cache migration error:", e.message); }
 }

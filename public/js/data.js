@@ -88,9 +88,7 @@ export async function refreshUserSettings() {
     if (adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
     // Admins don't submit feedback — they receive it
     const fbHeader   = document.getElementById('btn-feedback-header');
-    const fbSettings = document.getElementById('btn-feedback-settings-wrap');
     if (fbHeader)   fbHeader.style.display   = isAdmin ? 'none' : '';
-    if (fbSettings) fbSettings.style.display = isAdmin ? 'none' : '';
   } catch {}
 }
 

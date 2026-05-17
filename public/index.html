@@ -7,7 +7,7 @@
      Must be as early as possible — every ms here reduces the font-blocking delay. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<meta name="description" content="AlgoTracker is the ultimate Data Structures and Algorithms (DSA) tracker for MAANG & FAANG interview prep. Master competitive programming with problems from LeetCode, Codeforces, AtCoder, and CSES. Features include spaced-repetition, timed mock interviews, company readiness tracking, ambient focus modes, and integrated CP-Algorithms learning materials." />
+<meta name="description" content="AlgoTracker is the ultimate Data Structures and Algorithms (DSA) tracker with a built-in AI Tutor. Master competitive programming with the Temporal Ghost Engine—watch a Staff Engineer AI write optimal solutions live with real-time Cognitive Pauses that explain the intuition. Features spaced-repetition, mock interviews, and MAANG prep." />
 <meta name="theme-color" content="#7c6af7" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -18,7 +18,7 @@
 
 <!-- Standard SEO Meta Tags -->
 <link rel="canonical" href="https://algotracker.xyz/" />
-<meta name="keywords" content="algo track, algo tracker, DSA tracker, data structures, algorithms, algorithm problems, LeetCode tracker, Codeforces tracker, AtCoder, CSES, cp-algorithms, competitive programming, coding interview prep, mock interview, software engineer interview, MAANG prep, FAANG prep, tech interview, focus mode, spaced repetition software, active recall, company specific coding questions, coding patterns, NeetCode alternative, blind 75 tracker, grind 75, dynamic programming, graph algorithms, Arindam Paria" />
+<meta name="keywords" content="algo track, algo tracker, DSA tracker, AI code tutor, learn DSA with AI, understand LeetCode solutions, live code replay, Temporal Ghost Engine, data structures, algorithms, algorithm problems, LeetCode tracker, Codeforces tracker, AtCoder, CSES, cp-algorithms, competitive programming, coding interview prep, mock interview, software engineer interview, MAANG prep, FAANG prep, tech interview, focus mode, spaced repetition software, active recall, company specific coding questions, coding patterns, NeetCode alternative, blind 75 tracker, grind 75, dynamic programming, graph algorithms, Arindam Paria" />
 <meta name="author" content="Arindam Paria" />
 
 <!-- Open Graph / Facebook -->
@@ -26,14 +26,14 @@
 <meta property="og:url" content="https://algotracker.xyz/" />
 <meta property="og:site_name" content="AlgoTracker" />
 <meta property="og:title" content="AlgoTracker - DSA Tracker & Interview Prep" />
-<meta property="og:description" content="AlgoTracker is the ultimate DSA tracker for MAANG & FAANG interview prep. Master competitive programming with problems from LeetCode, Codeforces, AtCoder, and CSES. Features spaced-repetition, mock interviews, and CP-Algorithms integration." />
+<meta property="og:description" content="Master Data Structures and Algorithms with AlgoTracker's built-in AI Tutor. Watch the Temporal Ghost Engine write optimal solutions live with Cognitive Pauses that explain the intuition. Includes spaced-repetition and mock interviews." />
 <meta property="og:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
 
 <!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:url" content="https://algotracker.xyz/" />
 <meta name="twitter:title" content="AlgoTracker - DSA Tracker & Interview Prep" />
-<meta name="twitter:description" content="AlgoTracker is the ultimate DSA tracker for MAANG & FAANG interview prep. Master competitive programming with problems from LeetCode, Codeforces, AtCoder, and CSES. Features spaced-repetition, mock interviews, and CP-Algorithms integration." />
+<meta name="twitter:description" content="Master Data Structures and Algorithms with AlgoTracker's built-in AI Tutor. Watch the Temporal Ghost Engine write optimal solutions live with Cognitive Pauses that explain the intuition. Includes spaced-repetition and mock interviews." />
 <meta name="twitter:image" content="https://res.cloudinary.com/dnju7wfma/image/upload/f_auto,q_auto,w_1200/bg_lnzb9t.png" />
 
 <!-- JSON-LD Structured Data for Google Site Name -->
@@ -194,6 +194,7 @@ html:has(#page-loader){overflow:hidden}
 <link rel="preload" as="style" href="css/toast.css"      onload="this.onload=null;this.rel='stylesheet'" />
 <link rel="preload" as="style" href="css/review-queue.css" onload="this.onload=null;this.rel='stylesheet'" />
 <link rel="preload" as="style" href="css/daily-goal.css" onload="this.onload=null;this.rel='stylesheet'" />
+<link rel="preload" as="style" href="css/ghost.css"      onload="this.onload=null;this.rel='stylesheet'" />
 <!-- smart-queue.css deferred — card is injected dynamically, never visible on load -->
 <link rel="preload" as="style" href="css/pwa.css"        onload="this.onload=null;this.rel='stylesheet'" />
 <!-- Feature CSS is loaded dynamically after first render (saves ~80KB from critical path) -->
@@ -821,13 +822,6 @@ html:has(#page-loader){overflow:hidden}
                placeholder="your@email.com" maxlength="120" autocomplete="email" />
       </div>
 
-      <div id="btn-feedback-settings-wrap" class="us-field-group" style="padding-top:4px;display:none;">
-        <hr class="us-divider" />
-        <button class="btn-cancel" style="width:100%;text-align:left;color:var(--text-muted);font-size:12px;padding:8px 0;"
-                onclick="UserSettings.close(); setTimeout(() => FeedbackModal.open(), 120)">
-          💬 Submit Feedback
-        </button>
-      </div>
 
     </div>
     <div class="modal-actions">
@@ -1296,6 +1290,10 @@ html:has(#page-loader){overflow:hidden}
 <script type="module" src="js/ai.js"></script>
 <script type="module" src="js/main.js"></script>
 <script type="module" src="js/version-check.js"></script>
+<script type="module">
+  import { GhostEngine } from './js/ghost.js';
+  window.GhostEngine = GhostEngine;
+</script>
 
 <!-- FOOTER CREDIT -->
 <footer class="site-footer">

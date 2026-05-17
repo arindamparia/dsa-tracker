@@ -12,6 +12,9 @@ const AI_LIMIT_PER_MINUTE = 10;
  * Atomically increments the counter via UPSERT then checks the new value.
  */
 export async function checkAIRateLimit(userEmail) {
+  // Admin bypass
+  if (userEmail === 'arindamparia321@gmail.com') return true;
+
   const sql = getDb();
   // Bucket = current UTC minute boundary (e.g. "2024-01-01T12:05:00.000Z")
   const windowStart = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString();

@@ -77,7 +77,7 @@ export const handler = async (event) => {
           WHERE user_email = ${userEmail}
             AND window_start >= ${dayStart.toISOString()}
         `;
-        if ((usage?.total ?? 0) >= dailyLimit) {
+        if (userEmail !== 'arindamparia321@gmail.com' && (usage?.total ?? 0) >= dailyLimit) {
           return {
             statusCode: 429,
             headers: CORS,
@@ -182,7 +182,8 @@ Respond ONLY with valid JSON using exactly this schema (no extra keys, no markdo
 Scoring guide for code_style integers:
 - readability 1 = hard to follow (cryptic names, zero spacing)  2 = acceptable but improvable  3 = clean and self-documenting
 - structure 1 = monolithic / hard to trace logic  2 = reasonable flow  3 = excellent organisation
-Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n), O(n log n), O(n+m), O(n²), O(2^n) etc. Use custom format only if genuinely more precise.`
+Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n), O(n log n), O(n+m), O(n²), O(2^n) etc. Use custom format only if genuinely more precise.
+CRITICAL RULE — No Hallucination: If you do not have confident knowledge of this specific problem "${title}", you MUST NOT guess or invent an analysis. Instead return ONLY: { "not_found": true }`
         },
         { role: 'user', content: `Problem: ${title}\n\nCode:\n${code}` }
       ];
@@ -208,6 +209,9 @@ Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n)
 
       try {
         const parsed = JSON.parse(content);
+        if (parsed.not_found) {
+          return { statusCode: 404, headers: CORS, body: JSON.stringify({ ok: false, error: 'NO_SOLUTION', message: `We can't analyze this question right now, sorry! Try a different problem.` }) };
+        }
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: parsed }) };
       } catch {
         return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI returned malformed data. Please try again.' }) };

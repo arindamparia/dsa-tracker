@@ -294,6 +294,12 @@ export const AI = {
 
       const data = await res.json();
 
+      // AI doesn't have knowledge of this specific problem
+      if (data?.error === 'NO_SOLUTION') {
+        if (window.showToast) window.showToast(data.message || "We can't analyze this question right now, sorry! Try a different problem.", 'info');
+        return null;
+      }
+
       if (!res.ok) {
         if (res.status === 403 || data.error === 'subscription_required') {
           this._notSubscribedToast();
