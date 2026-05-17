@@ -69,6 +69,9 @@ export const GhostEngine = {
             <button class="ghost-speed ghost-skip-btn" id="ghost-skip-btn" onclick="GhostEngine.skipPlayback()">⏭ Skip</button>
             <button class="ghost-speed" id="ghost-copy-btn" onclick="GhostEngine.copyCode()" title="Copy Full Solution">📋 Copy</button>
           </div>
+          <div class="ghost-ai-disclaimer">
+            ⚠ AI-generated solution — verify correctness before submitting.
+          </div>
         </div>
       </div>
     `;

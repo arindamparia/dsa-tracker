@@ -72,12 +72,15 @@ If you do not have confident, reliable knowledge of this specific problem and it
 
 Only proceed with the full schema below if you are genuinely confident in the solution.
 
+CORRECTNESS MANDATE (Non-Negotiable):
+The 'optimal_code' you produce MUST be a complete, correct solution that passes ALL test cases on ${platform}, including edge cases (empty input, single element, maximum constraints, duplicates, negative numbers where applicable). Before finalising, mentally verify your solution against at least 3 representative test cases. If you have any doubt that the code would be accepted as a correct submission, return { "not_found": true } instead of guessing.
+
 You must respond ONLY in valid JSON matching this exact schema:
 {
   "intuition": "<A high-level explanation of how to approach the problem and why this approach works. Must be exactly ${intuitionLength} long based on problem difficulty.>",
   "time_complexity": "<e.g., O(N log N)>",
   "space_complexity": "<e.g., O(1)>",
-  "optimal_code": "<The complete, highly optimized ${language} code. Must be strictly formatted, highly readable, production-grade code with excellent variable names. DO NOT INDENT the root lines (e.g., 'class Solution' or '#include' MUST start at column 0). Do NOT include leading blank lines.>",
+  "optimal_code": "<The complete, correct, highly optimized ${language} solution. It MUST pass ALL test cases including edge cases — incorrect or incomplete code is not acceptable. Must be strictly formatted, highly readable, production-grade code with excellent variable names. Do NOT include leading blank lines.>",
   "thought_pauses": [
     {
       "line_number": <integer>,
