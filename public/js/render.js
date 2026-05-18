@@ -248,7 +248,7 @@ export function buildRow(q, si) {
       <div class="sol-cell-wrap">
         <div class="sol-actions-row">
           <button class="ai-btn ai-analyze-btn" id="ai-analyze-btn-${q.lc_number}" onclick="AI.analyze(${q.lc_number})" title="Analyze Complexity &amp; Quality">🤖 Analyze Code</button>
-          <button class="ai-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.4);color:#c4baff;margin-left:auto;" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>
+          ${q.difficulty === 'Hard' ? `<button class="ai-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.4);color:#c4baff;margin-left:auto;" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>` : ''}
         </div>
         <div style="position: relative;">
           <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>

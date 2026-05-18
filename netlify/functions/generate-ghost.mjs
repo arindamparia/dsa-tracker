@@ -24,11 +24,19 @@ export const handler = async (event) => {
     }
 
     const sql = getDb();
-    
+
+    // 0. Verify the question is Hard difficulty (server-side enforcement)
+    try {
+      const [q] = await sql`SELECT difficulty FROM questions WHERE lc_number = ${lcNumber} LIMIT 1`;
+      if (q && q.difficulty !== 'Hard') {
+        return { statusCode: 403, headers: CORS, body: JSON.stringify({ error: 'Ghost Replay is only available for Hard problems.' }) };
+      }
+    } catch { /* if questions table lookup fails, fall through */ }
+
     // 1. Check Cache
     try {
       const [cached] = await sql`
-        SELECT json_data FROM ghost_cache 
+        SELECT json_data FROM ghost_cache
         WHERE lc_number = ${lcNumber} AND language = ${language}
       `;
       if (cached) {
