@@ -46,8 +46,15 @@ function applyUserProfile(data) {
   state.imageUrl         = data.image_url         ?? null;
 }
 
-export async function refreshUserSettings() {
+export async function refreshUserSettings(force = false) {
   if (!window._clerk?.user) return;
+  
+  // Respect 5-minute TTL: don't fetch if cache is still fresh unless forced
+  if (!force && UserCache.get()) {
+    // If we have cache, the UI was already updated in boot()
+    return;
+  }
+
   try {
     const res  = await fetch('/.netlify/functions/get-user-settings', { cache: 'no-store' });
     if (!res.ok) return;

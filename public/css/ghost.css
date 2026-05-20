@@ -3,7 +3,7 @@
   position: fixed; inset: 0; z-index: 10000;
   background: rgba(10, 10, 12, 0.85);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+  display: flex; align-items: center; justify-content: center; padding: 0;
   opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -11,9 +11,9 @@
 
 .ghost-window {
   position: relative;
-  width: 100%; max-width: 900px; height: 80vh; max-height: 800px;
-  background: #111116; border: 1px solid rgba(124, 106, 247, 0.3);
-  border-radius: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+  width: 100vw; max-width: 100vw; height: 100vh; max-height: 100vh;
+  background: #111116; border: none;
+  border-radius: 0; box-shadow: none;
   display: flex; flex-direction: column; overflow: hidden;
   transform: translateY(20px) scale(0.98); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -58,7 +58,7 @@
 }
 .ghost-line-wrapper {
   display: block; position: relative; padding: 2px 0; border-radius: 4px;
-  white-space: normal;
+  white-space: pre-wrap;
 }
 .ghost-line-wrapper:hover {
   background: rgba(255,255,255,0.02);
@@ -273,13 +273,13 @@
 .ghost-spinner::before {
   border-top-color: #7c6af7;
   border-right-color: #7c6af7;
-  animation: ghost-spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  animation: ghost-spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite !important;
   box-shadow: 0 0 15px rgba(124, 106, 247, 0.4);
 }
 .ghost-spinner::after {
   border-bottom-color: #c4baff;
   border-left-color: #c4baff;
-  animation: ghost-spin-reverse 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  animation: ghost-spin-reverse 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite !important;
 }
 
 @keyframes ghost-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

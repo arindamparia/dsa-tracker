@@ -12,6 +12,8 @@ import { AddQuestionModal } from './modal-add.js';
 import { SolutionModal } from './modal-solution.js';
 import { ReportModal } from './modal-report.js';
 import { Logout } from './modal-logout.js';
+import { render, renderSkeletonSections } from './render.js';
+import { SocraticChat } from './gamification.js';
 import { ResetModal } from './reset.js';
 import { showToast } from './toast.js';
 import { initStopwatch, PomodoroModal } from './stopwatch.js';
@@ -326,6 +328,7 @@ window.Logout            = Logout;
 window.SRS               = SRS;
 window.MasteryChart      = MasteryChart;
 window.DailyGoal         = DailyGoal;
+window.SocraticChat      = SocraticChat;
 window.FocusMode         = FocusMode;
 window.SimilarProblems   = SimilarProblems;
 window.AI                = AI;
@@ -402,7 +405,7 @@ import('https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.mjs').then(({ defaul
     smoothTouch:     false,
     wheelMultiplier: 1.2,
     // Don't intercept wheel events inside any modal content box so native scroll works
-    prevent: (node) => node.closest('.modal') !== null,
+    prevent: (node) => node.closest('.modal') !== null || node.closest('.ghost-overlay') !== null || node.closest('.socratic-drawer') !== null,
   });
   window.__lenis = lenis;
   (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })(performance.now());
@@ -429,6 +432,32 @@ import('https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.mjs').then(({ defaul
       if (token) {
         options = { ...options };
         options.headers = { ...options.headers, Authorization: `Bearer ${token}` };
+      }
+
+      const MAX_RETRIES = 3; // 1 initial + 2 retries
+      let attempt = 0;
+      
+      while (attempt < MAX_RETRIES) {
+        try {
+          const res = await _fetch.call(this, url, options);
+          // Retry on server errors or rate limits
+          if ((res.status >= 500 || res.status === 429) && attempt < MAX_RETRIES - 1) {
+            attempt++;
+            console.warn(`[API] ${res.status} on ${url}. Retrying... (${attempt}/${MAX_RETRIES - 1})`);
+            await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000)); // 2s, 4s delay
+            continue;
+          }
+          return res;
+        } catch (e) {
+          // Retry on network errors (e.g. ENETUNREACH)
+          if (attempt < MAX_RETRIES - 1) {
+            attempt++;
+            console.warn(`[API] Network error on ${url}. Retrying... (${attempt}/${MAX_RETRIES - 1})`);
+            await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
+            continue;
+          }
+          throw e;
+        }
       }
     }
     return _fetch.call(this, url, options);

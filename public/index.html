@@ -1287,13 +1287,84 @@ html:has(#page-loader){overflow:hidden}
 
 <script src="js/learning-material.js" defer></script>
 <script src="js/cp-resources.js" defer></script>
-<script type="module" src="js/ai.js"></script>
-<script type="module" src="js/main.js"></script>
+  <!-- end add question modal -->
+
+  <!-- AI Review Modal for small screens -->
+  <div class="modal-overlay" id="ai-review-modal" onclick="if(event.target===this) window.AI.closeReviewModal()">
+    <div class="modal" style="max-width: 600px; padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 class="modal-title" style="margin: 0; font-size: 18px;">🤖 Code Review</h3>
+        <button onclick="window.AI.closeReviewModal()" style="font-size: 24px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 0; line-height: 1;">×</button>
+      </div>
+      <div id="ai-review-modal-body">
+        <style>
+          #ai-review-modal-body .air-card {
+            box-shadow: none !important;
+            border: none !important;
+            margin-top: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+          }
+          #ai-review-modal-body .ai-fb-box {
+            margin-top: 0 !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+          }
+        </style>
+      </div>
+    </div>
+  </div>
+
+  <!-- App JS (ES Modules) -->
+  <script type="module" src="js/main.js"></script>
 <script type="module" src="js/version-check.js"></script>
 <script type="module">
   import { GhostEngine } from './js/ghost.js';
   window.GhostEngine = GhostEngine;
 </script>
+
+<!-- Roast My Code Modal -->
+<div class="modal-overlay" id="roast-overlay" onclick="window.RoastCode.handleOverlay(event)">
+  <div class="modal" id="roast-modal" style="max-width:500px; border: 1px solid rgba(255,100,100,0.3); background: var(--bg-card); box-shadow: 0 8px 32px rgba(255,100,100,0.1);">
+    <div class="modal-header" style="border-bottom: 1px solid rgba(255,100,100,0.1);">
+      <h3 style="color:#ff8888;">🔥 Roast My Code</h3>
+      <button class="modal-close" onclick="window.RoastCode.close()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-dim); margin-bottom: 12px; font-size:13px;">Submit your worst spaghetti code. Our AI Bhaiya will tear it apart.</p>
+      <div class="form-group">
+        <label>Language</label>
+        <select id="roast-lang-select" class="form-input">
+          <option value="C++">C++</option>
+          <option value="Java">Java</option>
+          <option value="Python">Python</option>
+          <option value="JavaScript">JavaScript</option>
+        </select>
+      </div>
+      <textarea id="roast-code-input" class="sol-box has-content" style="height: 150px; margin-bottom: 16px;" placeholder="Paste your code here..."></textarea>
+      
+      <div id="roast-result" style="display:none; margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(255,100,100,0.05); color: var(--text-color); font-style: italic; font-size: 14px; border-left: 3px solid #ff8888;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="window.RoastCode.close()">Cancel</button>
+      <button class="btn" style="background:#ff8888; color:#000;" id="roast-submit-btn" onclick="window.RoastCode.submit()">Roast Me</button>
+    </div>
+  </div>
+</div>
+
+<!-- Socratic Mock Interview Drawer -->
+<div id="socratic-drawer" class="socratic-drawer">
+  <div class="socratic-header">
+    <h3>💬 Socratic Interview</h3>
+    <button class="socratic-close" onclick="window.SocraticChat.close()">×</button>
+  </div>
+  <div class="socratic-chat-history" id="socratic-history"></div>
+  <div class="socratic-input-area">
+    <textarea id="socratic-input" placeholder="Type your approach or question..." onkeydown="window.SocraticChat.handleKey(event)"></textarea>
+    <button onclick="window.SocraticChat.send()">Send</button>
+  </div>
+</div>
 
 <!-- FOOTER CREDIT -->
 <footer class="site-footer">

@@ -2,6 +2,7 @@ import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { checkAIRateLimit } from "./rate-limit.mjs";
+import { callAI } from "./ai-service.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -11,10 +12,7 @@ export const handler = async (event) => {
   try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  if (!OPENAI_API_KEY) {
-    return { statusCode: 503, headers: CORS, body: JSON.stringify({ error: 'AI service temporarily unavailable.' }) };
-  }
+  // API key check is handled by callAI
 
   try {
     const { action, title, code, platform = 'LeetCode' } = JSON.parse(event.body);
@@ -34,20 +32,15 @@ export const handler = async (event) => {
         }
       } catch { /* allow through on DB failure */ }
 
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-        body: JSON.stringify({
-          model: 'gpt-5.4-mini',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a strict, concise coding interviewer. The user needs a hint for: "${title}". Provide a single nudge or concept to think about. DO NOT write code. DO NOT give the direct answer. Maximum 3 sentences.`
-            },
-            { role: 'user', content: `Hint for ${title}?` }
-          ]
-        })
-      });
+      const messages = [
+        {
+          role: 'system',
+          content: `You are a strict, concise coding interviewer. The user needs a hint for: "${title}". Provide a single nudge or concept to think about. DO NOT write code. DO NOT give the direct answer. Maximum 3 sentences.`
+        },
+        { role: 'user', content: `Hint for ${title}?` }
+      ];
+
+      const res = await callAI('analyze_code_hint', messages);
       if (!res.ok) return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service error.' }) };
       const d = await res.json();
       const content = d?.choices?.[0]?.message?.content;
@@ -63,11 +56,11 @@ export const handler = async (event) => {
       let dailyLimit = 4;
       try {
         const sql = getDb();
-        const [row] = await sql`SELECT ai_access, ai_daily_limit FROM users WHERE email = ${userEmail}`;
-        if (!row?.ai_access) {
-          return { statusCode: 403, headers: CORS, body: JSON.stringify({ ok: false, error: 'subscription_required' }) };
-        }
-        dailyLimit = row.ai_daily_limit ?? 4;
+        const [row] = await sql`SELECT ai_daily_limit, is_subscribed FROM users WHERE email = ${userEmail}`;
+        
+        // Base limit: 4 for free, 10 for Pro. Respect admin overrides if higher.
+        dailyLimit = row?.ai_daily_limit ?? 4;
+        if (row?.is_subscribed && dailyLimit < 10) dailyLimit = 10;
 
         const dayStart = new Date();
         dayStart.setUTCHours(0, 0, 0, 0);
@@ -106,23 +99,19 @@ export const handler = async (event) => {
       let isMismatch = false;
       let mismatchReason = '';
       try {
-        const detectRes = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-          body: JSON.stringify({
-            model: 'gpt-5.4-mini',
-            max_tokens: 80,
-            messages: [
-              {
-                role: 'system',
-                content: `You are a strict code-problem matcher. Determine if the given code is a reasonable attempt to solve the ${safePlatform} problem: "${title}".
+        const messages = [
+          {
+            role: 'system',
+            content: `You are a strict code-problem matcher. Determine if the given code is a reasonable attempt to solve the ${safePlatform} problem: "${title}".
 Reply ONLY with valid JSON: { "match": true/false, "reason": "<one sentence>" }
 - match=true  if the code is a plausible attempt at this problem (even if wrong or suboptimal)
 - match=false if the code is clearly for a DIFFERENT problem, is empty, or is a stub with no logic`
-              },
-              { role: 'user', content: `Problem: ${title}\n\nCode:\n${code}` }
-            ]
-          })
+          },
+          { role: 'user', content: `Problem: ${title}\n\nCode:\n${code}` }
+        ];
+
+        const detectRes = await callAI('analyze_code_mismatch', messages, {
+          max_tokens: 80
         });
         if (detectRes.ok) {
           const detectData = await detectRes.json();
@@ -189,10 +178,8 @@ CRITICAL RULE — No Hallucination: If you do not have confident knowledge of th
         { role: 'user', content: `Problem: ${title}\n\nCode:\n${code}` }
       ];
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-        body: JSON.stringify({ model: 'gpt-5.4-mini', messages, response_format: { type: 'json_object' } })
+      const response = await callAI('analyze_code_full', messages, {
+        response_format: { type: 'json_object' }
       });
 
       if (!response.ok) {

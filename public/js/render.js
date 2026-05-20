@@ -240,15 +240,16 @@ export function buildRow(q, si) {
       <span class="topic-tag">${safeTopic}</span> ${platformHtml}
       <button class="similar-btn" id="sim-btn-${q.lc_number}" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
       <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>
+      <button class="ai-btn mock-int-btn" onclick="window.SocraticChat.open(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', '${q.difficulty}')" title="Socratic Mock Interview">💬 Mock Interview</button>
+      ${q.difficulty === 'Hard' ? `<button class="ai-btn ghost-btn" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>` : ''}
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
       ${companyHtml ? `<br>${companyHtml}` : ''}
     </td>
     <td class="diff-cell"><span class="diff-badge ${q.difficulty.toLowerCase()}">${safeDifficulty}</span></td>
     <td class="sol-cell">
       <div class="sol-cell-wrap">
-        <div class="sol-actions-row">
+        <div class="sol-actions-row" style="flex-wrap: wrap; gap: 4px;">
           <button class="ai-btn ai-analyze-btn" id="ai-analyze-btn-${q.lc_number}" onclick="AI.analyze(${q.lc_number})" title="Analyze Complexity &amp; Quality">🤖 Analyze Code</button>
-          ${q.difficulty === 'Hard' ? `<button class="ai-btn" style="background:rgba(124,106,247,0.1);border-color:rgba(124,106,247,0.4);color:#c4baff;margin-left:auto;" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>` : ''}
         </div>
         <div style="position: relative;">
           <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
@@ -582,7 +583,7 @@ function renderAIAnalysisHTML(lc, payload) {
   return `
     <div class="ai-fb-container" id="ai-fb-container-${lc}">
       <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${lc})">
-        <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
+        <span class="fb-icon">🤖</span> Code Review
       </button>
       <div class="ai-fb-content" id="ai-fb-content-${lc}" style="display:none;">
         ${contentHtml}

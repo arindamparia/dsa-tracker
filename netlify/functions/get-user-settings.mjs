@@ -32,16 +32,9 @@ export const handler = async (event, context) => {
       schemaInitialized = true;
     }
 
-    // Fetch fresh imageUrl from Clerk API on every login so DB stays in sync
-    // when the user updates their profile picture.
+    // We no longer fetch imageUrl from Clerk on the backend to save time.
+    // The frontend handles displaying the avatar directly from Clerk's SDK.
     let imageUrl = null;
-    try {
-      const clerk = getClerk();
-      if (clerk && clerkId) {
-        const clerkUser = await clerk.users.getUser(clerkId);
-        imageUrl = clerkUser.imageUrl || null;
-      }
-    } catch { /* non-fatal — continue without imageUrl */ }
 
     // upsert user on every login — backfills clerk_name and image_url
     const [row] = await sql`

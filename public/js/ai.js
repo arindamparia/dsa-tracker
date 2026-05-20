@@ -519,7 +519,7 @@ export const AI = {
       fbDiv.style.marginTop = '8px';
       fbDiv.innerHTML = `
         <button class="ai-fb-toggle" onclick="AI.toggleFeedback(${lc})">
-          <span class="fb-icon">🤖</span> AI Review <span class="fb-arrow">▼</span>
+          <span class="fb-icon">🤖</span> Code Review
         </button>
         <div class="ai-fb-content" id="ai-fb-content-${lc}" style="display:none;"></div>
       `;
@@ -532,20 +532,48 @@ export const AI = {
         ? buildAIReviewHTML(lc, data)
         : `<div class="ai-fb-box"><strong>🤖 Approach & Edge Cases:</strong> ${feedbackPayload}</div>`;
 
-      contentDiv.style.display = 'block';
-      const animTarget = contentDiv.querySelector('.ai-rich-fb, .ai-fb-box, .air-card');
-      if (animTarget) animate(animTarget, { opacity: [0, 1], y: [-8, 0] }, { duration: 0.3 });
-      document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`)?.classList.add('open');
+      // If screen is smaller than 1400px and we are actively rendering feedback (like after analyze code), pop the modal
+      if (window.innerWidth < 1400) {
+        AI.openReviewModal(contentDiv.innerHTML);
+      } else {
+        contentDiv.style.display = 'block';
+        const animTarget = contentDiv.querySelector('.ai-rich-fb, .ai-fb-box, .air-card');
+        if (animTarget) animate(animTarget, { opacity: [0, 1], y: [-8, 0] }, { duration: 0.3 });
+        document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`)?.classList.add('open');
+      }
     }
   },
 
   toggleFeedback(lc) {
     const contentDiv = document.getElementById(`ai-fb-content-${lc}`);
     const toggleBtn  = document.querySelector(`#ai-fb-container-${lc} .ai-fb-toggle`);
+    
+    if (window.innerWidth < 1400) {
+      if (!contentDiv) return;
+      AI.openReviewModal(contentDiv.innerHTML);
+      return;
+    }
+
     if (!contentDiv) return;
     const open = contentDiv.style.display === 'none';
     contentDiv.style.display = open ? 'block' : 'none';
     toggleBtn?.classList.toggle('open', open);
+  },
+
+  openReviewModal(htmlContent) {
+    const modal = document.getElementById('ai-review-modal');
+    const body = document.getElementById('ai-review-modal-body');
+    if (modal && body) {
+      body.innerHTML = htmlContent;
+      modal.classList.add('open');
+    }
+  },
+
+  closeReviewModal() {
+    const modal = document.getElementById('ai-review-modal');
+    if (modal) {
+      modal.classList.remove('open');
+    }
   },
 
 };

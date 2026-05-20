@@ -7,10 +7,8 @@ export const GhostEngine = {
     isPlaying: false,
     speed: 1, // 1x, 2x, 4x
     code: '',
-    pauses: [], // { line_number, delay_ms, annotation }
     charIndex: 0,
-    currentLine: 1,
-    isPausedForThought: false
+    currentLine: 1
   },
   intervals: {
     typing: null
@@ -20,73 +18,98 @@ export const GhostEngine = {
     if (this.UI) return;
     const html = `
       <div id="ghost-overlay" class="ghost-overlay" onclick="GhostEngine.handleOverlayClick(event)">
-        <div class="ghost-window">
-          <div class="ghost-header">
-            <div class="ghost-title">
-              <span style="font-size:16px;">👻</span> 
-              Temporal Ghost Replay 
-              <span id="ghost-title-text" style="color:#888;margin-left:8px;font-weight:400;"></span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <span class="ghost-badge" id="ghost-lang-badge">PYTHON</span>
-              <button class="ghost-close" onclick="GhostEngine.close()">×</button>
-            </div>
-          </div>
+        <div class="ghost-window" style="flex-direction: row; width: 100vw; height: 100vh;">
           
-          <div class="ghost-body" id="ghost-body">
-            <div id="ghost-lang-picker" class="ghost-lang-picker hidden">
-              <div class="ghost-lang-picker-title">Choose your weapon</div>
-              <div class="ghost-lang-grid">
-                <button class="ghost-lang-card" onclick="GhostEngine._pickLanguage('C++')">
-                  <span class="ghost-lang-icon">⚡</span>
-                  <span class="ghost-lang-name">C++</span>
-                  <span class="ghost-lang-desc">Blazing Fast</span>
-                </button>
-                <button class="ghost-lang-card" onclick="GhostEngine._pickLanguage('Java')">
-                  <span class="ghost-lang-icon">☕</span>
-                  <span class="ghost-lang-name">Java</span>
-                  <span class="ghost-lang-desc">Battle-Tested</span>
-                </button>
+          <div style="flex: 3; display: flex; flex-direction: column; position: relative; border-right: 1px solid rgba(124, 106, 247, 0.3);">
+            <div class="ghost-header">
+              <div class="ghost-title">
+                <span style="font-size:16px;">👻</span> 
+                Temporal Ghost Replay 
+                <span id="ghost-title-text" style="color:#888;margin-left:8px;font-weight:400;"></span>
               </div>
-            </div>
-            <div id="ghost-loading" class="ghost-loading hidden">
-              <div class="ghost-spinner"></div>
-              <div class="ghost-loading-text">Summoning optimal ghost...</div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <span class="ghost-badge" id="ghost-lang-badge" style="display: none;"></span>
+              </div>
             </div>
             
-            <div id="ghost-intuition-panel" class="ghost-intuition-panel hidden">
-              <div class="ghost-intuition-header">
-                <span class="ghost-intuition-title">✨ Cognitive Intuition</span>
-                <div class="ghost-complexity-badges">
-                  <span id="ghost-time-badge" class="ghost-badge time"></span>
-                  <span id="ghost-space-badge" class="ghost-badge space"></span>
+            <div class="ghost-body" id="ghost-body">
+              <div id="ghost-lang-picker" class="ghost-lang-picker hidden">
+                <div class="ghost-lang-picker-title">Choose your weapon</div>
+                <div class="ghost-lang-grid">
+                  <button class="ghost-lang-card" onclick="GhostEngine._pickLanguage('C++')" style="border-color: #7c6af7; background: rgba(124, 106, 247, 0.1);">
+                    <span class="ghost-lang-icon">⚡</span>
+                    <span class="ghost-lang-name">C++ (Default)</span>
+                    <span class="ghost-lang-desc">Blazing Fast</span>
+                  </button>
+                  <button class="ghost-lang-card" onclick="GhostEngine._pickLanguage('Java')">
+                    <span class="ghost-lang-icon">☕</span>
+                    <span class="ghost-lang-name">Java</span>
+                    <span class="ghost-lang-desc">Battle-Tested</span>
+                  </button>
                 </div>
               </div>
-              <div id="ghost-intuition-text" class="ghost-intuition-text"></div>
+              <div id="ghost-loading" class="ghost-loading hidden">
+                <div class="ghost-spinner"></div>
+                <div class="ghost-loading-text">Summoning optimal ghost...</div>
+              </div>
+              
+              <div id="ghost-naive-panel" class="ghost-intuition-panel hidden" style="border-left-color: #ff4757; background: rgba(255, 71, 87, 0.05); margin-bottom: 12px;">
+                <div class="ghost-intuition-header">
+                  <span class="ghost-intuition-title" style="color: #ff4757;">⚠️ Naive Approach</span>
+                </div>
+                <div id="ghost-naive-text" class="ghost-intuition-text"></div>
+              </div>
+
+              <div id="ghost-intuition-panel" class="ghost-intuition-panel hidden">
+                <div class="ghost-intuition-header">
+                  <span class="ghost-intuition-title">✨ Optimal Intuition</span>
+                  <div class="ghost-complexity-badges">
+                    <span id="ghost-time-badge" class="ghost-badge time"></span>
+                    <span id="ghost-space-badge" class="ghost-badge space"></span>
+                  </div>
+                </div>
+                <div id="ghost-intuition-text" class="ghost-intuition-text"></div>
+              </div>
+              
+              <div id="ghost-dry-run-panel" class="ghost-intuition-panel hidden" style="border-left-color: #0fb9b1; background: rgba(15, 185, 177, 0.05); margin-top: 12px;">
+                <div class="ghost-intuition-header">
+                  <span class="ghost-intuition-title" style="color: #0fb9b1;">👟 Dry Run (Mental Tracing)</span>
+                </div>
+                <div id="ghost-dry-run-steps" class="ghost-intuition-text" style="display: flex; flex-direction: column; gap: 8px;"></div>
+              </div>
+
+              <div class="ghost-code-content" id="ghost-code-container"><span id="ghost-code-output"></span><span class="ghost-cursor" id="ghost-cursor"></span></div>
             </div>
 
-            <div class="ghost-code-content"><span id="ghost-code-output"></span><span class="ghost-cursor" id="ghost-cursor"></span></div>
-          </div>
-          
-          <div id="ghost-annotation" class="ghost-annotation">
-            <div class="ghost-anno-title">
-              <div class="ghost-anno-pulse"></div><span>Cognitive Pause</span>
+            <div class="ghost-controls">
+              <button class="ghost-btn-play" id="ghost-play-btn" onclick="GhostEngine.togglePlay()">▶</button>
+              <div class="ghost-progress-wrap">
+                <div class="ghost-progress-bar" id="ghost-progress"></div>
+              </div>
+              <button class="ghost-speed" id="ghost-speed-btn" onclick="GhostEngine.toggleSpeed()">1x Speed</button>
+              <button class="ghost-speed ghost-skip-btn" id="ghost-skip-btn" onclick="GhostEngine.skipPlayback()">⏭ Skip</button>
+              <button class="ghost-speed" id="ghost-copy-btn" onclick="GhostEngine.copyCode()" title="Copy Full Solution">📋 Copy</button>
             </div>
-            <div id="ghost-anno-text"></div>
+            <div class="ghost-ai-disclaimer">
+              ⚠ AI-generated solution — verify correctness before submitting.
+            </div>
           </div>
 
-          <div class="ghost-controls">
-            <button class="ghost-btn-play" id="ghost-play-btn" onclick="GhostEngine.togglePlay()">▶</button>
-            <div class="ghost-progress-wrap">
-              <div class="ghost-progress-bar" id="ghost-progress"></div>
+          <div style="flex: 1; background: #0a0a0c; display: flex; flex-direction: column; min-width: 300px;">
+            <div class="ghost-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
+              <div class="ghost-title" style="color: #88ccff; display:flex; align-items:center;"><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:24px; height:24px; border-radius:50%; margin-right:8px; background:white; padding:2px; box-sizing:border-box;"> Snowy Chat</div>
+              <button onclick="GhostEngine.close()" style="background: rgba(255,71,87,0.15); border: 1px solid rgba(255,71,87,0.3); color: #ff4757; font-size: 24px; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,71,87,0.3)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,71,87,0.15)'; this.style.color='#ff4757';">×</button>
             </div>
-            <button class="ghost-speed" id="ghost-speed-btn" onclick="GhostEngine.toggleSpeed()">1x Speed</button>
-            <button class="ghost-speed ghost-skip-btn" id="ghost-skip-btn" onclick="GhostEngine.skipPlayback()">⏭ Skip</button>
-            <button class="ghost-speed" id="ghost-copy-btn" onclick="GhostEngine.copyCode()" title="Copy Full Solution">📋 Copy</button>
+            <div id="ghost-mentor-chat" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; font-family: 'Syne', sans-serif;">
+            </div>
+            <div id="ghost-chat-actions" style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); display: none; background: #0a0a0c;">
+            </div>
+            <div id="ghost-chat-input-area" style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); display: none; gap: 8px; background: #131318;">
+              <input type="text" id="ghost-chat-input" placeholder="Ask Snowy about this code..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px 12px; color: white; outline: none; font-size: 13px;" onkeydown="if(event.key === 'Enter') GhostEngine.sendChatMessage()">
+              <button id="ghost-chat-send" onclick="GhostEngine.sendChatMessage()" style="background: var(--accent); border: none; color: white; padding: 0 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">Ask</button>
+            </div>
           </div>
-          <div class="ghost-ai-disclaimer">
-            ⚠ AI-generated solution — verify correctness before submitting.
-          </div>
+
         </div>
       </div>
     `;
@@ -98,12 +121,21 @@ export const GhostEngine = {
       langPicker: document.getElementById('ghost-lang-picker'),
       loading: document.getElementById('ghost-loading'),
       output: document.getElementById('ghost-code-output'),
+      codeContent: document.getElementById('ghost-code-container'),
+      naivePanel: document.getElementById('ghost-naive-panel'),
+      naiveText: document.getElementById('ghost-naive-text'),
       intuitionPanel: document.getElementById('ghost-intuition-panel'),
       intuitionText: document.getElementById('ghost-intuition-text'),
+      dryRunPanel: document.getElementById('ghost-dry-run-panel'),
+      dryRunSteps: document.getElementById('ghost-dry-run-steps'),
       timeBadge: document.getElementById('ghost-time-badge'),
       spaceBadge: document.getElementById('ghost-space-badge'),
-      annotation: document.getElementById('ghost-annotation'),
-      annoText: document.getElementById('ghost-anno-text'),
+      mentorChat: document.getElementById('ghost-mentor-chat'),
+      chatActions: document.getElementById('ghost-chat-actions'),
+      chatInputArea: document.getElementById('ghost-chat-input-area'),
+      chatInput: document.getElementById('ghost-chat-input'),
+      chatSend: document.getElementById('ghost-chat-send'),
+      resumeBtn: document.getElementById('ghost-resume-btn'),
       playBtn: document.getElementById('ghost-play-btn'),
       progress: document.getElementById('ghost-progress'),
       speedBtn: document.getElementById('ghost-speed-btn'),
@@ -150,10 +182,14 @@ export const GhostEngine = {
     lockScroll();
     this.UI.overlay.classList.add('open');
     this.UI.title.textContent = '- ' + title;
-    this.UI.langBadge.textContent = '';
-    this.UI.annotation.classList.remove('visible');
+    this.UI.langBadge.style.display = 'none';
+    this.UI.output.textContent = '';
+    this.UI.mentorChat.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">Waiting for the optimal solution... Once it\'s ready, you can ask me questions about the logic!</div>';
+    this.UI.chatActions.style.display = 'none';
     this.UI.intuitionPanel.classList.add('hidden');
-    this.state = { isPlaying: false, speed: 1, code: '', pauses: [], charIndex: 0, currentLine: 1, isPausedForThought: false };
+    if (this.UI.naivePanel) this.UI.naivePanel.classList.add('hidden');
+    if (this.UI.dryRunPanel) this.UI.dryRunPanel.classList.add('hidden');
+    this.state = { isPlaying: false, speed: 1, code: '', charIndex: 0, currentLine: 1, chatHistory: [], problemTitle: title, ghostContext: null };
     this.updateControls();
 
     if (!language) {
@@ -183,6 +219,7 @@ export const GhostEngine = {
 
   async _doSummon(lcNumber, title, language, platform, difficulty) {
     this.UI.langBadge.textContent = language.toUpperCase();
+    this.UI.langBadge.style.display = 'inline-block';
     this.UI.loading.classList.remove('hidden');
     document.getElementById('ghost-body').classList.remove('is-typing');
     this.UI.output.parentElement.classList.remove('interactive');
@@ -209,6 +246,35 @@ export const GhostEngine = {
       if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed to summon ghost');
 
       this.state.code = (data.data.optimal_code || '').trimStart();
+      this.state.ghostContext = data.data;
+
+      // Enable chat only after successful generation
+      this.UI.chatInputArea.style.display = 'flex';
+      
+      const cacheStr = localStorage.getItem('dsa_ghost_history');
+      const cache = cacheStr ? JSON.parse(cacheStr) : {};
+      this.state.chatHistory = cache[lcNumber] || [];
+
+      // Restore chat UI if history exists
+      for (const msg of this.state.chatHistory) {
+        const div = document.createElement('div');
+        div.className = `msg ${msg.role}`;
+        if (msg.role === 'assistant') {
+          div.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <span>${msg.content}</span>`;
+        } else {
+          div.innerHTML = `<strong>You:</strong> <span>${msg.content}</span>`;
+        }
+        this.UI.mentorChat.appendChild(div);
+      }
+      if (this.state.chatHistory.length > 0) {
+        this.UI.mentorChat.scrollTop = this.UI.mentorChat.scrollHeight;
+      }
+
+      const naiveText = data.data.naive_approach;
+      if (naiveText && this.UI.naivePanel) {
+        this.UI.naiveText.textContent = naiveText;
+        this.UI.naivePanel.classList.remove('hidden');
+      }
 
       if (data.data.intuition) {
         this.UI.intuitionText.textContent = data.data.intuition;
@@ -217,10 +283,19 @@ export const GhostEngine = {
         this.UI.intuitionPanel.classList.remove('hidden');
       }
 
-      this.state.pauses = (data.data.thought_pauses || []).reduce((acc, p) => {
-        acc[p.line_number] = p;
-        return acc;
-      }, {});
+      if (data.data.dry_run && Array.isArray(data.data.dry_run) && this.UI.dryRunPanel) {
+        this.UI.dryRunSteps.innerHTML = '';
+        data.data.dry_run.forEach(step => {
+          const div = document.createElement('div');
+          div.style.padding = "8px";
+          div.style.background = "rgba(0,0,0,0.2)";
+          div.style.borderRadius = "6px";
+          div.style.borderLeft = "3px solid #0fb9b1";
+          div.innerHTML = `<strong style="color: #0fb9b1;">[Step ${step.step}] ${step.variable_state}</strong><br><span style="opacity:0.85; font-size:0.9em; line-height: 1.4; display: inline-block; margin-top: 4px;">${step.description}</span>`;
+          this.UI.dryRunSteps.appendChild(div);
+        });
+        this.UI.dryRunPanel.classList.remove('hidden');
+      }
 
       this.stopLoadingAnimation();
       this.UI.loading.classList.add('hidden');
@@ -261,22 +336,89 @@ export const GhostEngine = {
 
   togglePlay() {
     if (this.state.charIndex >= this.state.code.length) {
-      // Replay from start
       this.state.charIndex = 0;
-      this.state.currentLine = 1;
       this.UI.output.parentElement.classList.remove('interactive');
       this.UI.output.textContent = '';
-      this.UI.annotation.classList.remove('visible');
+      this.UI.mentorChat.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">Waiting for the optimal solution... Once it\'s ready, you can ask me questions about the logic!</div>';
+      this.UI.chatActions.style.display = 'none';
+      this.UI.chatInputArea.style.display = 'flex';
+      this.state.chatHistory = [];
     }
     this.state.isPlaying ? this.pause() : this.play();
   },
 
+  sendChatMessage: async function() {
+    const input = this.UI.chatInput;
+    const text = input.value.trim();
+    if (!text) return;
+    
+    input.value = '';
+    
+    const userMsg = document.createElement('div');
+    userMsg.style.background = 'rgba(255,255,255,0.05)';
+    userMsg.style.padding = '10px 14px';
+    userMsg.style.borderRadius = '8px';
+    userMsg.style.fontSize = '14px';
+    userMsg.style.marginLeft = '20px';
+    userMsg.innerHTML = `<strong>You:</strong><br>${text}`;
+    this.UI.mentorChat.appendChild(userMsg);
+    this.UI.mentorChat.scrollTop = this.UI.mentorChat.scrollHeight;
+    
+    this.state.chatHistory.push({ role: 'user', content: text });
+    this._saveGhostCache();
+    
+    const typingMsg = document.createElement('div');
+    typingMsg.style.background = 'rgba(100,200,255,0.1)';
+    typingMsg.style.borderLeft = '2px solid #88ccff';
+    typingMsg.style.padding = '10px 14px';
+    typingMsg.style.borderRadius = '8px';
+    typingMsg.style.fontSize = '14px';
+    typingMsg.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <em>Typing...</em>`;
+    this.UI.mentorChat.appendChild(typingMsg);
+    this.UI.mentorChat.scrollTop = this.UI.mentorChat.scrollHeight;
+
+    input.disabled = true;
+    this.UI.chatSend.disabled = true;
+    
+    try {
+      const token = await window.Clerk.session.getToken();
+      const response = await fetch('/.netlify/functions/ghost-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          problemTitle: this.state.problemTitle,
+          fullCode: this.state.code,
+          ghostContext: this.state.ghostContext,
+          history: this.state.chatHistory.slice(-5)
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to get chat response');
+      const data = await response.json();
+      
+      typingMsg.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br>${data.data.reply}`;
+      this.state.chatHistory.push({ role: 'assistant', content: data.data.reply });
+      this._saveGhostCache();
+      
+    } catch (err) {
+      console.error(err);
+      typingMsg.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br><em>Sorry, I encountered an error answering that.</em>`;
+    } finally {
+      input.disabled = false;
+      this.UI.chatSend.disabled = false;
+      input.focus();
+      this.UI.mentorChat.scrollTop = this.UI.mentorChat.scrollHeight;
+    }
+  },
+
   skipPlayback() {
     this.stopPlayback();
-    this.UI.body.classList.remove('is-typing'); // ensure scroll is restored
+    this.UI.body.classList.remove('is-typing');
     this.state.charIndex = this.state.code.length;
-    this.UI.annotation.classList.remove('visible');
-    this.renderInteractiveCode();
+    this.renderCompletedCode();
     this.updateControls();
   },
 
@@ -289,17 +431,18 @@ export const GhostEngine = {
 
   pause() {
     this.state.isPlaying = false;
-    clearTimeout(this.intervals.typing);
-    document.getElementById('ghost-body').classList.remove('is-typing');
+    clearInterval(this.intervals.typing);
+    this.intervals.typing = null;
     this.updateControls();
+    document.getElementById('ghost-body').classList.remove('is-typing');
+    this.UI.chatActions.style.display = 'none';
   },
 
   stopPlayback() {
     this.state.isPlaying = false;
-    this.state.isPausedForThought = false;
-    clearTimeout(this.intervals.typing);
+    clearInterval(this.intervals.typing);
     document.getElementById('ghost-body').classList.remove('is-typing');
-    this.UI.annotation.classList.remove('visible');
+    this.UI.chatActions.style.display = 'none';
   },
 
   toggleSpeed() {
@@ -316,109 +459,43 @@ export const GhostEngine = {
   },
 
   typeNext() {
-    if (!this.state.isPlaying || this.state.isPausedForThought) return;
+    if (!this.state.isPlaying) return;
 
     if (this.state.charIndex >= this.state.code.length) {
-      this.stopPlayback(); // Done
-      this.renderInteractiveCode();
+      this.stopPlayback();
+      this.renderCompletedCode();
       this.updateControls();
       return;
     }
 
     const char = this.state.code[this.state.charIndex];
-    this.UI.output.textContent += char;
+    if (this.UI.output.lastChild && this.UI.output.lastChild.nodeType === 3) {
+      this.UI.output.lastChild.nodeValue += char;
+    } else {
+      this.UI.output.appendChild(document.createTextNode(char));
+    }
     this.state.charIndex++;
     this.updateControls();
 
-    // Scroll to bottom only if actively typing
     if (this.state.isPlaying) {
       this.UI.body.scrollTop = this.UI.body.scrollHeight;
     }
 
-    // Line break logic
-    if (char === '\\n' || char === '\n') {
-      this.state.currentLine++;
-      const thought = this.state.pauses[this.state.currentLine];
-      
-      if (thought) {
-        this.triggerCognitivePause(thought);
-        return; // Halt normal typing loop
-      }
-    }
-
-    // Baseline typing speed: random between 20ms and 80ms, divided by speed multiplier
     let baseDelay = 20 + Math.random() * 60;
-    // Faster on spaces or indents
     if (char === ' ') baseDelay = 10;
     
     const delay = baseDelay / this.state.speed;
     this.intervals.typing = setTimeout(() => this.typeNext(), delay);
   },
 
-  triggerCognitivePause(thought) {
-    this.state.isPausedForThought = true;
-    clearTimeout(this.intervals.typing);
-    this.updateControls(); // ensure play button shows paused state if we want
-
-    // Show annotation with manual resume button
-    this.UI.annoText.innerHTML = `
-      <div style="margin-bottom:4px;">${thought.annotation}</div>
-      <button class="ghost-anno-btn" onclick="GhostEngine.resumeFromThought()">Resume Replay ➔</button>
-    `;
-    this.UI.annotation.classList.add('visible');
-  },
-
-  resumeFromThought() {
-    this.UI.annotation.classList.remove('visible');
-    this.state.isPausedForThought = false;
-    if (this.state.isPlaying) this.typeNext();
-  },
-
-  renderInteractiveCode() {
+  renderCompletedCode() {
     this.UI.output.parentElement.classList.add('interactive');
     const lines = this.state.code.split('\n');
-    let html = '';
-    
-    // Helper to safely escape HTML to prevent XSS injection in user code
-    const escapeHtml = (unsafe) => {
-      return (unsafe || '').replace(/[&<"']/g, m => {
-        switch (m) {
-          case '&': return '&amp;'; case '<': return '&lt;';
-          case '"': return '&quot;'; default: return '&#039;';
-        }
-      });
-    };
-
-    lines.forEach((line, idx) => {
-      const lineNum = idx + 1;
-      const hasPause = !!this.state.pauses[lineNum];
-      // Use white-space:pre to preserve all indentation and spacing per line
-      const lineHtml = `<span style="white-space:pre;">${escapeHtml(line) || ' '}</span>`;
-      if (hasPause) {
-        html += `<div class="ghost-line-wrapper"><span class="ghost-line-marker" onclick="GhostEngine.showInteractivePause(${lineNum}, this)" title="Click to view explanation">💡</span>${lineHtml}</div>`;
-      } else {
-        html += `<div class="ghost-line-wrapper">${lineHtml}</div>`;
-      }
-    });
+    const html = lines.map((lineStr) => {
+        const lineHtml = lineStr.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<div class="ghost-line-wrapper">${lineHtml || ' '}</div>`;
+      }).join('');
     this.UI.output.innerHTML = html;
-  },
-
-  showInteractivePause(lineNum, markerEl) {
-    document.querySelectorAll('.ghost-line-marker').forEach(el => el.classList.remove('active'));
-    markerEl.classList.add('active');
-    const p = this.state.pauses[lineNum];
-    if (p) {
-      this.UI.annoText.innerHTML = `
-        <div style="margin-bottom:4px;">${p.annotation}</div>
-        <button class="ghost-anno-btn" onclick="GhostEngine.hideInteractivePause()">Close ✖</button>
-      `;
-      this.UI.annotation.classList.add('visible');
-    }
-  },
-
-  hideInteractivePause() {
-    this.UI.annotation.classList.remove('visible');
-    document.querySelectorAll('.ghost-line-marker').forEach(el => el.classList.remove('active'));
   },
 
   async copyCode() {
@@ -432,5 +509,16 @@ export const GhostEngine = {
     } catch (e) {
       showToast('Failed to copy', 'error');
     }
+  },
+
+  _saveGhostCache() {
+    if (!this._pendingSummon && !this.state.problemTitle) return;
+    const lcNumber = this._pendingSummon ? this._pendingSummon.lcNumber : (this.state.ghostContext?.lc_number);
+    if (!lcNumber) return;
+    
+    const cacheStr = localStorage.getItem('dsa_ghost_history');
+    const cache = cacheStr ? JSON.parse(cacheStr) : {};
+    cache[lcNumber] = this.state.chatHistory;
+    localStorage.setItem('dsa_ghost_history', JSON.stringify(cache));
   }
 };

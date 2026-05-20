@@ -1,6 +1,7 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { checkAIRateLimit } from "./rate-limit.mjs";
+import { callAI } from "./ai-service.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -10,10 +11,7 @@ export const handler = async (event) => {
   try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  if (!OPENAI_API_KEY) {
-    return { statusCode: 503, headers: CORS, body: JSON.stringify({ error: 'AI service temporarily unavailable.' }) };
-  }
+  // API key check is now handled by callAI
 
   // ── Rate limiting — max 10 AI calls per user per minute ──────────────
   try {
@@ -54,17 +52,8 @@ Respond ONLY with a JSON object: { "picks": [i, j, k] } where each value is a 0-
       }
     ];
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-5.4-mini',
-        messages,
-        response_format: { type: 'json_object' }
-      })
+    const response = await callAI('rank_similar_problems', messages, {
+      response_format: { type: 'json_object' }
     });
 
     if (!response.ok) {

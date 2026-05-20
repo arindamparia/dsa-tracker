@@ -1,6 +1,7 @@
 import { getAuthInfo, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
+import { callAI } from "./ai-service.mjs";
 
 // ── AlgoTracker feature context — fed to AI on every request ─────────────────
 const SITE_CONTEXT = `AlgoTracker (algotracker.xyz) — DSA question progress tracker and interview prep app.
@@ -112,20 +113,8 @@ export const handler = async (event, context) => {
   let isGenuine      = true; // default true; set false only when AI explicitly says not genuine
   let aiCategory     = null; // feature_request | bug_report | suggestion | already_exists | spam | off_topic
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  if (OPENAI_API_KEY) {
-    try {
-      const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          max_tokens: 320,
-          response_format: { type: "json_object" },
-          messages: [
+  try {
+    const messages = [
             {
               role: "system",
               content: `You are a feedback classifier for AlgoTracker (algotracker.xyz). Classify the user message and output JSON only.
@@ -147,32 +136,29 @@ CLASSIFICATION RULES — follow these exactly:
 ALGOTRACKER FEATURE LIST — check this carefully before deciding already_implemented:
 ${SITE_CONTEXT}`,
             },
-            { role: "user", content: trimmed },
-          ],
-        }),
-      });
+      { role: "user", content: trimmed },
+    ];
 
-      if (aiRes.ok) {
-        const aiData = await aiRes.json();
-        const choice = aiData?.choices?.[0];
-        const raw = choice?.message?.content;
-        // If the model hit the token cap the JSON will be truncated — treat as no AI response
-        if (raw && choice?.finish_reason !== "length") {
-          const parsed = JSON.parse(raw);
-          aiReply         = parsed.reply              ?? null;
-          alreadyImpl     = parsed.already_implemented === true;
-          featureLocation = parsed.feature_location    ?? null;
-          isGenuine       = parsed.genuine !== false;
-          aiCategory      = parsed.category            ?? null;
-          // all cases fall through to save — counts toward daily limit
-        }
-      } else {
-        const errText = await aiRes.text().catch(() => '');
-        console.error("[feedback-ai] OpenAI error", aiRes.status, errText);
-      }
-    } catch (aiErr) {
-      console.error("[feedback-ai] exception:", aiErr?.message);
+    const aiRes = await callAI('submit_feedback', messages, {
+      max_tokens: 320,
+      response_format: { type: "json_object" }
+    });
+
+    const aiData = await aiRes.json();
+    const choice = aiData?.choices?.[0];
+    const raw = choice?.message?.content;
+    // If the model hit the token cap the JSON will be truncated — treat as no AI response
+    if (raw && choice?.finish_reason !== "length") {
+      const parsed = JSON.parse(raw);
+      aiReply         = parsed.reply              ?? null;
+      alreadyImpl     = parsed.already_implemented === true;
+      featureLocation = parsed.feature_location    ?? null;
+      isGenuine       = parsed.genuine !== false;
+      aiCategory      = parsed.category            ?? null;
+      // all cases fall through to save — counts toward daily limit
     }
+  } catch (aiErr) {
+    console.error("[feedback-ai] exception:", aiErr?.message);
   }
 
   // ── Save to DB ────────────────────────────────────────────────────────────
