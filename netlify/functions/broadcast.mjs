@@ -57,49 +57,59 @@ export default async (request) => {
 
     const features = [
       {
-        icon: "🧬",
-        title: "Smart Pick",
-        desc: "Not sure what to solve next? Smart Pick scores every unsolved problem by difficulty, topic gap, and your weak areas — and picks the one that'll move the needle most. One click, zero decision fatigue.",
+        icon: "👻",
+        tag: "NEW",
+        tagColor: "#8b5cf6",
+        tagBg: "rgba(139,92,246,0.15)",
+        borderColor: "rgba(139,92,246,0.3)",
+        title: "Ghost Replay — Watch AI Solve Hard Problems Live",
+        desc: "Pick any Hard problem, hit Summon Ghost, and watch an AI Staff Engineer write the optimal solution character-by-character in your chosen language. C++, Python, Java, Go — you pick. Every replay includes the intuition, the naive approach, a dry run, and full complexity analysis. Ask Snowy questions mid-replay and she'll explain the why behind every line.",
       },
       {
-        icon: "📋",
-        title: "Review Queue — Spaced Repetition",
-        desc: "Solved a problem two weeks ago and already forgot it? We now automatically surface problems you should revisit based on proven spaced repetition intervals (1 → 3 → 7 → 14 → 30 days). Your memory will actually hold.",
+        icon: "💬",
+        tag: "NEW",
+        tagColor: "#14b8a6",
+        tagBg: "rgba(20,184,166,0.15)",
+        borderColor: "rgba(20,184,166,0.3)",
+        title: "Mock Interview with Snowy — Stop Reading, Start Thinking",
+        desc: "Snowy is your AI Staff Engineer who interviews you Socratically. She never gives away the answer — she asks, probes, and pushes you to articulate your reasoning out loud. Exactly how top tech companies interview. Your entire conversation is saved per question on your device so you can pick up exactly where you left off.",
       },
       {
-        icon: "🏢",
-        title: "Company Readiness Mode",
-        desc: "Preparing for Google, Amazon, or any specific company? Company mode filters your entire tracker to show only the questions that company actually asks — with a readiness score to track how prepared you really are.",
+        icon: "✅",
+        tag: "SMART",
+        tagColor: "#f59e0b",
+        tagBg: "rgba(245,158,11,0.15)",
+        borderColor: "rgba(245,158,11,0.3)",
+        title: "Auto-Mark on Correct Solution",
+        desc: "When you submit your code and the AI confirms it's correct, the problem is instantly marked as done — no manual checkbox. Your streak and progress update automatically so you stay in flow.",
       },
       {
         icon: "⚡",
-        title: "Dramatically Faster & Smoother",
-        desc: "The whole app is now significantly faster — smarter caching, instant loads, and zero-flicker UI even during theme switching. It adapts to your device and network so you always get the best experience.",
-      },
-      {
-        icon: "📊",
-        title: "Better Progress Insights",
-        desc: "Your stats dashboard now has collapsible sections, cleaner animations, and tracks your trajectory over time — not just how many you've done, but how consistently you're improving.",
-      },
-      {
-        icon: "🌐",
-        title: "Questions Beyond LeetCode",
-        desc: "We've expanded the question bank beyond LeetCode. Problems from Codeforces, GeeksforGeeks, HackerRank, and more are now tracked in the same place — one dashboard for your entire prep, regardless of where the question lives.",
+        tag: "RELIABILITY",
+        tagColor: "#6366f1",
+        tagBg: "rgba(99,102,241,0.15)",
+        borderColor: "rgba(99,102,241,0.3)",
+        title: "Always-On AI — Dual Provider Fallback",
+        desc: "When Gemini is overloaded or returns an error, the backend silently falls back to OpenAI in milliseconds. You never see a failure message. You never lose context. The session just keeps going.",
       },
     ];
 
     const featureCardsHtml = features.map(f => `
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;border:1px solid #2a2a3e;border-radius:10px;overflow:hidden;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;border:1px solid ${f.borderColor};border-radius:12px;overflow:hidden;">
         <tr>
-          <td style="padding:18px 20px;">
-            <p style="margin:0 0 6px;font-size:16px;">${f.icon} <strong style="color:#e8e8f0;font-size:15px;">${f.title}</strong></p>
-            <p style="margin:0;font-size:13px;color:#9898b0;line-height:1.65;">${f.desc}</p>
+          <td style="padding:18px 20px 16px;">
+            <p style="margin:0 0 8px;">
+              <span style="font-size:22px;vertical-align:middle;margin-right:8px;">${f.icon}</span>
+              <span style="display:inline-block;background:${f.tagBg};color:${f.tagColor};font-size:9px;font-family:monospace;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:2px 8px;border-radius:100px;vertical-align:middle;">${f.tag}</span>
+            </p>
+            <p style="margin:0 0 6px;font-size:16px;font-weight:800;color:#e8e8f0;line-height:1.2;">${f.title}</p>
+            <p style="margin:0;font-size:13px;color:#9898b0;line-height:1.7;">${f.desc}</p>
           </td>
         </tr>
       </table>`).join("");
 
     const featurePlainText = features.map(f =>
-      `${f.icon} ${f.title}\n   ${f.desc}`
+      `${f.icon} [${f.tag}] ${f.title}\n   ${f.desc}`
     ).join("\n\n");
 
     const buildPayload = (user) => {
@@ -172,7 +182,7 @@ export default async (request) => {
 <body style="margin:0;padding:0;background:#0d0d1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">
-    Interview season is here. Here's every new feature we built to help you land the offer.
+    Ghost Replay just dropped — most people are still reading editorials. Don't be that person.
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
 
@@ -183,17 +193,26 @@ export default async (request) => {
           <tr>
             <td style="background:#111118;border-radius:14px;border:1px solid #2a2a3e;overflow:hidden;">
 
-              <div style="height:3px;background:linear-gradient(90deg,#7c6af7,#06d6a0);"></div>
+              <div style="height:3px;background:linear-gradient(90deg,#8b5cf6,#14b8a6,#f59e0b);"></div>
 
               <div style="padding:30px 28px 8px;">
-                <p style="margin:0 0 6px;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:#6b6b85;">AlgoTracker</p>
-                <h1 style="margin:0 0 14px;font-size:26px;font-weight:800;color:#e8e8f0;line-height:1.25;">
-                  ${displayName}, your tracker just levelled up. &#128640;
+                <p style="margin:0 0 10px;font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:#6b6b85;">AlgoTracker &mdash; Product Update</p>
+                <h1 style="margin:0 0 14px;font-size:28px;font-weight:900;color:#e8e8f0;line-height:1.2;">
+                  ${displayName}, your AI study buddy just got a brain transplant. &#128165;
                 </h1>
                 <p style="margin:0 0 6px;font-size:15px;color:#9898b0;line-height:1.7;">
-                  Interview season is brutal. We've been building to give you every edge possible.
-                  Here's what changed — and more importantly, <strong style="color:#e8e8f0;">why it matters for you.</strong>
+                  Reading editorial solutions is the <strong style="color:#ff6b6b;">worst way to prep</strong>. You read, you nod, you close the tab — and two days later you can't solve anything.<br><br>
+                  We built two tools that force you to <em>actually think</em>. Here's what just dropped.
                 </p>
+
+                <!-- Top mini-CTA -->
+                <table cellpadding="0" cellspacing="0" style="margin-top:16px;">
+                  <tr>
+                    <td style="border-radius:7px;background:linear-gradient(135deg,#8b5cf6,#4f46e5);">
+                      <a href="${siteUrl}" style="display:inline-block;padding:10px 24px;font-size:13px;font-weight:700;color:#fff;text-decoration:none;">Try it now &rarr;</a>
+                    </td>
+                  </tr>
+                </table>
               </div>
 
               <!-- Divider -->
@@ -207,43 +226,130 @@ export default async (request) => {
                 <!-- Suggested problem -->
                 ${problemCardHtml}
 
-                <!-- Urgency nudge -->
-                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:linear-gradient(135deg,rgba(124,106,247,0.12),rgba(6,214,160,0.06));border:1px solid rgba(124,106,247,0.3);border-radius:10px;">
+                <!-- What you'll actually learn -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;background:linear-gradient(135deg,rgba(20,184,166,0.08),rgba(99,102,241,0.06));border:1px solid rgba(20,184,166,0.25);border-radius:10px;">
                   <tr>
-                    <td style="padding:18px 20px;">
-                      <p style="margin:0 0 6px;font-size:14px;font-weight:700;color:#e8e8f0;">&#127942; The people who get offers practice every day.</p>
+                    <td style="padding:18px 20px 10px;">
+                      <p style="margin:0 0 12px;font-size:14px;font-weight:800;color:#e8e8f0;">&#128161; What you&rsquo;ll actually learn &mdash; not just watch</p>
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td width="50%" style="padding:0 8px 12px 0;vertical-align:top;">
+                            <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#c4b5fd;">&#129504; Algorithm Intuition</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Understand the <em>why</em> before seeing a line of code</p>
+                            <p style="margin:0;font-size:10px;color:#8b5cf6;font-weight:600;">&#8594; Watch the intuition card before hitting play</p>
+                          </td>
+                          <td width="50%" style="padding:0 0 12px 8px;vertical-align:top;">
+                            <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#5eead4;">&#128483;&#65039; Verbal Articulation</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Train yourself to explain your approach out loud</p>
+                            <p style="margin:0;font-size:10px;color:#14b8a6;font-weight:600;">&#8594; Use Mock Interview before looking at any solution</p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="50%" style="padding:0 8px 12px 0;vertical-align:top;">
+                            <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#fde68a;">&#9203; Complexity Analysis</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Time &amp; space broken down in plain English</p>
+                            <p style="margin:0;font-size:10px;color:#f59e0b;font-weight:600;">&#8594; Pause the replay and predict complexity before Snowy reveals it</p>
+                          </td>
+                          <td width="50%" style="padding:0 0 12px 8px;vertical-align:top;">
+                            <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#a5b4fc;">&#127757; Multi-Language Fluency</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Same optimal solution in C++, Python, Java, Go</p>
+                            <p style="margin:0;font-size:10px;color:#6366f1;font-weight:600;">&#8594; Watch it in the language your target company uses</p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td width="50%" style="padding:0 8px 0 0;vertical-align:top;">
+                            <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#86efac;">&#128027; Edge Case Radar</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Snowy validates or challenges every claim you make</p>
+                            <p style="margin:0;font-size:10px;color:#22c55e;font-weight:600;">&#8594; Tell Snowy your solution handles all cases &mdash; see if she agrees</p>
+                          </td>
+                          <td width="50%" style="padding:0 0 0 8px;vertical-align:top;">
+                            <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#fb923c;">&#128202; Pattern Recognition</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Map each problem to its core algorithm pattern</p>
+                            <p style="margin:0;font-size:10px;color:#f97316;font-weight:600;">&#8594; Ask Snowy &ldquo;what pattern does this problem follow?&rdquo;</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- 3 Steps to start RIGHT NOW -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border:1px solid rgba(251,191,36,0.3);border-radius:10px;overflow:hidden;">
+                  <tr><td style="background:rgba(251,191,36,0.08);padding:10px 20px;border-bottom:1px solid rgba(251,191,36,0.2);">
+                    <p style="margin:0;font-size:10px;font-family:monospace;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#fbbf24;">&#9889; Start in 60 seconds</p>
+                  </td></tr>
+                  <tr><td style="padding:16px 20px 18px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="width:28px;vertical-align:top;padding-top:1px;"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:#8b5cf6;font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:22px;">1</span></td>
+                        <td style="padding-left:10px;padding-bottom:12px;"><p style="margin:0;font-size:13px;color:#e2e8f0;line-height:1.5;">Open any <strong>Hard problem</strong> in your tracker</p></td>
+                      </tr>
+                      <tr>
+                        <td style="width:28px;vertical-align:top;padding-top:1px;"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:#14b8a6;font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:22px;">2</span></td>
+                        <td style="padding-left:10px;padding-bottom:12px;"><p style="margin:0;font-size:13px;color:#e2e8f0;line-height:1.5;">Hit <strong style="color:#c4b5fd;">&#128172; Mock Interview</strong> &mdash; try to explain the approach to Snowy before seeing any code</p></td>
+                      </tr>
+                      <tr>
+                        <td style="width:28px;vertical-align:top;padding-top:1px;"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:#f59e0b;font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:22px;">3</span></td>
+                        <td style="padding-left:10px;"><p style="margin:0;font-size:13px;color:#e2e8f0;line-height:1.5;">Then hit <strong style="color:#c4b5fd;">&#128123; Summon Ghost</strong> &mdash; watch the optimal solution appear live and ask Snowy anything</p></td>
+                      </tr>
+                    </table>
+                  </td></tr>
+                </table>
+
+                <!-- FOMO stats -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-radius:10px;overflow:hidden;border:1px solid #2a2a3e;">
+                  <tr>
+                    <td width="33%" style="padding:14px 8px;text-align:center;border-right:1px solid #2a2a3e;">
+                      <p style="margin:0;font-size:22px;font-weight:900;color:#a78bfa;">5+</p>
+                      <p style="margin:2px 0 0;font-size:10px;color:#475569;">Languages</p>
+                    </td>
+                    <td width="33%" style="padding:14px 8px;text-align:center;border-right:1px solid #2a2a3e;">
+                      <p style="margin:0;font-size:22px;font-weight:900;color:#5eead4;">2</p>
+                      <p style="margin:2px 0 0;font-size:10px;color:#475569;">AI providers (zero downtime)</p>
+                    </td>
+                    <td width="33%" style="padding:14px 8px;text-align:center;">
+                      <p style="margin:0;font-size:22px;font-weight:900;color:#fde68a;">&infin;</p>
+                      <p style="margin:2px 0 0;font-size:10px;color:#475569;">Saved sessions per question</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Urgency nudge -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;background:linear-gradient(135deg,rgba(255,71,87,0.1),rgba(139,92,246,0.08));border:1px solid rgba(255,71,87,0.3);border-radius:10px;">
+                  <tr>
+                    <td style="padding:16px 20px;">
+                      <p style="margin:0 0 6px;font-size:14px;font-weight:800;color:#e8e8f0;">&#128293; The gap between you and an offer is closing every day you don&rsquo;t practice.</p>
                       <p style="margin:0;font-size:13px;color:#9898b0;line-height:1.65;">
-                        Consistency beats cramming every time. Even 30 minutes a day compounds faster than you think.
-                        Your tracker is ready — problems queued, weak spots mapped, company filters set.
-                        All you have to do is open it.
+                        Candidates who land offers at top tech companies don&rsquo;t just solve problems &mdash; they can <em>explain</em> their reasoning under pressure.
+                        Mock Interview trains exactly that. Ghost Replay shows you what optimal actually looks like.
+                        <strong style="color:#e8e8f0;">Both are live. Both are free. Open your tracker right now.</strong>
                       </p>
                     </td>
                   </tr>
                 </table>
 
-                <!-- CTA -->
+                <!-- Primary CTA -->
                 <table cellpadding="0" cellspacing="0" style="margin-top:28px;width:100%;">
                   <tr>
                     <td align="center">
                       <table cellpadding="0" cellspacing="0">
                         <tr>
-                          <td style="border-radius:9px;background:linear-gradient(135deg,#7c6af7,#5b4bd4);">
-                            <a href="${siteUrl}"
-                               style="display:inline-block;padding:14px 40px;font-size:15px;font-weight:700;color:#fff;text-decoration:none;letter-spacing:0.03em;">
-                              Open AlgoTracker &rarr;
-                            </a>
+                          <td style="border-radius:9px;background:linear-gradient(135deg,#8b5cf6,#4f46e5);box-shadow:0 8px 24px rgba(139,92,246,0.4);">
+                             <a href="${siteUrl}"
+                                style="display:inline-block;padding:16px 52px;font-size:16px;font-weight:800;color:#fff;text-decoration:none;letter-spacing:0.03em;">
+                               &#128123;&nbsp; Summon Ghost Now
+                             </a>
                           </td>
                         </tr>
                       </table>
-                      <p style="margin:10px 0 0;font-size:12px;color:#6b6b85;">
-                        <a href="${siteUrl}" style="color:#7c6af7;text-decoration:none;">${siteUrl.replace("https://","")}</a>
-                      </p>
+                      <p style="margin:12px 0 0;font-size:12px;color:#475569;">or <a href="${siteUrl}" style="color:#7c6af7;text-decoration:none;">open your full tracker &rarr;</a></p>
                     </td>
                   </tr>
                 </table>
 
                 <p style="margin-top:28px;font-size:13px;color:#6b6b85;line-height:1.7;border-top:1px solid #2a2a3e;padding-top:20px;">
-                  Have feedback or a feature you want? Just reply to this email — we read every one.<br>
+                  Your next Hard problem is waiting. So is Snowy. &#128123;<br>
+                  If you have feedback or a feature request — just reply, we actually read every email.<br>
                   <strong style="color:#9898b0;">— The AlgoTracker team</strong>
                 </p>
               </div>
@@ -269,7 +375,7 @@ export default async (request) => {
       return {
         from:    `AlgoTracker <${fromEmail}>`,
         to:      toEmail,
-        subject: `${displayName}, your tracker just levelled up`,
+        subject: `${displayName}, the way you've been prepping for tech interviews is broken 👻`,
         text:    plainText,
         html,
         headers: {
