@@ -63,7 +63,7 @@ export default async (request) => {
         tagBg: "rgba(139,92,246,0.15)",
         borderColor: "rgba(139,92,246,0.3)",
         title: "Ghost Replay — Watch AI Solve Hard Problems Live",
-        desc: "Pick any Hard problem, hit Summon Ghost, and watch an AI Staff Engineer write the optimal solution character-by-character in your chosen language. C++, Python, Java, Go — you pick. Every replay includes the intuition, the naive approach, a dry run, and full complexity analysis. Ask Snowy questions mid-replay and she'll explain the why behind every line.",
+        desc: "Pick any Hard problem, hit Summon Ghost, and watch an AI Staff Engineer write the perfect solution live — in C++ or Java. Every replay comes with the full story: the intuition, the simpler brute-force approach, a step-by-step dry run, and exactly how fast and memory-efficient the solution is. Ask Snowy questions mid-replay and she'll break down every decision.",
       },
       {
         icon: "💬",
@@ -89,8 +89,8 @@ export default async (request) => {
         tagColor: "#6366f1",
         tagBg: "rgba(99,102,241,0.15)",
         borderColor: "rgba(99,102,241,0.3)",
-        title: "Always-On AI — Dual Provider Fallback",
-        desc: "When Gemini is overloaded or returns an error, the backend silently falls back to OpenAI in milliseconds. You never see a failure message. You never lose context. The session just keeps going.",
+        title: "Always-On AI — Super Fast & Never Goes Down",
+        desc: "Our AI is super fast and built to always be available. You will never hit a dead end, see a failure screen, or lose your progress mid-session. It just works, every single time.",
       },
     ];
 
@@ -252,7 +252,7 @@ export default async (request) => {
                           </td>
                           <td width="50%" style="padding:0 0 12px 8px;vertical-align:top;">
                             <p style="margin:0 0 2px;font-size:12px;font-weight:700;color:#a5b4fc;">&#127757; Multi-Language Fluency</p>
-                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Same optimal solution in C++, Python, Java, Go</p>
+                            <p style="margin:0 0 4px;font-size:11px;color:#64748b;line-height:1.5;">Same perfect solution in C++ or Java</p>
                             <p style="margin:0;font-size:10px;color:#6366f1;font-weight:600;">&#8594; Watch it in the language your target company uses</p>
                           </td>
                         </tr>
@@ -304,8 +304,8 @@ export default async (request) => {
                       <p style="margin:2px 0 0;font-size:10px;color:#475569;">Languages</p>
                     </td>
                     <td width="33%" style="padding:14px 8px;text-align:center;border-right:1px solid #2a2a3e;">
-                      <p style="margin:0;font-size:22px;font-weight:900;color:#5eead4;">2</p>
-                      <p style="margin:2px 0 0;font-size:10px;color:#475569;">AI providers (zero downtime)</p>
+                      <p style="margin:0;font-size:22px;font-weight:900;color:#5eead4;">⚡</p>
+                      <p style="margin:2px 0 0;font-size:10px;color:#475569;">Always online, always fast</p>
                     </td>
                     <td width="33%" style="padding:14px 8px;text-align:center;">
                       <p style="margin:0;font-size:22px;font-weight:900;color:#fde68a;">&infin;</p>
