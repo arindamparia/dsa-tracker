@@ -1,6 +1,7 @@
 import { getAuthEmail } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
+import { invalidateAccessCache } from "./ai-gate.mjs";
 
 const ADMIN_EMAIL = "arindamparia321@gmail.com";
 
@@ -86,7 +87,7 @@ export const handler = async (event) => {
       const body = JSON.parse(event.body || '{}');
       const { action, target_email, value } = body;
 
-      if (!['set_ai_access', 'set_daily_limit'].includes(action)) {
+      if (!['set_ai_access', 'set_daily_limit', 'set_subscribed'].includes(action)) {
         return { statusCode: 400, headers: CORS, body: JSON.stringify({ ok: false, error: 'Invalid action' }) };
       }
 
@@ -110,6 +111,25 @@ export const handler = async (event) => {
         return { statusCode: 404, headers: CORS, body: JSON.stringify({ ok: false, error: 'User not found' }) };
       }
 
+      if (action === 'set_subscribed') {
+        // When subscribing, also auto-enable AI access
+        const [updated] = value
+          ? await sql`
+              UPDATE users
+              SET is_subscribed = true, ai_access = true
+              WHERE email = ${safeEmail}
+              RETURNING email, COALESCE(clerk_name, name, '') AS name, role, is_subscribed, ai_access, ai_daily_limit, last_active, created_at
+            `
+          : await sql`
+              UPDATE users
+              SET is_subscribed = false
+              WHERE email = ${safeEmail}
+              RETURNING email, COALESCE(clerk_name, name, '') AS name, role, is_subscribed, ai_access, ai_daily_limit, last_active, created_at
+            `;
+        invalidateAccessCache(safeEmail);
+        return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, user: updated }) };
+      }
+
       if (action === 'set_ai_access') {
         const [updated] = await sql`
           UPDATE users
@@ -117,6 +137,7 @@ export const handler = async (event) => {
           WHERE email = ${safeEmail}
           RETURNING email, COALESCE(clerk_name, name, '') AS name, role, is_subscribed, ai_access, ai_daily_limit, last_active, created_at
         `;
+        invalidateAccessCache(safeEmail);
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, user: updated }) };
       }
 
@@ -132,6 +153,7 @@ export const handler = async (event) => {
           WHERE email = ${safeEmail}
           RETURNING email, COALESCE(clerk_name, name, '') AS name, role, is_subscribed, ai_access, ai_daily_limit, last_active, created_at
         `;
+        invalidateAccessCache(safeEmail);
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, user: updated }) };
       }
     } catch (err) {

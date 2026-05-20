@@ -125,7 +125,7 @@ export const SocraticChat = {
         history: this.history.slice(-10)
       };
       
-      console.log('[Socratic Mock Interview] Sending payload to backend:', payload);
+
 
       const res = await fetch('/.netlify/functions/mock-interview', {
         method: 'POST',

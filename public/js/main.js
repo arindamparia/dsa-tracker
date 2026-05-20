@@ -123,6 +123,7 @@ const AdminPanel = {
     const name     = u.name || '\u2014';
     const lastSeen = u.last_active ? _apTimeAgo(new Date(u.last_active)) : 'never';
     const aiOn     = u.ai_access;
+    const subOn    = u.is_subscribed;
     const dailyLim = u.ai_daily_limit ?? 4;
     const safeKey  = u.email.replace(/[^a-z0-9]/gi, '_');
     const roleChip = u.role === 'ADMIN'
@@ -143,12 +144,12 @@ const AdminPanel = {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">AI</span>
-          <button onclick="AdminPanel.setAIAccess('${u.email}', ${!aiOn})"
-            style="width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;transition:background 0.25s;background:${aiOn ? '#06d6a0' : 'var(--border2)'};position:relative;outline:none;"
-            title="${aiOn ? 'Revoke AI access' : 'Grant AI access'}"
-            id="ap-ai-tog-${safeKey}"
-          ><span style="position:absolute;top:2px;left:${aiOn ? '22px' : '2px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3);" id="ap-ai-knob-${safeKey}"></span></button>
+          <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">SUB</span>
+          <button onclick="AdminPanel.setSubscribed('${u.email}', ${!subOn})"
+            style="width:44px;height:24px;border-radius:12px;border:none;cursor:pointer;transition:background 0.25s;background:${subOn ? '#8b5cf6' : 'var(--border2)'};position:relative;outline:none;"
+            title="${subOn ? 'Remove subscription' : 'Grant subscription (also enables AI)'}"
+            id="ap-sub-tog-${safeKey}"
+          ><span style="position:absolute;top:2px;left:${subOn ? '22px' : '2px'};width:20px;height:20px;border-radius:50%;background:#fff;transition:left 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3);" id="ap-sub-knob-${safeKey}"></span></button>
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
           <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Limit</span>
@@ -190,24 +191,32 @@ const AdminPanel = {
     });
   },
 
-  async setAIAccess(email, value) {
+  async setSubscribed(email, value) {
     const safeKey = email.replace(/[^a-z0-9]/gi, '_');
-    const btn = document.getElementById(`ap-ai-tog-${safeKey}`);
+    const btn = document.getElementById(`ap-sub-tog-${safeKey}`);
     if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
     try {
       const res  = await fetch('/.netlify/functions/admin-users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'set_ai_access', target_email: email, value }),
+        body: JSON.stringify({ action: 'set_subscribed', target_email: email, value }),
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
       if (this._userCache) {
         const u = this._userCache.find(x => x.email === email);
-        if (u) u.ai_access = value;
+        if (u) {
+          u.is_subscribed = value;
+          if (value) u.ai_access = true; // auto-enabled
+        }
         this.renderUsers(this._userCache);
       }
-      showToast(`AI access ${value ? 'granted \u2713' : 'revoked'} \u2014 ${email}`, value ? 'success' : 'info');
+      showToast(
+        value
+          ? `\u2713 Subscribed & AI enabled \u2014 ${email}`
+          : `Subscription removed \u2014 ${email}`,
+        value ? 'success' : 'info'
+      );
     } catch (err) {
       if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
       showToast(`Failed: ${err.message}`, 'error');

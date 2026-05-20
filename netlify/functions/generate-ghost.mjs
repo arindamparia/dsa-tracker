@@ -1,7 +1,7 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
-import { checkAIRateLimit } from "./rate-limit.mjs";
+import { aiGate } from "./ai-gate.mjs";
 import { callAI } from "./ai-service.mjs";
 
 export const handler = async (event) => {
@@ -44,13 +44,9 @@ export const handler = async (event) => {
       console.warn("Ghost cache read error:", e.message);
     }
 
-    // Rate limiting (only applied if cache misses)
-    try {
-      const allowed = await checkAIRateLimit(userEmail);
-      if (!allowed) {
-        return { statusCode: 429, headers: CORS, body: JSON.stringify({ ok: false, error: 'rate_limited', message: 'Too many requests. Please wait a moment.' }) };
-      }
-    } catch { /* allow through on DB failure */ }
+    // 2. ai_access + daily limit + per-minute check (only on cache miss)
+    const blocked = await aiGate(userEmail, CORS);
+    if (blocked) return blocked;
 
     // Dynamic length based on difficulty
     let intuitionLength = "3-4 sentences";

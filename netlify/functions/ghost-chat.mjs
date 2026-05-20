@@ -1,6 +1,6 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
-import { checkAIRateLimit } from "./rate-limit.mjs";
+import { aiGate } from "./ai-gate.mjs";
 import { callAI } from "./ai-service.mjs";
 
 export const handler = async (event) => {
@@ -11,12 +11,8 @@ export const handler = async (event) => {
   try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
-  try {
-    const allowed = await checkAIRateLimit(userEmail);
-    if (!allowed) {
-      return { statusCode: 429, headers: CORS, body: JSON.stringify({ ok: false, error: 'rate_limited', message: 'Too many requests. Please wait a moment.' }) };
-    }
-  } catch { /* allow through on DB failure */ }
+  const blocked = await aiGate(userEmail, CORS);
+  if (blocked) return blocked;
 
   try {
     const { problemTitle, fullCode, ghostContext, history } = JSON.parse(event.body);

@@ -1,7 +1,7 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
-import { checkAIRateLimit } from "./rate-limit.mjs";
+import { aiGate } from "./ai-gate.mjs";
 import { callAI } from "./ai-service.mjs";
 
 export const handler = async (event) => {
@@ -52,47 +52,13 @@ export const handler = async (event) => {
     if (action === 'analyze') {
       if (!code) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Code is required for analysis' }) };
 
-      // STAGE 0: Check ai_access + enforce daily limit (READ + CHECK only, no increment yet)
-      let dailyLimit = 4;
-      try {
-        const sql = getDb();
-        const [row] = await sql`SELECT ai_daily_limit, is_subscribed FROM users WHERE email = ${userEmail}`;
-        
-        // Base limit: 4 for free, 10 for Pro. Respect admin overrides if higher.
-        dailyLimit = row?.ai_daily_limit ?? 4;
-        if (row?.is_subscribed && dailyLimit < 10) dailyLimit = 10;
+      // STAGE 0: Check ai_access + enforce daily limit
+      const blocked = await aiGate(userEmail, CORS);
+      if (blocked) return blocked;
 
-        const dayStart = new Date();
-        dayStart.setUTCHours(0, 0, 0, 0);
-        const [usage] = await sql`
-          SELECT COALESCE(SUM(count), 0)::int AS total
-          FROM ai_rate_limits
-          WHERE user_email = ${userEmail}
-            AND window_start >= ${dayStart.toISOString()}
-        `;
-        if (userEmail !== 'arindamparia321@gmail.com' && (usage?.total ?? 0) >= dailyLimit) {
-          return {
-            statusCode: 429,
-            headers: CORS,
-            body: JSON.stringify({
-              ok: false,
-              error: 'daily_limit_reached',
-              message: `You've used all ${dailyLimit} AI analyses for today. Resets at midnight UTC.`,
-            }),
-          };
-        }
-      } catch {
-        return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error' }) };
-      }
-
-      // INCREMENT the daily counter NOW — counts for both mismatch detections and full analyses.
-      // This prevents users from gaming the limit by spamming wrong solutions.
-      try {
-        const allowed = await checkAIRateLimit(userEmail);
-        if (!allowed) {
-          return { statusCode: 429, headers: CORS, body: JSON.stringify({ ok: false, error: 'rate_limited', message: 'Too many requests. Please wait a moment.' }) };
-        }
-      } catch { /* allow through on DB failure */ }
+      // Per-minute rate limit — increment counter after gate passes
+      const burstBlocked = await aiGate(userEmail, CORS, { skipDailyLimit: true });
+      if (burstBlocked) return burstBlocked;
 
       // STAGE 1: Cheap mismatch detection (~50-80 tokens)
       // Runs AFTER the counter is incremented so mismatches cost a daily use.
