@@ -97,7 +97,7 @@ export const handler = async (event, context) => {
       WHERE user_email = ${userEmail}
         AND created_at > NOW() - INTERVAL '24 hours'
     `;
-    if (parseInt(countRow?.cnt ?? 0, 10) >= 2) {
+    if (parseInt(countRow?.cnt ?? 0, 10) >= 5) {
       return {
         statusCode: 429,
         headers: CORS,
@@ -107,24 +107,24 @@ export const handler = async (event, context) => {
   } catch { /* non-fatal — proceed */ }
 
   // ── AI evaluation ─────────────────────────────────────────────────────────
-  let aiReply        = null;
-  let alreadyImpl    = false;
+  let aiReply = null;
+  let alreadyImpl = false;
   let featureLocation = null;
-  let isGenuine      = true; // default true; set false only when AI explicitly says not genuine
-  let aiCategory     = null; // feature_request | bug_report | suggestion | already_exists | spam | off_topic
+  let isGenuine = true; // default true; set false only when AI explicitly says not genuine
+  let aiCategory = null; // feature_request | bug_report | suggestion | already_exists | spam | off_topic
 
   try {
     const messages = [
-            {
-              role: "system",
-              content: `You are a feedback classifier for AlgoTracker (algotracker.xyz). Classify the user message and output JSON only.
+      {
+        role: "system",
+        content: `You are a feedback classifier for AlgoTracker (algotracker.xyz). Classify the user message and output JSON only.
 
 OUTPUT FORMAT (strict JSON, no markdown, no extra keys):
 {"genuine":<bool>,"category":<str>,"already_implemented":<bool>,"feature_location":<str|null>,"spam_reason":<str|null>,"reply":<str>}
 
 CLASSIFICATION RULES — follow these exactly:
-1. "genuine": true if the message is a real feature request, bug report, or suggestion specifically about AlgoTracker. False for gibberish, random text, abuse, off-topic content, meaningless test inputs like "hello", "test", "asdf".
-2. "category": classify into exactly one of these — "feature_request" | "bug_report" | "suggestion" | "already_exists" | "spam" | "off_topic". Use "already_exists" when genuine but already implemented. Use "spam" when not genuine AND looks like intentional spam/abuse. Use "off_topic" when not genuine but not spam (e.g. general DSA questions).
+1. "genuine": true if the message is a real feature request, bug report, or suggestion or appreciation specifically about AlgoTracker. False for gibberish, random text, abuse, off-topic content, meaningless test inputs like "hello", "test", "asdf".
+2. "category": classify into exactly one of these — "feature_request" | "bug_report" | "suggestion" | "already_exists" | "spam" | "off_topic" | "appreciation". Use "already_exists" when genuine but already implemented. Use "spam" when not genuine AND looks like intentional spam/abuse. Use "off_topic" when not genuine but not spam (e.g. general DSA questions).
 3. "already_implemented": true if the feature or concept the user describes ALREADY EXISTS in AlgoTracker (see feature list below). Match by concept and intent — not just exact words.
 4. "feature_location": if already_implemented, write max 6 words describing where it is in the app. Otherwise null.
 5. "spam_reason": if not genuine, write max 8 words explaining why (e.g. "random characters", "unrelated DSA question", "abusive language"). Otherwise null.
@@ -132,10 +132,10 @@ CLASSIFICATION RULES — follow these exactly:
    - If not genuine: politely ask them to send real AlgoTracker feedback.
    - If already_implemented: tell them the feature exists and where to find it.
    - If genuine new idea: thank them briefly.
-
+7. LANGUAGE & TONE GUARD: If the message contains profanity, slurs, slang, or abusive language in any language or script (including obfuscated forms like "wtf", "sh*t", "bc", "bkl", or phonetic substitutions), set "genuine": false, "category": "spam", and "spam_reason": "contains inappropriate or abusive language". The "reply" must politely ask the user to rephrase respectfully. Do NOT attempt to extract any feature intent from such messages regardless of context.
 ALGOTRACKER FEATURE LIST — check this carefully before deciding already_implemented:
 ${SITE_CONTEXT}`,
-            },
+      },
       { role: "user", content: trimmed },
     ];
 
@@ -150,11 +150,11 @@ ${SITE_CONTEXT}`,
     // If the model hit the token cap the JSON will be truncated — treat as no AI response
     if (raw && choice?.finish_reason !== "length") {
       const parsed = JSON.parse(raw);
-      aiReply         = parsed.reply              ?? null;
-      alreadyImpl     = parsed.already_implemented === true;
-      featureLocation = parsed.feature_location    ?? null;
-      isGenuine       = parsed.genuine !== false;
-      aiCategory      = parsed.category            ?? null;
+      aiReply = parsed.reply ?? null;
+      alreadyImpl = parsed.already_implemented === true;
+      featureLocation = parsed.feature_location ?? null;
+      isGenuine = parsed.genuine !== false;
+      aiCategory = parsed.category ?? null;
       // all cases fall through to save — counts toward daily limit
     }
   } catch (aiErr) {
@@ -195,8 +195,8 @@ ${SITE_CONTEXT}`,
       body: JSON.stringify({
         ok: true,
         already_implemented: alreadyImpl,
-        feature_location:    featureLocation,
-        ai_reply:            aiReply,
+        feature_location: featureLocation,
+        ai_reply: aiReply,
       }),
     };
   } catch (err) {

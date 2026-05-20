@@ -148,6 +148,7 @@ export const ViewFeedbackModal = {
           bug_report:      { bg: 'rgba(239,68,68,0.1)',    color: '#f87171', border: 'rgba(239,68,68,0.25)',   label: 'Bug Report' },
           suggestion:      { bg: 'rgba(59,130,246,0.1)',   color: '#60a5fa', border: 'rgba(59,130,246,0.25)',  label: 'Suggestion' },
           already_exists:  { bg: 'rgba(234,179,8,0.1)',    color: '#facc15', border: 'rgba(234,179,8,0.25)',   label: 'Already Exists' },
+          appreciation:    { bg: 'rgba(16,185,129,0.1)',   color: '#34d399', border: 'rgba(16,185,129,0.25)',  label: '💚 Appreciation' },
         };
         const cat = f.ai_category && categoryColors[f.ai_category];
         const categoryBadge = cat
