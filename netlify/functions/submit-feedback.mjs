@@ -16,7 +16,9 @@ COMPANY FEATURES: company pills on each problem row (sorted by frequency), 527+ 
 
 STUDY MODES: Focus Mode (select topic → strips UI to only unsolved problems in that section, auto-starts stopwatch, exit → session summary with time + problems solved by difficulty), Company Prep Mode (described above), Mock Interview Mode (configure Easy+Medium+Hard count + optional company/section filter + time limit 30/45/60/90/120 min, AI disabled during session, countdown turns red in final 5 min, submit → report card with score + rating Excellent/Passed/Needs Practice)
 
-AI FEATURES: AI Hint per problem (1-2 sentence nudge, free), AI Code Analysis (complexity extraction, LeetCode-style breakdown, approach vs optimal, code style score, premium only), AI Similar Problems (top 3 structurally similar problems ranked by AI, cached, clickable to jump), Smart Pick/Smart Queue (adaptive scoring: section weakness 35% + difficulty progression 25% + SRS urgency 20% + company relevance 15% + never attempted 5%; shortcut R; next suggestion slide-in card after solving)
+AI FEATURES: AI Hint per problem (1-2 sentence nudge, free), AI Code Analysis (complexity extraction, LeetCode-style breakdown, approach vs optimal, code style score, auto-marks question done when AI confirms correct solution, premium only), AI Similar Problems (top 3 structurally similar problems ranked by AI, cached, clickable to jump), Smart Pick/Smart Queue (adaptive scoring: section weakness 35% + difficulty progression 25% + SRS urgency 20% + company relevance 15% + never attempted 5%; shortcut R; next suggestion slide-in card after solving)
+
+GHOST REPLAY (Temporal Ghost Replay): available only for Hard difficulty problems, AI types out the optimal solution live with a typing animation, shows Naive Approach panel (why brute force fails), Optimal Intuition panel with time/space complexity badges, Dry Run panel (mental tracing steps), user picks language (C++ or Java) before summoning, solutions cached per problem+language, Snowy Chat sidebar (AI Q&A assistant about the solution code, chat history saved per problem in localStorage), AI disclaimer shown, auto-verifies correctness before generating
 
 SPACED REPETITION (SRS): Anki-style review queue, intervals 1d/3d/1w/2w/1mo, due-problems banner at top of dashboard, Mark Reviewed button, morning email listing due reviews
 
@@ -32,9 +34,11 @@ REMINDERS: morning SRS review email, night solved-summary email, configurable em
 
 CP RESOURCES: integrated cp-algorithms.com reader (server-side CORS proxy, no new tab needed)
 
-ACCOUNT & AUTH: Clerk auth (email + Google OAuth), user profile (name/email/phone/reminders/theme/perf tier), free + premium tier (AI Code Analysis gated)
+ACCOUNT & AUTH: Clerk auth (email + Google OAuth), user profile (name/email/phone/reminders/theme/perf tier), Premium badge shown in profile if subscribed, free + premium tier (AI Code Analysis + Ghost Replay gated behind premium/ai_access)
 
-ADMIN ONLY: add question, broadcast email to all users, view all feedback submissions (with name + avatar)
+FEEDBACK: users can submit feedback via header button or settings page (min 5 words, max 5 per day), AI classifies into: feature_request, bug_report, suggestion, already_exists, appreciation, spam, off_topic; if already_exists AI tells user where the feature is; admins cannot submit feedback
+
+ADMIN ONLY: add question, broadcast email to all users, view all user feedback (genuine only, with category badge: Feature Request/Bug Report/Suggestion/Already Exists/Appreciation), user management panel (search users, toggle AI access/subscription per user, set daily AI limit, see last active)
 
 KEYBOARD SHORTCUTS: S or / (search), R (Smart Pick), F (Focus Mode), M (Mock Interview), H (Weakness Heatmap), Esc (close modal)
 

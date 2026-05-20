@@ -120,6 +120,9 @@ export const UserProfile = {
     }
     if (emailEl)  emailEl.textContent  = email;
 
+    const planBadge = document.getElementById('up-plan-badge');
+    if (planBadge) planBadge.style.display = state.isSubscribed ? 'flex' : 'none';
+
     if (codeEl && !codeEl.options.length) {
       codeEl.innerHTML = buildCountryOptions(code);
     } else if (codeEl) {
