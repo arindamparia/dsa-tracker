@@ -44,6 +44,7 @@ export async function getAuthInfo(event) {
     // ── Verify JWT via Clerk secret key ───────────────────────────
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
+      clockSkewInMs: 300000, // 5 minutes leeway for severe client clock skew
     });
 
     const clerkId = payload.sub;

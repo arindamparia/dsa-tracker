@@ -50,7 +50,10 @@ export const GhostEngine = {
               </div>
               <div id="ghost-loading" class="ghost-loading hidden">
                 <div class="ghost-spinner"></div>
-                <div class="ghost-loading-text">Summoning optimal ghost...</div>
+                <div class="ghost-loading-text" style="text-align: center;">
+                  Summoning optimal ghost...<br/>
+                  <span style="font-size: 0.85em; color: var(--text-muted); font-weight: normal; margin-top: 8px; display: inline-block;">This AI generation takes a minute. Grab a cup of coffee! ☕</span>
+                </div>
               </div>
               
               <div id="ghost-naive-panel" class="ghost-intuition-panel hidden" style="border-left-color: #ff4757; background: rgba(255, 71, 87, 0.05); margin-bottom: 12px;">
@@ -174,6 +177,10 @@ export const GhostEngine = {
     this.stopPlayback();
     this.UI.langPicker?.classList.add('hidden');
     this._pendingSummon = null;
+    if (this._pollTimer) {
+      clearTimeout(this._pollTimer);
+      this._pollTimer = null;
+    }
     unlockScroll();
   },
 
@@ -228,12 +235,13 @@ export const GhostEngine = {
     this.setControlsEnabled(false);
 
     try {
-      const res = await fetch('/.netlify/functions/generate-ghost', {
+      // 1. Check cache first
+      let res = await fetch('/.netlify/functions/check-ghost-cache', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
       });
-      const data = await res.json();
+      let data = await res.json();
 
       if (data?.error === 'NO_SOLUTION') {
         this.stopLoadingAnimation();
@@ -243,7 +251,89 @@ export const GhostEngine = {
         return;
       }
 
-      if (!res.ok || !data.ok) throw new Error(data?.error || 'Failed to summon ghost');
+      if (!res.ok) throw new Error(data?.error || 'Failed to check ghost cache');
+
+      // 2. If pending or generating, poll for completion
+      if (data.status === 'pending' || data.status === 'generating') {
+        if (data.status === 'pending') {
+          fetch('/.netlify/functions/generate-ghost-background', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
+          }).catch(err => console.warn('Background trigger error:', err)); // Fire and forget
+        }
+
+        // Dynamic polling: Wait 30s, 15s, 7s, then every 5s, for up to 3 minutes (180s)
+        const pollResult = await new Promise((resolve, reject) => {
+          let elapsed = 0;
+          const delays = [30000, 15000, 7000];
+          let delayIndex = 0;
+          let currentDelay = delays[0];
+          
+          const doPoll = () => {
+            if (elapsed >= 180000) {
+              reject(new Error("Ghost Replay generation is taking longer than expected. Please check back later."));
+              return;
+            }
+            
+            this._pollTimer = setTimeout(async () => {
+              elapsed += currentDelay;
+              
+              // If modal was closed, stop polling
+              if (!this.UI.overlay.classList.contains('open')) return;
+
+              try {
+                const pollRes = await fetch('/.netlify/functions/check-ghost-cache', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
+                });
+                const pollData = await pollRes.json();
+
+                if (pollData?.error === 'NO_SOLUTION') {
+                  resolve({ status: 'NO_SOLUTION', message: pollData.message });
+                  return;
+                }
+
+                if (pollData.ok && pollData.data) {
+                  // If it's a lock row, keep polling
+                  if (pollData.data.status === 'generating') {
+                    delayIndex++;
+                    currentDelay = delayIndex < delays.length ? delays[delayIndex] : 5000;
+                    doPoll();
+                    return;
+                  }
+                  
+                  data = pollData;
+                  resolve({ status: 'SUCCESS' });
+                  return;
+                }
+              } catch (err) {
+                console.warn('Polling error:', err);
+              }
+              
+              // Cache miss or network error, keep polling
+              delayIndex++;
+              currentDelay = delayIndex < delays.length ? delays[delayIndex] : 5000;
+              doPoll();
+            }, currentDelay);
+          };
+          
+          doPoll();
+        });
+
+        if (pollResult.status === 'NO_SOLUTION') {
+          this.stopLoadingAnimation();
+          this.setControlsEnabled(true);
+          this.close();
+          showToast(pollResult.message || "Ghost Engine has no solution for this problem yet. Try a different problem!", 'info');
+          return;
+        }
+      }
+
+      if (!data.data || !data.data.optimal_code) {
+         throw new Error("Invalid response from Ghost Engine");
+      }
 
       this.state.code = (data.data.optimal_code || '').trimStart();
       this.state.ghostContext = data.data;

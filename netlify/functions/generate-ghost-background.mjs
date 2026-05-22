@@ -36,22 +36,31 @@ export const handler = async (event) => {
       }
     } catch { /* if questions table lookup fails, fall through */ }
 
-    // 1. Check Cache
+    // 1. Insert a "generating" lock to prevent duplicate concurrent runs
     try {
-      const [cached] = await sql`
-        SELECT json_data FROM ghost_cache
-        WHERE lc_number = ${lcNumber} AND language = ${language}
+      const lockData = JSON.stringify({ status: "generating", started_at: Date.now() });
+      const [inserted] = await sql`
+        INSERT INTO ghost_cache (lc_number, language, json_data)
+        VALUES (${lcNumber}, ${language}, ${lockData}::jsonb)
+        ON CONFLICT (lc_number, language) DO NOTHING
+        RETURNING 1
       `;
-      if (cached) {
-        return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: cached.json_data }) };
+      if (!inserted) {
+        // A lock or actual data already exists. Another process is handling this!
+        console.log(`Ghost Replay generation already in progress/completed for "${title}". Aborting duplicate.`);
+        return { statusCode: 200, headers: CORS, body: "Aborted duplicate run" };
       }
     } catch (e) {
-      console.warn("Ghost cache read error:", e.message);
+      console.warn("Ghost cache lock error:", e.message);
     }
 
     // 2. ai_access + daily limit + per-minute check (only on cache miss)
     const blocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'generate_ghost' });
-    if (blocked) return blocked;
+    if (blocked) {
+      // Clear the lock we just created so they can try again later
+      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
+      return blocked;
+    }
 
     // Dynamic length based on difficulty
     let intuitionLength = "3-4 sentences";
@@ -123,6 +132,7 @@ JSON Formatting Rules (CRITICAL):
 
     if (!res.ok) {
       console.error('AI service error:', await res.text());
+      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
       return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service error.' }) };
     }
 
@@ -130,22 +140,23 @@ JSON Formatting Rules (CRITICAL):
     const content = d?.choices?.[0]?.message?.content;
     
     if (!content) {
+      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
       return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'Unexpected AI response.' }) };
     }
 
     const parsed = JSON.parse(content);
 
-    // If AI flagged it doesn't know the solution, return a clear user-friendly error
+    // We log if the AI flagged it doesn't know the solution
     if (parsed.not_found) {
-      return { statusCode: 404, headers: CORS, body: JSON.stringify({ ok: false, error: 'NO_SOLUTION', message: `The Ghost Engine doesn't have a verified solution for "${title}" yet. Try a well-known LeetCode problem!` }) };
+      console.log(`Ghost Engine returned not_found for "${title}"`);
     }
 
-    // 2. Save to Cache (only if a real solution was generated)
+    // 3. Save to Cache (Update the lock with actual data)
     try {
       await sql`
-        INSERT INTO ghost_cache (lc_number, language, json_data)
-        VALUES (${lcNumber}, ${language}, ${parsed})
-        ON CONFLICT (lc_number, language) DO NOTHING
+        UPDATE ghost_cache 
+        SET json_data = ${parsed}
+        WHERE lc_number = ${lcNumber} AND language = ${language}
       `;
     } catch (e) {
       console.warn("Ghost cache write error:", e.message);
@@ -155,6 +166,13 @@ JSON Formatting Rules (CRITICAL):
 
   } catch (err) {
     console.error('Generate Ghost error:', err);
+    // Clear lock on critical failure
+    try {
+      const { lcNumber, language } = JSON.parse(event.body);
+      const sql = getDb();
+      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
+    } catch (e) {}
+    
     return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error.' }) };
   }
 };
