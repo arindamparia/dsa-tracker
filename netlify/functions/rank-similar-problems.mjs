@@ -2,6 +2,7 @@ import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { checkAIRateLimit } from "./rate-limit.mjs";
 import { callAI } from "./ai-service.mjs";
+import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -44,7 +45,7 @@ export const handler = async (event) => {
 Consider not just the explicit topic/tags, but the actual algorithm usually required to solve them (e.g. if the source is a 2D matrix BFS, pick other 2D matrix BFS problems).
 Assume the candidates are already somewhat filtered, but you act as the final tiebreaker for true algorithmic equivalence.
 
-Respond ONLY with a JSON object: { "picks": [i, j, k] } where each value is a 0-based index from the provided candidate list. Do not provide any explanations.`
+Respond ONLY with a JSON object: { "picks": [i, j, k] } where each value is a 0-based index from the provided candidate list. Do not provide any explanations.` + PROMPT_INJECTION_DEFENSE
       },
       {
         role: 'user',

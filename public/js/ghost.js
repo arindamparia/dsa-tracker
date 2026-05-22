@@ -97,7 +97,7 @@ export const GhostEngine = {
 
           <div style="flex: 1; background: #0a0a0c; display: flex; flex-direction: column; min-width: 300px;">
             <div class="ghost-header" style="border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
-              <div class="ghost-title" style="color: #88ccff; display:flex; align-items:center;"><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:24px; height:24px; border-radius:50%; margin-right:8px; background:white; padding:2px; box-sizing:border-box;"> Snowy Chat</div>
+              <div class="ghost-title" style="color: #88ccff; display:flex; align-items:center;"><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:24px; height:24px; border-radius:50%; margin-right:8px; background:white; padding:2px; box-sizing:border-box;"> Snowy Chat</div>
               <button onclick="GhostEngine.close()" style="background: rgba(255,71,87,0.15); border: 1px solid rgba(255,71,87,0.3); color: #ff4757; font-size: 24px; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,71,87,0.3)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,71,87,0.15)'; this.style.color='#ff4757';">×</button>
             </div>
             <div id="ghost-mentor-chat" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; font-family: 'Syne', sans-serif;">
@@ -260,7 +260,7 @@ export const GhostEngine = {
         const div = document.createElement('div');
         div.className = `msg ${msg.role}`;
         if (msg.role === 'assistant') {
-          div.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <span>${msg.content}</span>`;
+          div.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <span>${msg.content}</span>`;
         } else {
           div.innerHTML = `<strong>You:</strong> <span>${msg.content}</span>`;
         }
@@ -373,7 +373,7 @@ export const GhostEngine = {
     typingMsg.style.padding = '10px 14px';
     typingMsg.style.borderRadius = '8px';
     typingMsg.style.fontSize = '14px';
-    typingMsg.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <em>Typing...</em>`;
+    typingMsg.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <em>Typing...</em>`;
     this.UI.mentorChat.appendChild(typingMsg);
     this.UI.mentorChat.scrollTop = this.UI.mentorChat.scrollHeight;
 
@@ -399,13 +399,13 @@ export const GhostEngine = {
       if (!response.ok) throw new Error('Failed to get chat response');
       const data = await response.json();
       
-      typingMsg.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br>${data.data.reply}`;
+      typingMsg.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br>${data.data.reply}`;
       this.state.chatHistory.push({ role: 'assistant', content: data.data.reply });
       this._saveGhostCache();
       
     } catch (err) {
       console.error(err);
-      typingMsg.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br><em>Sorry, I encountered an error answering that.</em>`;
+      typingMsg.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br><em>Sorry, I encountered an error answering that.</em>`;
     } finally {
       input.disabled = false;
       this.UI.chatSend.disabled = false;

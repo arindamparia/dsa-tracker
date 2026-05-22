@@ -3,6 +3,7 @@ import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { aiGate } from "./ai-gate.mjs";
 import { callAI } from "./ai-service.mjs";
+import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };

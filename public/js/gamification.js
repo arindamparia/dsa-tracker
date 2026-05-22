@@ -6,13 +6,17 @@ export const SocraticChat = {
   currentLc: null,
   currentName: '',
   currentDiff: '',
+  currentUrl: '',
+  currentPlatform: '',
   history: [],
   isOpen: false,
 
-  open(lcNumber, problemName, difficulty) {
+  open(lcNumber, problemName, difficulty, url = '', platform = '') {
     this.currentLc = lcNumber;
     this.currentName = problemName;
     this.currentDiff = difficulty;
+    this.currentUrl = url;
+    this.currentPlatform = platform;
     
     // Load from cache
     const cacheStr = localStorage.getItem('dsa_socratic_history');
@@ -55,7 +59,7 @@ export const SocraticChat = {
     div.className = `socratic-msg ${role}`;
     
     if (role === 'system') {
-      div.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <span class="socratic-text"></span>`;
+      div.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <span class="socratic-text"></span>`;
       const span = div.querySelector('.socratic-text');
       
       if (animate) {
@@ -117,13 +121,15 @@ export const SocraticChat = {
     // Show typing indicator
     const typingDiv = document.createElement('div');
     typingDiv.className = 'socratic-msg system typing';
-    typingDiv.innerHTML = `<strong><img src="https://upload.wikimedia.org/wikipedia/en/2/22/Snowy_Tintin.png" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <em>Typing...</em>`;
+    typingDiv.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <em>Typing...</em>`;
     document.getElementById('socratic-history').appendChild(typingDiv);
 
     try {
       const payload = {
         problemTitle: this.currentName,
         difficulty: this.currentDiff,
+        url: this.currentUrl,
+        platform: this.currentPlatform,
         history: this.history.slice(-10)
       };
       

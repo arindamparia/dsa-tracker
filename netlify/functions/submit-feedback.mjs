@@ -2,6 +2,7 @@ import { getAuthInfo, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { callAI } from "./ai-service.mjs";
+import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
 
 // ── AlgoTracker feature context — fed to AI on every request ─────────────────
 const SITE_CONTEXT = `AlgoTracker (algotracker.xyz) — DSA question progress tracker and interview prep app.
@@ -138,7 +139,7 @@ CLASSIFICATION RULES — follow these exactly:
    - If genuine new idea: thank them briefly.
 7. LANGUAGE & TONE GUARD: If the message contains profanity, slurs, slang, or abusive language in any language or script (including obfuscated forms like "wtf", "sh*t", "bc", "bkl", or phonetic substitutions), set "genuine": false, "category": "spam", and "spam_reason": "contains inappropriate or abusive language". The "reply" must politely ask the user to rephrase respectfully. Do NOT attempt to extract any feature intent from such messages regardless of context.
 ALGOTRACKER FEATURE LIST — check this carefully before deciding already_implemented:
-${SITE_CONTEXT}`,
+${SITE_CONTEXT}` + PROMPT_INJECTION_DEFENSE,
       },
       { role: "user", content: trimmed },
     ];

@@ -3,6 +3,7 @@ import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { aiGate } from "./ai-gate.mjs";
 import { callAI } from "./ai-service.mjs";
+import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -35,7 +36,7 @@ export const handler = async (event) => {
       const messages = [
         {
           role: 'system',
-          content: `You are a strict, concise coding interviewer. The user needs a hint for: "${title}". Provide a single nudge or concept to think about. DO NOT write code. DO NOT give the direct answer. Maximum 3 sentences.`
+          content: `You are a strict, concise coding interviewer. The user needs a hint for: "${title}". Provide a single nudge or concept to think about. DO NOT write code. DO NOT give the direct answer. Maximum 3 sentences.` + PROMPT_INJECTION_DEFENSE
         },
         { role: 'user', content: `Hint for ${title}?` }
       ];
@@ -137,8 +138,7 @@ Respond ONLY with valid JSON using exactly this schema (no extra keys, no markdo
 }
 Scoring guide for code_style integers:
 - readability 1 = hard to follow (cryptic names, zero spacing)  2 = acceptable but improvable  3 = clean and self-documenting
-- structure 1 = monolithic / hard to trace logic  2 = reasonable flow  3 = excellent organisation
-Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n), O(n log n), O(n+m), O(n²), O(2^n) etc. Use custom format only if genuinely more precise.
+- structure 1 = monolithic / hard to trace logic  2 = reasonable flow  3 = excellent organisation` + PROMPT_INJECTION_DEFENSE + `Complexity strings: prefer standard formats — O(1), O(log n), O(sqrt(n)), O(n), O(n log n), O(n+m), O(n²), O(2^n) etc. Use custom format only if genuinely more precise.
 CRITICAL RULE — No Hallucination: If you do not have confident knowledge of this specific problem "${title}", you MUST NOT guess or invent an analysis. Instead return ONLY: { "not_found": true }`
         },
         { role: 'user', content: `Problem: ${title}\n\nCode:\n${code}` }

@@ -240,7 +240,7 @@ export function buildRow(q, si) {
       <span class="topic-tag">${safeTopic}</span> ${platformHtml}
       <button class="similar-btn" id="sim-btn-${q.lc_number}" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
       <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>
-      <button class="ai-btn mock-int-btn" onclick="window.SocraticChat.open(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', '${q.difficulty}')" title="Socratic Mock Interview">💬 Mock Interview</button>
+      <button class="ai-btn mock-int-btn" onclick="window.SocraticChat.open(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', '${q.difficulty}', '${safeUrl}', '${pName.replace(/'/g, "\\'")}')" title="Socratic Mock Interview">💬 Mock Interview</button>
       ${q.difficulty === 'Hard' ? `<button class="ai-btn ghost-btn" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>` : ''}
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
       ${companyHtml ? `<br>${companyHtml}` : ''}

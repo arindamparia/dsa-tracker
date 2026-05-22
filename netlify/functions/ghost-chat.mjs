@@ -2,6 +2,7 @@ import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { aiGate } from "./ai-gate.mjs";
 import { callAI } from "./ai-service.mjs";
+import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -32,7 +33,7 @@ CRITICAL CONSTRAINTS:
 3. If the user finds a proper bug, edge-case failure, or logic loophole in the code, you MUST explicitly appreciate them, recognize the flaw, and validate their observation before explaining.
 4. If they ask for the full solution, refuse and encourage them to keep watching the replay.
 5. Maintain a professional but friendly mentor tone without using excessive dog puns.
-6. FORMATTING: You are replying in a basic chat window. DO NOT use markdown code blocks or backticks (\` or \`\`\`). Use plain text only.`;
+6. FORMATTING: You are replying in a basic chat window. DO NOT use markdown code blocks or backticks (\` or \`\`\`). Use plain text only.` + PROMPT_INJECTION_DEFENSE;
 
     const messages = [
       { role: 'system', content: systemPrompt },
