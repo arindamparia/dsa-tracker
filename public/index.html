@@ -65,7 +65,7 @@
         "Auto-marks problems complete when AI confirms your solution is correct",
         "Track LeetCode, Codeforces, AtCoder, CSES, HackerRank, and GeeksForGeeks problems",
         "Spaced-repetition review queue for long-term retention",
-        "Timed mock interview sessions",
+        "Timed coding round sessions",
         "Company-specific question tracking for tech interviews",
         "Progress analytics and Weakness Heatmap"
       ],
@@ -394,9 +394,9 @@ html:has(#page-loader){overflow:hidden}
       <span class="feature-icon">🏢</span>
       <span class="feature-text">Company Prep Mode</span>
     </button>
-    <button class="btn-feature" onclick="MockInterview.openConfig()" title="Simulate a timed interview [M]">
-      <span class="feature-icon">🎤</span>
-      <span class="feature-text">Mock Interview</span>
+    <button class="btn-feature" onclick="MockInterview.openConfig()" title="Simulate a coding round [M]">
+      <span class="feature-icon">🎯</span>
+      <span class="feature-text">Coding Round</span>
     </button>
     <button class="btn-feature" onclick="WeaknessHeatmap.open()" title="View weakness heatmap by section & difficulty [H]">
       <span class="feature-icon">🔥</span>
@@ -515,9 +515,9 @@ html:has(#page-loader){overflow:hidden}
   <!-- MOCK INTERVIEW BAR (sticky, shown during mock session) -->
   <div id="mi-bar" class="focus-bar hidden">
     <div class="focus-bar-inner">
-      <span class="focus-bar-label" id="mi-bar-label">🎤 <strong>Mock Interview</strong></span>
+      <span class="focus-bar-label" id="mi-bar-label">🎯 <strong>Coding Round</strong></span>
       <span class="mi-countdown" id="mi-countdown">00:00</span>
-      <button class="focus-end-btn" onclick="MockInterview.end(false)">Submit Interview</button>
+      <button class="focus-end-btn" onclick="MockInterview.end(false)">Submit Round</button>
     </div>
   </div>
 
@@ -850,7 +850,7 @@ html:has(#page-loader){overflow:hidden}
     </div>
     <div class="form-group" style="margin-top:20px;">
       <label class="form-label">Your Feedback</label>
-      <textarea id="fb-message" class="form-textarea" rows="5"
+      <textarea id="fb-message" class="form-textarea no-plugins" rows="5"
         placeholder="Bug report, feature request, general thoughts — anything helps! (min 5 words)"></textarea>
       <div class="form-error" id="fb-error"></div>
       <div class="form-info"  id="fb-ai-info"></div>
@@ -998,7 +998,7 @@ html:has(#page-loader){overflow:hidden}
     <div class="modal-title" style="margin-bottom: 8px;" id="sol-modal-title">Edit Solution</div>
     <div class="modal-sub" style="margin-bottom: 20px;" id="sol-modal-sub"></div>
     <div class="form-group full" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-      <textarea class="form-input" id="f-sol-text" style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; resize: none; padding: 16px;"></textarea>
+      <textarea class="form-input no-plugins" id="f-sol-text" style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; resize: none; padding: 16px;"></textarea>
     </div>
     <div class="modal-actions" style="margin-top: 24px;">
       <button class="btn-cancel" onclick="SolutionModal.close()">Cancel</button>
@@ -1141,8 +1141,8 @@ html:has(#page-loader){overflow:hidden}
 <!-- MOCK INTERVIEW CONFIG -->
 <div class="modal-overlay" id="mi-config-modal" onclick="MockInterview.handleConfigOverlay(event)">
   <div class="modal" style="max-width:460px;">
-    <div class="modal-title" style="margin-bottom:4px;">🎤 Mock Interview</div>
-    <div class="modal-sub" style="margin-bottom:16px;">Configure your timed interview session. AI hints and analysis are disabled during the session.</div>
+    <div class="modal-title" style="margin-bottom:4px;">🎯 Coding Round</div>
+    <div class="modal-sub" style="margin-bottom:16px;">Configure your timed coding round session. AI hints and analysis are disabled during the session.</div>
 
     <div class="mi-config-grid">
       <div class="mi-count-group">
@@ -1206,7 +1206,7 @@ html:has(#page-loader){overflow:hidden}
 
     <div class="modal-actions">
       <button class="btn-cancel" onclick="MockInterview.closeConfig()">Cancel</button>
-      <button class="btn-submit" onclick="MockInterview.start()" style="background:var(--accent)">Start Interview</button>
+      <button class="btn-submit" onclick="MockInterview.start()" style="background:var(--accent)">Start Round</button>
     </div>
   </div>
 </div>
@@ -1349,7 +1349,7 @@ html:has(#page-loader){overflow:hidden}
           <option value="JavaScript">JavaScript</option>
         </select>
       </div>
-      <textarea id="roast-code-input" class="sol-box has-content" style="height: 150px; margin-bottom: 16px;" placeholder="Paste your code here..."></textarea>
+      <textarea id="roast-code-input" class="sol-box no-plugins has-content" style="height: 150px; margin-bottom: 16px;" placeholder="Paste your code here..."></textarea>
       
       <div id="roast-result" style="display:none; margin-top: 16px; padding: 12px; border-radius: 8px; background: rgba(255,100,100,0.05); color: var(--text-color); font-style: italic; font-size: 14px; border-left: 3px solid #ff8888;"></div>
     </div>
@@ -1368,7 +1368,7 @@ html:has(#page-loader){overflow:hidden}
   </div>
   <div class="socratic-chat-history" id="socratic-history"></div>
   <div class="socratic-input-area">
-    <textarea id="socratic-input" placeholder="Type your approach or question..." onkeydown="window.SocraticChat.handleKey(event)"></textarea>
+    <textarea id="socratic-input" class="no-plugins" placeholder="Type your approach or question..." onkeydown="window.SocraticChat.handleKey(event)"></textarea>
     <button onclick="window.SocraticChat.send()">Send</button>
   </div>
 </div>

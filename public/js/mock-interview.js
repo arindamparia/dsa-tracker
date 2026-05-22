@@ -193,22 +193,22 @@ export const MockInterview = {
     const bar = document.getElementById('mi-bar');
     if (bar) bar.classList.remove('hidden');
     document.getElementById('mi-bar-label').textContent =
-      `🎯 Mock Interview — ${actualTotal} problem${actualTotal > 1 ? 's' : ''}`;
+      `🎯 Coding Round — ${actualTotal} problem${actualTotal > 1 ? 's' : ''}`;
 
     // Start countdown
     updateCountdown();
     _countdownInterval = setInterval(updateCountdown, 1000);
 
-    // Disable AI buttons
-    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
+    // Disable AI + session-exclusive buttons
+    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn, .mock-int-btn, .ghost-btn').forEach(b => {
       b.disabled = true;
-      b.title = 'AI disabled during mock interview';
+      b.title = 'AI disabled during coding round';
     });
 
     // Filter view to only session problems
     this._applyFilter();
 
-    window.showToast?.(`Interview started — ${minutes} min clock running`, 'success');
+    window.showToast?.(`Coding round started — ${minutes} min clock running`, 'success');
   },
 
   end(timeUp = false) {
@@ -290,10 +290,13 @@ export const MockInterview = {
     toggleStopwatch('stop');
     setStopwatchLock(false);
 
-    // Re-enable AI buttons
-    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
+    // Re-enable AI + session-exclusive buttons
+    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn, .mock-int-btn, .ghost-btn').forEach(b => {
       b.disabled = false;
-      b.title = b.classList.contains('ai-hint-btn') ? 'Get a small hint' : 'Analyze Complexity & Quality';
+      if (b.classList.contains('ai-hint-btn')) b.title = 'Get a small hint';
+      else if (b.classList.contains('ai-analyze-btn')) b.title = 'Analyze Complexity & Quality';
+      else if (b.classList.contains('mock-int-btn')) b.title = 'Socratic Mock Interview with Snowy';
+      else if (b.classList.contains('ghost-btn')) b.title = 'Watch AI Ghost solve it';
     });
 
     // Clean up interview-specific classes
@@ -367,15 +370,15 @@ export const MockInterview = {
     const bar = document.getElementById('mi-bar');
     if (bar) bar.classList.remove('hidden');
     document.getElementById('mi-bar-label').textContent =
-      `🎯 Mock Interview — ${session.problems.length} problem${session.problems.length > 1 ? 's' : ''}`;
+      `🎯 Coding Round — ${session.problems.length} problem${session.problems.length > 1 ? 's' : ''}`;
     const sidebar = document.getElementById('mi-sidebar');
     if (sidebar) sidebar.innerHTML = buildProblemList(session.problems);
     this._applyFilter();
     updateCountdown();
     _countdownInterval = setInterval(updateCountdown, 1000);
-    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
+    document.querySelectorAll('.ai-hint-btn, .ai-analyze-btn, .mock-int-btn, .ghost-btn').forEach(b => {
       b.disabled = true;
-      b.title = 'AI disabled during mock interview';
+      b.title = 'AI disabled during coding round';
     });
   },
 };

@@ -1,6 +1,6 @@
 import { animate, stagger } from './motion.js';
 import { maybeShowOnboarding } from './onboarding.js';
-import { lockScroll, unlockScroll } from './utils.js';
+import { lockScroll, unlockScroll, initPluginGuards } from './utils.js';
 import { initAuth, getToken, getUserEmail, getUserName } from './auth.js';
 import { boot, bootFresh, RefreshModal } from './data.js';
 import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
@@ -483,6 +483,7 @@ initReveal();
 initMotivation();
 initToggles();
 initTheme();
+initPluginGuards();
 DailyGoal.init();
 AmbientSound.init();
 registerSW();

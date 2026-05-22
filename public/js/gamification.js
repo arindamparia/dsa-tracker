@@ -10,6 +10,7 @@ export const SocraticChat = {
   currentPlatform: '',
   history: [],
   isOpen: false,
+  _outsideClickHandler: null,
 
   open(lcNumber, problemName, difficulty, url = '', platform = '') {
     this.currentLc = lcNumber;
@@ -35,20 +36,34 @@ export const SocraticChat = {
       drawer.classList.add('open');
       historyDiv.innerHTML = '';
       document.getElementById('socratic-input').value = '';
-      
+
       // Always show the initial greeting
       this.addMessage('system', `I'm Snowy! Let's dig into "${problemName}". How would you approach this? (Think aloud)`, this.history.length === 0, true);
-      
+
       // Restore history
       for (const msg of this.history) {
         this.addMessage(msg.role === 'user' ? 'user' : 'system', msg.content, false, true);
       }
+
+      // Click-outside to close
+      if (this._outsideClickHandler) {
+        document.removeEventListener('click', this._outsideClickHandler);
+      }
+      this._outsideClickHandler = (e) => {
+        const d = document.getElementById('socratic-drawer');
+        if (d && !d.contains(e.target)) this.close();
+      };
+      setTimeout(() => document.addEventListener('click', this._outsideClickHandler), 100);
     }
   },
 
   close() {
     this.isOpen = false;
     document.getElementById('socratic-drawer')?.classList.remove('open');
+    if (this._outsideClickHandler) {
+      document.removeEventListener('click', this._outsideClickHandler);
+      this._outsideClickHandler = null;
+    }
   },
 
   addMessage(role, text, animate = true, isRestoring = false) {

@@ -22,6 +22,38 @@ export function unlockScroll() {
   }
 }
 
+// ── Plugin guard ─────────────────────────────────────────────────────────────
+// Prevents browser extensions (Grammarly, LanguageTool, etc.) from injecting
+// into inputs, which causes layout jitter and console errors.
+// Usage: add class="no-plugins" to any <textarea> or <input>.
+// Call initPluginGuards() once at app boot — MutationObserver handles all
+// elements added dynamically after that (e.g. per-question sol-box rows).
+const _PLUGIN_ATTRS = {
+  'data-gramm':              'false',
+  'data-gramm_editor':       'false',
+  'data-enable-grammarly':   'false',
+  'spellcheck':              'false',
+};
+
+function _applyGuards(el) {
+  for (const [attr, val] of Object.entries(_PLUGIN_ATTRS)) {
+    el.setAttribute(attr, val);
+  }
+}
+
+export function initPluginGuards() {
+  document.querySelectorAll('.no-plugins').forEach(_applyGuards);
+  new MutationObserver(mutations => {
+    for (const { addedNodes } of mutations) {
+      for (const node of addedNodes) {
+        if (!(node instanceof Element)) continue;
+        if (node.matches('.no-plugins')) _applyGuards(node);
+        node.querySelectorAll('.no-plugins').forEach(_applyGuards);
+      }
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
 export function groupBySections(questions) {
   const map = new Map();
   for (const q of questions) {

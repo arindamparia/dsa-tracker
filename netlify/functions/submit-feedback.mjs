@@ -15,7 +15,7 @@ SEARCH & FILTERS: real-time full-text search (title/topic/tags), difficulty filt
 
 COMPANY FEATURES: company pills on each problem row (sorted by frequency), 527+ company filter dropdown, Company Prep Mode (select a company → filters to only its problems, sticky session bar with solved count + elapsed time, end session → summary modal with Easy/Medium/Hard breakdown), Company Stats panel (Interview Readiness Score per company: Hard×3 + Medium×2 + Easy×1, labels: Interview Ready/On Track/Needs Work/Just Starting)
 
-STUDY MODES: Focus Mode (select topic → strips UI to only unsolved problems in that section, auto-starts stopwatch, exit → session summary with time + problems solved by difficulty), Company Prep Mode (described above), Mock Interview Mode (configure Easy+Medium+Hard count + optional company/section filter + time limit 30/45/60/90/120 min, AI disabled during session, countdown turns red in final 5 min, submit → report card with score + rating Excellent/Passed/Needs Practice)
+STUDY MODES: Focus Mode (select topic → strips UI to only unsolved problems in that section, auto-starts stopwatch, exit → session summary with time + problems solved by difficulty), Company Prep Mode (described above), Coding Round Mode (configure Easy+Medium+Hard count + optional company/section filter + time limit 30/45/60/90/120 min, AI disabled during session, countdown turns red in final 5 min, submit → report card with score + rating Excellent/Passed/Needs Practice)
 
 AI FEATURES: AI Hint per problem (1-2 sentence nudge, free), AI Code Analysis (complexity extraction, LeetCode-style breakdown, approach vs optimal, code style score, auto-marks question done when AI confirms correct solution, premium only), AI Similar Problems (top 3 structurally similar problems ranked by AI, cached, clickable to jump), Smart Pick/Smart Queue (adaptive scoring: section weakness 35% + difficulty progression 25% + SRS urgency 20% + company relevance 15% + never attempted 5%; shortcut R; next suggestion slide-in card after solving)
 
@@ -41,7 +41,7 @@ FEEDBACK: users can submit feedback via header button or settings page (min 5 wo
 
 ADMIN ONLY: add question, broadcast email to all users, view all user feedback (genuine only, with category badge: Feature Request/Bug Report/Suggestion/Already Exists/Appreciation), user management panel (search users, toggle AI access/subscription per user, set daily AI limit, see last active)
 
-KEYBOARD SHORTCUTS: S or / (search), R (Smart Pick), F (Focus Mode), M (Mock Interview), H (Weakness Heatmap), Esc (close modal)
+KEYBOARD SHORTCUTS: S or / (search), R (Smart Pick), F (Focus Mode), M (Coding Round), H (Weakness Heatmap), Esc (close modal)
 
 NOT BUILT (genuinely missing): public leaderboard, friend/peer comparison, social features, video explanations, discussion comments per problem, difficulty voting, LeetCode account import/sync, native mobile app, interview scheduling, resume builder`;
 

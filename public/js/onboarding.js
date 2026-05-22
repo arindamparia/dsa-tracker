@@ -32,8 +32,8 @@ const CARDS = [
     emoji: '🎤',
     gradient: 'linear-gradient(135deg, rgba(248,181,0,0.15) 0%, rgba(248,181,0,0.04) 100%)',
     accent: '#f8b500',
-    title: 'Mock Interview Mode',
-    body: 'Simulate a real interview: pick problem count, difficulty mix, and a time limit. Get a report card at the end — Excellent, Passed, or Needs Practice.',
+    title: 'Coding Round Mode',
+    body: 'Simulate a real coding round: pick problem count, difficulty mix, and a time limit. Get a report card at the end — Excellent, Passed, or Needs Practice.',
     tag: 'Interview Prep',
   },
   {

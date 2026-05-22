@@ -240,7 +240,7 @@ export function buildRow(q, si) {
       <span class="topic-tag">${safeTopic}</span> ${platformHtml}
       <button class="similar-btn" id="sim-btn-${q.lc_number}" onclick="SimilarProblems.toggle(${q.lc_number})" title="Find similar unsolved problems">Similar →</button>
       <button class="ai-btn ai-hint-btn" id="ai-hint-btn-${q.lc_number}" onclick="AI.getHint(${q.lc_number})" title="Get a small hint">💡 Hint</button>
-      <button class="ai-btn mock-int-btn" onclick="window.SocraticChat.open(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', '${q.difficulty}', '${safeUrl}', '${pName.replace(/'/g, "\\'")}')" title="Socratic Mock Interview">💬 Mock Interview</button>
+      <button class="ai-btn mock-int-btn" onclick="window.SocraticChat.open(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', '${q.difficulty}', '${safeUrl}', '${pName.replace(/'/g, "\\'")}')" title="Socratic Mock Interview with Snowy">💬 Mock Interview</button>
       ${q.difficulty === 'Hard' ? `<button class="ai-btn ghost-btn" onclick="GhostEngine.summon(${q.lc_number}, '${(q.name || '').replace(/'/g, "\\'")}', null, '${pName.replace(/'/g, "\\'")}', '${q.difficulty}')" title="Watch AI Ghost solve it">👻 Summon Ghost</button>` : ''}
       ${tagHtml ? `<span class="tag-pills-wrap"><br>${tagHtml}</span>` : ''}
       ${companyHtml ? `<br>${companyHtml}` : ''}
@@ -253,7 +253,7 @@ export function buildRow(q, si) {
         </div>
         <div style="position: relative;">
           <button class="expand-btn" onclick="SolutionModal.open(${q.lc_number})" title="View / Edit in Full Screen">⤢</button>
-          <textarea class="sol-box ${solRaw ? 'has-content' : ''}"
+          <textarea class="sol-box no-plugins ${solRaw ? 'has-content' : ''}"
             placeholder="Paste or write solution code..."
             data-lc="${q.lc_number}"
             oninput="debounceSave(${q.lc_number}, this)"
@@ -273,7 +273,7 @@ export function buildRow(q, si) {
           ${buildComplexityOptions(q.space_complexity)}
         </select>
       </div>
-      <textarea class="notes-box ${notesRaw ? 'has-content' : ''}"
+      <textarea class="notes-box no-plugins ${notesRaw ? 'has-content' : ''}"
         placeholder="Approach, complexity, edge cases..."
         data-lc="${q.lc_number}"
         oninput="debounceNotesSave(${q.lc_number}, this)"
@@ -456,9 +456,9 @@ export function renderSection(si, sync = false) {
 
 function _afterRender(si, tbody, skipStagger) {
   if (window.MockInterview?.isActive()) {
-    tbody.querySelectorAll('.ai-hint-btn, .ai-analyze-btn').forEach(b => {
+    tbody.querySelectorAll('.ai-hint-btn, .ai-analyze-btn, .mock-int-btn, .ghost-btn').forEach(b => {
       b.disabled = true;
-      b.title = 'AI disabled during mock interview';
+      b.title = 'AI disabled during coding round';
     });
     window.MockInterview._markInterviewRows();
   }
