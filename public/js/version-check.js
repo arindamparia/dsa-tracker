@@ -1,12 +1,14 @@
 /**
  * Version Check — hybrid approach
- * 1. Polls HEAD /index.html every 5 mins to auto-detect any deploy via ETag changes.
- * 2. If ETag changes, fetches /version.json to check if it's a mandatory update.
+ * Triggers an update if either:
+ * 1. The ETag of /index.html changes (auto-detects normal deploys)
+ * 2. The version string in /version.json changes
  */
 import { animate } from './motion.js';
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let currentEtag = null;
+let currentVersion = null;
 let bannerShown = false;
 
 async function getEtag() {
@@ -77,26 +79,29 @@ function showUpdateBanner(message) {
 }
 
 async function checkVersion() {
-  const etag = await getEtag();
-  if (!etag) return;
+  const etagPromise = getEtag();
+  const infoPromise = getVersionInfo();
+  
+  const [etag, info] = await Promise.all([etagPromise, infoPromise]);
 
-  if (currentEtag === null) {
+  if (currentEtag === null && currentVersion === null) {
     currentEtag = etag;
+    currentVersion = info?.version || null;
     return;
   }
 
-  // If a deploy occurred
-  if (etag !== currentEtag) {
-    const info = await getVersionInfo();
-    
+  const etagChanged = etag && etag !== currentEtag;
+  const versionChanged = info && info.version && info.version !== currentVersion;
+
+  if (etagChanged || versionChanged) {
     if (info && info.force_refresh) {
       showMandatoryUpdate(info.message);
     } else {
       showUpdateBanner(info ? info.message : 'New version available');
     }
     
-    // Update ETag so we don't keep triggering
     currentEtag = etag;
+    if (info) currentVersion = info.version;
   }
 }
 
