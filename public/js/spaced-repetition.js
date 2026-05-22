@@ -6,6 +6,7 @@
  * After all intervals pass the problem is considered "mastered".
  */
 import { state } from './state.js';
+import { lsSet, lsGet } from './storage.js';
 
 const INTERVALS = [1, 3, 7, 14, 30]; // review intervals in days
 
@@ -105,7 +106,7 @@ export const SRS = {
 
     container.classList.add('has-items');
 
-    const isCollapsed = localStorage.getItem('srs_collapsed') !== '0';
+    const isCollapsed = lsGet('srs_collapsed', '1') !== '0';
 
     const MAX_SHOWN = 20;
     const shown = due.slice(0, MAX_SHOWN);
@@ -161,7 +162,7 @@ export const SRS = {
     const willExpand = !wrap.classList.contains('open');
     wrap.classList.toggle('open', willExpand);
     chevron?.classList.toggle('rotated', willExpand);
-    localStorage.setItem('srs_collapsed', willExpand ? '0' : '1');
+    lsSet('srs_collapsed', willExpand ? '0' : '1');
   },
 
   /** No need to prune anymore since data lives on the question row in DB */

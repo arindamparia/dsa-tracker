@@ -14,6 +14,7 @@
 import { state } from './state.js';
 import { groupBySections, lockScroll, unlockScroll } from './utils.js';
 import { toggleStopwatch, resetStopwatch, setStopwatchLock } from './stopwatch.js';
+import { lsSet, lsGet, lsRemove } from './storage.js';
 
 let session = null; // active session state
 let _countdownInterval = null;
@@ -21,26 +22,23 @@ let _countdownInterval = null;
 const SESSION_KEY = 'dsa_mi_session';
 
 function saveSession() {
-  try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({
-      lcNumbers: session.problems.map(q => q.lc_number),
-      startedAt: session.startedAt,
-      endsAt:    session.endsAt,
-      minutes:   session.minutes,
-      snapshotDone: [...session.snapshotDone.entries()],
-    }));
-  } catch {}
+  lsSet(SESSION_KEY, {
+    lcNumbers: session.problems.map(q => q.lc_number),
+    startedAt: session.startedAt,
+    endsAt:    session.endsAt,
+    minutes:   session.minutes,
+    snapshotDone: [...session.snapshotDone.entries()],
+  });
 }
 
 function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
+  lsRemove(SESSION_KEY);
 }
 
 export function restoreSession() {
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return false;
-    const saved = JSON.parse(raw);
+    const saved = lsGet(SESSION_KEY);
+    if (!saved) return false;
     if (Date.now() >= saved.endsAt) { clearSession(); return false; }
     const problems = saved.lcNumbers
       .map(lc => state.questions.find(q => q.lc_number === lc))

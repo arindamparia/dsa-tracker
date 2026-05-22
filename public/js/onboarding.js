@@ -1,5 +1,6 @@
 // Onboarding tour — shown once to first-time users after login
 // Triggered from main.js after boot() resolves
+import { lsSet, lsGet } from './storage.js';
 
 const STORAGE_KEY = 'dsa_onboarded_v1';
 
@@ -231,7 +232,7 @@ function injectStyles() {
 
 export function maybeShowOnboarding() {
   // Only show once, only for logged-in users
-  if (localStorage.getItem(STORAGE_KEY)) return;
+  if (lsGet(STORAGE_KEY)) return;
   if (!window._clerk?.user) return;
 
   injectStyles();
@@ -287,7 +288,7 @@ export function maybeShowOnboarding() {
   }
 
   function dismiss() {
-    localStorage.setItem(STORAGE_KEY, '1');
+    lsSet(STORAGE_KEY, '1');
     overlay.style.animation = 'ob-fade-in 0.25s ease reverse forwards';
     setTimeout(() => overlay.remove(), 260);
   }

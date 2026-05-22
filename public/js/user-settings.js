@@ -3,6 +3,7 @@ import { UserCache } from './cache.js';
 import { showToast } from './toast.js';
 import { getUserEmail } from './auth.js';
 import { handleError } from './errors.js';
+import { lsSet, lsGet, lsRemove } from './storage.js';
 import { lockScroll, unlockScroll } from './utils.js';
 
 // country code list (flag emoji + name + dial code)
@@ -243,7 +244,7 @@ export const UserSettings = {
 
     const bgToggleEl = document.getElementById('us-bg-toggle');
     if (bgToggleEl) {
-      let hideBgState = localStorage.getItem('dsa_hide_bg');
+      let hideBgState = lsGet('dsa_hide_bg');
       if (hideBgState === null) hideBgState = '1';
       bgToggleEl.checked = hideBgState !== '1';
       this._bgSnapshot = document.documentElement.classList.contains('hide-theme-bg') ? '1' : '0';
@@ -251,7 +252,7 @@ export const UserSettings = {
 
     const perfEl = document.getElementById('us-perf-select');
     if (perfEl) {
-      const override = localStorage.getItem('perf-override');
+      const override = lsGet('perf-override');
       perfEl.value = override || 'auto';
       const hintEl = document.getElementById('us-perf-hint');
       if (hintEl) {
@@ -320,7 +321,7 @@ export const UserSettings = {
     const enabled   = toggleEl?.checked ?? false;
     const remEmail  = emailEl?.value.trim() || '';
     const perfValue = perfEl?.value || 'auto';
-    const prevPerf  = localStorage.getItem('perf-override') || 'auto';
+    const prevPerf  = lsGet('perf-override') || 'auto';
 
     const enabledChanged = enabled !== !!state.remindersEnabled;
     const emailChanged   = remEmail !== (state.reminderEmail || '');
@@ -330,14 +331,14 @@ export const UserSettings = {
 
     if (!enabledChanged && !emailChanged) {
       if (bgChanged) {
-        localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
+        lsSet('dsa_hide_bg', bgChecked ? '0' : '1');
         this._bgSnapshot = undefined;
       }
       if (perfChanged) {
         if (perfValue === 'auto') {
-          localStorage.removeItem('perf-override');
+          lsRemove('perf-override');
         } else {
-          localStorage.setItem('perf-override', perfValue);
+          lsSet('perf-override', perfValue);
         }
       }
       this.close();
@@ -368,15 +369,15 @@ export const UserSettings = {
     });
 
     if (bgChecked !== undefined) {
-      localStorage.setItem('dsa_hide_bg', bgChecked ? '0' : '1');
+      lsSet('dsa_hide_bg', bgChecked ? '0' : '1');
     }
     this._bgSnapshot = undefined;
 
     if (perfChanged) {
       if (perfValue === 'auto') {
-        localStorage.removeItem('perf-override');
+        lsRemove('perf-override');
       } else {
-        localStorage.setItem('perf-override', perfValue);
+        lsSet('perf-override', perfValue);
       }
     }
 

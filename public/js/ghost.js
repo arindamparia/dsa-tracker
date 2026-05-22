@@ -1,5 +1,6 @@
 import { showToast } from './toast.js';
 import { lockScroll, unlockScroll } from './utils.js';
+import { lsSet, lsGet } from './storage.js';
 
 export const GhostEngine = {
   UI: null,
@@ -341,8 +342,7 @@ export const GhostEngine = {
       // Enable chat only after successful generation
       this.UI.chatInputArea.style.display = 'flex';
       
-      const cacheStr = localStorage.getItem('dsa_ghost_history');
-      const cache = cacheStr ? JSON.parse(cacheStr) : {};
+      const cache = lsGet('dsa_ghost_history', {});
       this.state.chatHistory = cache[lcNumber] || [];
 
       // Restore chat UI if history exists
@@ -621,9 +621,8 @@ export const GhostEngine = {
     const lcNumber = this._pendingSummon ? this._pendingSummon.lcNumber : (this.state.ghostContext?.lc_number);
     if (!lcNumber) return;
     
-    const cacheStr = localStorage.getItem('dsa_ghost_history');
-    const cache = cacheStr ? JSON.parse(cacheStr) : {};
+    const cache = lsGet('dsa_ghost_history', {});
     cache[lcNumber] = this.state.chatHistory;
-    localStorage.setItem('dsa_ghost_history', JSON.stringify(cache));
+    lsSet('dsa_ghost_history', cache);
   }
 };

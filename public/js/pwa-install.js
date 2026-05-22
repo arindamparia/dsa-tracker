@@ -1,11 +1,13 @@
 // PWA install prompt for Android (beforeinstallprompt) and iOS Safari (manual)
+import { lsSet, lsGet } from './storage.js';
+
 export function initPWAInstall() {
   // Don't show if already installed as standalone
   if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) return;
 
   // Don't show if user previously dismissed (7 days for Safari, 3 days for others)
   const isSafariBrowser = /safari/i.test(navigator.userAgent) && !/chrome|chromium|crios|fxios/i.test(navigator.userAgent);
-  const dismissed = localStorage.getItem('dsa_pwa_dismissed');
+  const dismissed = lsGet('dsa_pwa_dismissed');
   if (dismissed) {
     const daysSince = (Date.now() - parseInt(dismissed)) / 86400000;
     if (daysSince < (isSafariBrowser ? 7 : 3)) return;
@@ -85,7 +87,7 @@ export function initPWAInstall() {
     dismissBtn.className = 'pwa-dismiss-btn';
     dismissBtn.textContent = platform === 'android' ? 'Not now' : 'Got it';
     dismissBtn.addEventListener('click', () => {
-      localStorage.setItem('dsa_pwa_dismissed', Date.now().toString());
+      lsSet('dsa_pwa_dismissed', Date.now());
       removeBanner(banner);
     });
     actions.appendChild(dismissBtn);

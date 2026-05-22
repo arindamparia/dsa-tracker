@@ -1,5 +1,6 @@
 // Gamification logic: Socratic Mock Interview
 import { state } from './state.js';
+import { lsSet, lsGet } from './storage.js';
 
 // --- Socratic Mock Interview ---
 export const SocraticChat = {
@@ -20,8 +21,7 @@ export const SocraticChat = {
     this.currentPlatform = platform;
     
     // Load from cache
-    const cacheStr = localStorage.getItem('dsa_socratic_history');
-    const cache = cacheStr ? JSON.parse(cacheStr) : {};
+    const cache = lsGet('dsa_socratic_history', {});
     this.history = cache[lcNumber] || [];
     this.isOpen = true;
     
@@ -51,9 +51,13 @@ export const SocraticChat = {
       }
       this._outsideClickHandler = (e) => {
         const d = document.getElementById('socratic-drawer');
-        if (d && !d.contains(e.target)) this.close();
+        if (d && !d.contains(e.target)) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.close();
+        }
       };
-      setTimeout(() => document.addEventListener('click', this._outsideClickHandler), 100);
+      setTimeout(() => document.addEventListener('click', this._outsideClickHandler, true), 100);
     }
   },
 
@@ -61,7 +65,7 @@ export const SocraticChat = {
     this.isOpen = false;
     document.getElementById('socratic-drawer')?.classList.remove('open');
     if (this._outsideClickHandler) {
-      document.removeEventListener('click', this._outsideClickHandler);
+      document.removeEventListener('click', this._outsideClickHandler, true);
       this._outsideClickHandler = null;
     }
   },
@@ -111,10 +115,9 @@ export const SocraticChat = {
 
   _saveCache() {
     if (!this.currentLc) return;
-    const cacheStr = localStorage.getItem('dsa_socratic_history');
-    const cache = cacheStr ? JSON.parse(cacheStr) : {};
+    const cache = lsGet('dsa_socratic_history', {});
     cache[this.currentLc] = this.history;
-    localStorage.setItem('dsa_socratic_history', JSON.stringify(cache));
+    lsSet('dsa_socratic_history', cache);
   },
 
   handleKey(e) {

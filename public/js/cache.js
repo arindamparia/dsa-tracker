@@ -1,3 +1,5 @@
+import { lsSet, lsGet, lsRemove } from './storage.js';
+
 const KEY    = 'dsa_questions';
 const TS_KEY = 'dsa_cache_ts';
 const TTL    = 30 * 24 * 60 * 60 * 1000;
@@ -12,23 +14,20 @@ const USER_TTL    = 5 * 60 * 1000;
 export const UserCache = {
   get() {
     try {
-      const ts = parseInt(localStorage.getItem(USER_TS_KEY) || '0', 10);
+      const ts = lsGet(USER_TS_KEY, 0);
       if (Date.now() - ts > USER_TTL) return null;
-      const raw = localStorage.getItem(USER_KEY);
-      return raw ? JSON.parse(raw) : null;
+      return lsGet(USER_KEY, null);
     } catch { return null; }
   },
 
   set(profile) {
-    try {
-      localStorage.setItem(USER_KEY, JSON.stringify(profile));
-      localStorage.setItem(USER_TS_KEY, String(Date.now()));
-    } catch {}
+    lsSet(USER_KEY, profile);
+    lsSet(USER_TS_KEY, Date.now());
   },
 
   clear() {
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(USER_TS_KEY);
+    lsRemove(USER_KEY);
+    lsRemove(USER_TS_KEY);
   },
 };
 
@@ -37,23 +36,22 @@ const SIMILAR_KEY = 'dsa_similar_v2';
 export const SimilarCache = {
   get(lc) {
     try {
-      const raw = localStorage.getItem(SIMILAR_KEY);
-      const val = raw ? JSON.parse(raw)[String(lc)] : null;
+      const map = lsGet(SIMILAR_KEY, {});
+      const val = map[String(lc)];
       return Array.isArray(val) && val.length > 0 ? val : null;
     } catch { return null; }
   },
 
   set(lc, pickedLCs) {
     try {
-      const raw = localStorage.getItem(SIMILAR_KEY);
-      const map = raw ? JSON.parse(raw) : {};
+      const map = lsGet(SIMILAR_KEY, {});
       map[String(lc)] = pickedLCs;
-      localStorage.setItem(SIMILAR_KEY, JSON.stringify(map));
+      lsSet(SIMILAR_KEY, map);
     } catch {}
   },
 
   clear() {
-    localStorage.removeItem(SIMILAR_KEY);
+    lsRemove(SIMILAR_KEY);
   },
 };
 
@@ -62,22 +60,21 @@ const HINT_KEY = 'dsa_hints_v1';
 export const HintCache = {
   get(lc) {
     try {
-      const raw = localStorage.getItem(HINT_KEY);
-      return raw ? (JSON.parse(raw)[String(lc)] || null) : null;
+      const map = lsGet(HINT_KEY, {});
+      return map[String(lc)] || null;
     } catch { return null; }
   },
 
   set(lc, hintStr) {
     try {
-      const raw = localStorage.getItem(HINT_KEY);
-      const map = raw ? JSON.parse(raw) : {};
+      const map = lsGet(HINT_KEY, {});
       map[String(lc)] = hintStr;
-      localStorage.setItem(HINT_KEY, JSON.stringify(map));
+      lsSet(HINT_KEY, map);
     } catch {}
   },
 
   clear() {
-    localStorage.removeItem(HINT_KEY);
+    lsRemove(HINT_KEY);
   },
 };
 
@@ -87,10 +84,9 @@ export const Cache = {
   get() {
     try {
       if (_memCache) return _memCache;
-      const ts = parseInt(localStorage.getItem(TS_KEY) || '0', 10);
+      const ts = lsGet(TS_KEY, 0);
       if (Date.now() - ts > TTL) return null;
-      const raw = localStorage.getItem(KEY);
-      _memCache = raw ? JSON.parse(raw) : null;
+      _memCache = lsGet(KEY, null);
       return _memCache;
     } catch { return null; }
   },
@@ -98,8 +94,8 @@ export const Cache = {
   set(questions) {
     try {
       _memCache = questions;
-      localStorage.setItem(KEY, JSON.stringify(questions));
-      localStorage.setItem(TS_KEY, String(Date.now()));
+      lsSet(KEY, questions);
+      lsSet(TS_KEY, Date.now());
     } catch {}
   },
 
@@ -109,30 +105,29 @@ export const Cache = {
         const idx = _memCache.findIndex(q => q.lc_number === lc_number);
         if (idx !== -1) _memCache[idx] = { ..._memCache[idx], ...patch };
       }
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return;
-      const questions = JSON.parse(raw);
+      const questions = lsGet(KEY);
+      if (!questions) return;
       const idx = questions.findIndex(q => q.lc_number === lc_number);
       if (idx !== -1) {
         questions[idx] = { ...questions[idx], ...patch };
-        localStorage.setItem(KEY, JSON.stringify(questions));
+        lsSet(KEY, questions);
       }
     } catch {}
   },
 
   isProgressStale() {
-    const ts = parseInt(localStorage.getItem(PROGRESS_TS_KEY) || '0', 10);
+    const ts = lsGet(PROGRESS_TS_KEY, 0);
     return Date.now() - ts > PROGRESS_TTL;
   },
 
   touchProgress() {
-    localStorage.setItem(PROGRESS_TS_KEY, String(Date.now()));
+    lsSet(PROGRESS_TS_KEY, Date.now());
   },
 
   clear() {
     _memCache = null;
-    localStorage.removeItem(KEY);
-    localStorage.removeItem(TS_KEY);
-    localStorage.removeItem(PROGRESS_TS_KEY);
+    lsRemove(KEY);
+    lsRemove(TS_KEY);
+    lsRemove(PROGRESS_TS_KEY);
   },
 };

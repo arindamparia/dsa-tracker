@@ -7,14 +7,15 @@
  */
 import { animate } from './motion.js';
 import { lockScroll, unlockScroll } from './utils.js';
+import { lsSet, lsGet } from './storage.js';
 
 const GOAL_KEY = 'dsa_daily_goal';
 
 function loadGoal() {
-  try { return parseInt(localStorage.getItem(GOAL_KEY), 10) || 3; } catch { return 3; }
+  try { return parseInt(lsGet(GOAL_KEY, 3), 10) || 3; } catch { return 3; }
 }
 function saveGoal(n) {
-  try { localStorage.setItem(GOAL_KEY, String(n)); } catch {}
+  lsSet(GOAL_KEY, n);
 }
 
 // motivational captions

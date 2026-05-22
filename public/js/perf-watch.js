@@ -1,3 +1,5 @@
+import { lsSet } from './storage.js';
+
 /**
  * perf-watch.js — passive jank detector with periodic re-checks.
  *
@@ -122,7 +124,7 @@ function _showBanner(currentTier) {
   };
 
   el.querySelector('.pjb-go').addEventListener('click', () => {
-    localStorage.setItem('perf-override', suggestTier);
+    lsSet('perf-override', suggestTier);
     location.reload();
   });
 

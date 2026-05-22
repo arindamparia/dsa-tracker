@@ -1,3 +1,5 @@
+import { lsSet, lsGet } from './storage.js';
+
 const AUDIO_URLS = {
   // ── New additions (shown first in panel) ──
   omNamahShivay:  'https://res.cloudinary.com/dnju7wfma/video/upload/v1775153821/Om_Namah_Shivay_h7hx0r.mp3',
@@ -51,7 +53,7 @@ export const AmbientSound = {
     });
 
     // Restore saved volume (stored as actual vol, convert to slider position)
-    const savedVol = localStorage.getItem('dsa_ambient_vol');
+    const savedVol = lsGet('dsa_ambient_vol');
     if (savedVol !== null) {
       this.volSlider.value = this._volToSlider(parseFloat(savedVol));
     }
@@ -102,7 +104,7 @@ export const AmbientSound = {
           break;
         }
       }
-      localStorage.setItem('dsa_ambient_vol', vol);
+      lsSet('dsa_ambient_vol', vol);
       this.applyVolume(vol);
       this._updateVolLabel(vol);
       this._updateSliderFill(parseFloat(this.volSlider.value));

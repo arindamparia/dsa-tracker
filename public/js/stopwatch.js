@@ -1,4 +1,5 @@
 import { lockScroll, unlockScroll } from './utils.js';
+import { lsSet, lsGet } from './storage.js';
 
 let startTime = 0;
 let elapsedTime = 0;
@@ -26,7 +27,7 @@ export function initStopwatch() {
   });
 
   // Default to minimized; only expand if user explicitly chose to
-  if (localStorage.getItem('dsa_timer_minimized') !== '0') {
+  if (lsGet('dsa_timer_minimized', '1') !== '0') {
     document.getElementById('timer-hang').classList.add('minimized');
   }
 
@@ -41,7 +42,7 @@ export function initStopwatch() {
 function toggleMinimize() {
   const hang = document.getElementById('timer-hang');
   const minimized = hang.classList.toggle('minimized');
-  localStorage.setItem('dsa_timer_minimized', minimized ? '1' : '0');
+  lsSet('dsa_timer_minimized', minimized ? '1' : '0');
 }
 
 export const PomodoroModal = {

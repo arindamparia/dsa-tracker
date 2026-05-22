@@ -1,6 +1,7 @@
 import { animate, stagger } from './motion.js';
 import { maybeShowOnboarding } from './onboarding.js';
 import { lockScroll, unlockScroll, initPluginGuards } from './utils.js';
+import { lsSet, lsGet } from './storage.js';
 import { initAuth, getToken, getUserEmail, getUserName } from './auth.js';
 import { boot, bootFresh, RefreshModal } from './data.js';
 import { Cache, UserCache, HintCache, SimilarCache } from './cache.js';
@@ -494,11 +495,11 @@ initPWAInstall();
   if (!authed) return;
 
   const currentUserEmail = getUserEmail();
-  const lastUserEmail = localStorage.getItem('dsa_last_user');
+  const lastUserEmail = lsGet('dsa_last_user');
   if (currentUserEmail && lastUserEmail && lastUserEmail !== currentUserEmail) {
     Cache.clear(); UserCache.clear(); HintCache.clear(); SimilarCache.clear();
   }
-  if (currentUserEmail) localStorage.setItem('dsa_last_user', currentUserEmail);
+  if (currentUserEmail) lsSet('dsa_last_user', currentUserEmail);
 
   if (window._clerk) {
     const myUserId = window._clerk.user?.id ?? null;
@@ -664,11 +665,11 @@ initPWAInstall();
 
   // Show mobile warning popup
   if (window.innerWidth <= 768) {
-    const lastShown = localStorage.getItem('mobile_warning_shown_time');
+    const lastShown = lsGet('mobile_warning_shown_time');
     const now = Date.now();
     // 2 days in milliseconds
     if (!lastShown || now - parseInt(lastShown, 10) > 2 * 24 * 60 * 60 * 1000) {
-      localStorage.setItem('mobile_warning_shown_time', now.toString());
+      lsSet('mobile_warning_shown_time', now);
       setTimeout(() => {
         const mo = document.createElement('div');
         mo.className = 'modal-overlay open';
@@ -689,7 +690,7 @@ initPWAInstall();
 
   // Skip background image on lite tier (saves ~200KB network on low-end devices)
   if (window.__perfTier !== 'lite') {
-    const hideBg = localStorage.getItem('dsa_hide_bg');
+    const hideBg = lsGet('dsa_hide_bg');
     const isMobile = window.innerWidth <= 768;
     const shouldHide = hideBg === '1' || (hideBg === null && isMobile);
     if (!shouldHide) {

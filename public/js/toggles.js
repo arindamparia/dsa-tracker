@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { smoothTransition } from './utils.js';
 import { animate } from './motion.js';
+import { lsSet, lsGet } from './storage.js';
 
 const TOGGLE_CACHE_KEY = 'dsa_toggles';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -14,14 +15,13 @@ function saveToggles() {
     hideCompanies: state.hideCompanies,
     timestamp: Date.now()
   };
-  localStorage.setItem(TOGGLE_CACHE_KEY, JSON.stringify(data));
+  lsSet(TOGGLE_CACHE_KEY, data);
 }
 
 export function initToggles() {
   try {
-    const cached = localStorage.getItem(TOGGLE_CACHE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
+    const parsed = lsGet(TOGGLE_CACHE_KEY);
+    if (parsed) {
       if (Date.now() - parsed.timestamp < ONE_DAY_MS) {
         state.hideTags = !!parsed.hideTags;
         state.hideSolution = !!parsed.hideSolution;
@@ -86,7 +86,7 @@ export function toggleCompanies(btn) {
 }
 
 export function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
+  const saved = lsGet(THEME_KEY);
   if (saved === 'light') {
     document.documentElement.setAttribute('data-theme', 'light');
   }
@@ -102,10 +102,10 @@ export function toggleTheme() {
   const switchTheme = () => {
     if (isLight) {
       document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem(THEME_KEY, 'dark');
+      lsSet(THEME_KEY, 'dark');
     } else {
       document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem(THEME_KEY, 'light');
+      lsSet(THEME_KEY, 'light');
     }
   };
 

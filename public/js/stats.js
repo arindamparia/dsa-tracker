@@ -1,6 +1,7 @@
 /** Updates stat cards, progress bar, and section mini-progress. */
 import { state } from './state.js';
 import { groupBySections, smoothTransition } from './utils.js';
+import { lsSet } from './storage.js';
 import { DailyGoal } from './daily-goal.js';
 
 // animated number counter
@@ -156,6 +157,6 @@ export function toggleStatsBoard() {
   const willExpand = !wrap.classList.contains('open');
   wrap.classList.toggle('open', willExpand);
   chevron?.classList.toggle('rotated', willExpand);
-  localStorage.setItem('stats_collapsed', willExpand ? '0' : '1');
+  lsSet('stats_collapsed', willExpand ? '0' : '1');
 }
 window.toggleStatsBoard = toggleStatsBoard;
