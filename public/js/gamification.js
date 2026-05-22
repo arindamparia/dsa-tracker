@@ -26,6 +26,8 @@ export const SocraticChat = {
     const historyDiv = document.getElementById('socratic-history');
     
     if (drawer) {
+      // Clear the inline pre-hide style — JS-injected CSS now controls visibility
+      drawer.style.cssText = '';
       drawer.classList.add('open');
       historyDiv.innerHTML = '';
       document.getElementById('socratic-input').value = '';

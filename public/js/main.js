@@ -1,4 +1,5 @@
 import { animate, stagger } from './motion.js';
+import { maybeShowOnboarding } from './onboarding.js';
 import { lockScroll, unlockScroll } from './utils.js';
 import { initAuth, getToken, getUserEmail, getUserName } from './auth.js';
 import { boot, bootFresh, RefreshModal } from './data.js';
@@ -656,6 +657,9 @@ initPWAInstall();
   CompanyStats.render();
 
   if (restoreSession()) window.MockInterview.resume();
+
+  // Show onboarding tour to first-time users (800ms delay lets the page settle)
+  setTimeout(maybeShowOnboarding, 800);
 
   // Skip background image on lite tier (saves ~200KB network on low-end devices)
   if (window.__perfTier !== 'lite') {
