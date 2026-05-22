@@ -53,11 +53,11 @@ export const handler = async (event) => {
       if (!code) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Code is required for analysis' }) };
 
       // STAGE 0: Check ai_access + enforce daily limit
-      const blocked = await aiGate(userEmail, CORS);
+      const blocked = await aiGate(userEmail, CORS, { fnName: 'analyze_code' });
       if (blocked) return blocked;
 
       // Per-minute rate limit — increment counter after gate passes
-      const burstBlocked = await aiGate(userEmail, CORS, { skipDailyLimit: true });
+      const burstBlocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'analyze_code' });
       if (burstBlocked) return burstBlocked;
 
       // STAGE 1: Cheap mismatch detection (~50-80 tokens)

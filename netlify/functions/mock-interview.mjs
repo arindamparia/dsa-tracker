@@ -12,7 +12,7 @@ export const handler = async (event) => {
   try { userEmail = await getAuthEmail(event); }
   catch (err) { return { ...unauthorized(err.message), headers: CORS }; }
 
-  const blocked = await aiGate(userEmail, CORS);
+  const blocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'mock_interview' });
   if (blocked) return blocked;
 
   try {

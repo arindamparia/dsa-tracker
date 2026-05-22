@@ -45,7 +45,7 @@ export const handler = async (event) => {
     }
 
     // 2. ai_access + daily limit + per-minute check (only on cache miss)
-    const blocked = await aiGate(userEmail, CORS);
+    const blocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'generate_ghost' });
     if (blocked) return blocked;
 
     // Dynamic length based on difficulty
