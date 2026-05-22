@@ -250,7 +250,7 @@ const LearningMaterial = (() => {
     _docxInner.innerHTML = '';
     _docxInner.style.zoom = '';
     _viewerIframe.classList.remove('show');
-    _viewerIframe.src = '';
+    _viewerIframe.src = 'about:blank';
     _zoomLevel = 1.0;
     if (_zoomLabel) _zoomLabel.textContent = '100%';
   }
@@ -309,7 +309,10 @@ const LearningMaterial = (() => {
   function _renderWeb(material) {
     _loaderText.textContent = 'Loading…';
     const proxyUrl = window.location.origin + `/.netlify/functions/cp-proxy?url=${encodeURIComponent(material.url)}`;
-    setTimeout(() => { _viewerIframe.contentWindow.location.replace(proxyUrl); }, 80);
+    // Use src directly — both _resetViewer (about:blank) and this assignment happen
+    // in the same synchronous task, so the browser navigates straight to proxyUrl
+    // with no stray load events and no contentWindow cross-origin risk.
+    _viewerIframe.src = proxyUrl;
   }
 
   /* ── Error display ──────────────────────────────────── */
@@ -373,7 +376,7 @@ const LearningMaterial = (() => {
     window.__lenis?.start();
     setTimeout(() => {
       if (!_viewerOverlay.classList.contains('open')) {
-        _viewerIframe.src  = '';
+        _viewerIframe.src  = 'about:blank';
         _docxInner.innerHTML = '';
       }
     }, 300);

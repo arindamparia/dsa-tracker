@@ -1,9 +1,12 @@
 [build]
-  publish = "public"
+  command = "node scripts/build.mjs"
+  publish = "dist"
   functions = "netlify/functions"
   edge_functions = "netlify/edge-functions"
 
 [dev]
+  # Serve unminified source directly during local development
+  publish = "public"
   host = "0.0.0.0"
 
 [functions]

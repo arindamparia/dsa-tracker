@@ -4,6 +4,7 @@
   "description": "LeetCode Algorithm Mastery Tracker with Neon DB",
   "scripts": {
     "dev": "netlify dev",
+    "build": "node scripts/build.mjs",
     "ping-index": "node scripts/ping-indexnow.js"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
     "resend": "^6.9.4"
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
     "netlify-cli": "^24.3.0"
   }
 }
