@@ -84,7 +84,14 @@ async function checkVersion() {
   
   const [etag, info] = await Promise.all([etagPromise, infoPromise]);
 
+  console.log('[VersionCheck] Polling results:');
+  console.log('  -> Current ETag (in memory):', currentEtag);
+  console.log('  -> Fetched ETag:', etag);
+  console.log('  -> Current Version (in memory):', currentVersion);
+  console.log('  -> Fetched Version Info:', info);
+
   if (currentEtag === null && currentVersion === null) {
+    console.log('[VersionCheck] Initial load. Storing values and skipping alert.');
     currentEtag = etag;
     currentVersion = info?.version || null;
     return;
@@ -93,15 +100,23 @@ async function checkVersion() {
   const etagChanged = etag && etag !== currentEtag;
   const versionChanged = info && info.version && info.version !== currentVersion;
 
+  console.log(`[VersionCheck] Did ETag change? ${etagChanged}`);
+  console.log(`[VersionCheck] Did Version change? ${versionChanged}`);
+
   if (etagChanged || versionChanged) {
+    console.log('[VersionCheck] Change detected! Triggering UI banner/modal.');
     if (info && info.force_refresh) {
+      console.log('[VersionCheck] Action: showMandatoryUpdate (force_refresh is true)');
       showMandatoryUpdate(info.message);
     } else {
+      console.log('[VersionCheck] Action: showUpdateBanner (force_refresh is false)');
       showUpdateBanner(info ? info.message : 'New version available');
     }
     
     currentEtag = etag;
     if (info) currentVersion = info.version;
+  } else {
+    console.log('[VersionCheck] No changes detected.');
   }
 }
 
