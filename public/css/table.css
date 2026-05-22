@@ -272,7 +272,7 @@ tr.filtered-out { display: none; }
   background: rgba(20, 184, 166, 0.12);
   border-color: rgba(20, 184, 166, 0.45);
   color: #5eead4;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
 }
 .mock-int-btn:hover:not(:disabled) {
@@ -288,7 +288,7 @@ tr.filtered-out { display: none; }
   background: rgba(139, 92, 246, 0.12);
   border-color: rgba(139, 92, 246, 0.45);
   color: #c4b5fd;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
 }
 .ghost-btn:hover:not(:disabled) {
@@ -297,6 +297,32 @@ tr.filtered-out { display: none; }
   box-shadow: 0 0 10px rgba(139, 92, 246, 0.35);
   color: #ddd6fe;
   transform: translateY(-1px);
+}
+
+/* Light mode — darker, high-contrast colours for both buttons */
+[data-theme="light"] .mock-int-btn {
+  background: rgba(13, 148, 136, 0.1);
+  border-color: rgba(13, 148, 136, 0.55);
+  color: #0f766e;
+  font-weight: 700;
+}
+[data-theme="light"] .mock-int-btn:hover:not(:disabled) {
+  background: rgba(13, 148, 136, 0.18);
+  border-color: #0d9488;
+  color: #0d6b62;
+  box-shadow: 0 0 10px rgba(13, 148, 136, 0.25);
+}
+[data-theme="light"] .ghost-btn {
+  background: rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.45);
+  color: #6d28d9;
+  font-weight: 700;
+}
+[data-theme="light"] .ghost-btn:hover:not(:disabled) {
+  background: rgba(109, 40, 217, 0.15);
+  border-color: #7c3aed;
+  color: #5b21b6;
+  box-shadow: 0 0 10px rgba(109, 40, 217, 0.2);
 }
 
 
