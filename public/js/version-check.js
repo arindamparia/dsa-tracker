@@ -1,10 +1,16 @@
 /**
- * Version Check — hybrid approach
- * Triggers an update if either:
+ * Version Check — admin-only notification
+ *
+ * Notifies admins when a new version is deployed (banner or mandatory modal).
+ * Regular users are silently handled by the server-side version-gate edge
+ * function which returns 426 → main.js forces location.reload(true).
+ *
+ * Triggers an update notification if either:
  * 1. The ETag of /index.html changes (auto-detects normal deploys)
  * 2. The version string in /version.json changes
  */
 import { animate } from './motion.js';
+import { state } from './state.js';
 
 const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let currentEtag = null;
@@ -40,6 +46,7 @@ function showMandatoryUpdate(message) {
   bannerShown = true;
 
   const overlay = document.createElement('div');
+  overlay.id = 'mandatory-update-modal'; // Added ID for tracking
   overlay.className = 'modal-overlay open';
   overlay.style.zIndex = '999999';
   overlay.innerHTML = `
@@ -53,6 +60,22 @@ function showMandatoryUpdate(message) {
     </div>
   `;
   document.body.appendChild(overlay);
+
+  // --- LAYER 1: Nuke Network ---
+  // Any attempt to make an API call will instantly force a reload
+  window.fetch = function() {
+    window.location.reload(true);
+    return new Promise(() => {}); // never resolves
+  };
+
+  // --- LAYER 2: DOM Tamper Protection ---
+  // If the user uses DevTools to delete the modal, instantly reload
+  const observer = new MutationObserver(() => {
+    if (!document.getElementById('mandatory-update-modal')) {
+      window.location.reload(true);
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 function showUpdateBanner(message) {
@@ -99,7 +122,7 @@ async function checkVersion() {
     } else {
       showUpdateBanner(info ? info.message : 'New version available');
     }
-    
+
     currentEtag = etag;
     if (info) currentVersion = info.version;
   }

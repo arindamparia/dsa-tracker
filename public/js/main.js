@@ -1,4 +1,5 @@
 import { animate, stagger } from './motion.js';
+import { APP_VERSION } from './app-version.js';
 import { maybeShowOnboarding } from './onboarding.js';
 import { lockScroll, unlockScroll, initPluginGuards } from './utils.js';
 import { lsSet, lsGet } from './storage.js';
@@ -440,17 +441,23 @@ import('https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.mjs').then(({ defaul
   window.fetch = async function (url, options = {}) {
     if (typeof url === "string" && url.startsWith("/.netlify/functions/")) {
       const token = await getToken();
+      options = { ...options };
+      options.headers = { ...options.headers, 'X-Client-Version': APP_VERSION };
       if (token) {
-        options = { ...options };
         options.headers = { ...options.headers, Authorization: `Bearer ${token}` };
       }
 
       const MAX_RETRIES = 3; // 1 initial + 2 retries
       let attempt = 0;
-      
+
       while (attempt < MAX_RETRIES) {
         try {
           const res = await _fetch.call(this, url, options);
+          // 426: server says client is outdated — reload regardless of modal state
+          if (res.status === 426) {
+            setTimeout(() => location.reload(true), 150);
+            return res;
+          }
           // Retry on server errors or rate limits
           if ((res.status >= 500 || res.status === 429) && attempt < MAX_RETRIES - 1) {
             attempt++;

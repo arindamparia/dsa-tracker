@@ -13,6 +13,6 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 export const CORS_HEADERS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Version",
   "Vary": "Origin",
 };
