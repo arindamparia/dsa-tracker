@@ -259,6 +259,9 @@ export const GhostEngine = {
       for (const msg of this.state.chatHistory) {
         const div = document.createElement('div');
         div.className = `msg ${msg.role}`;
+        div.style.fontSize = '16px';
+        div.style.fontFamily = "'Kalam', cursive";
+        div.style.lineHeight = '1.4';
         if (msg.role === 'assistant') {
           div.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <span>${msg.content}</span>`;
         } else {
@@ -358,7 +361,9 @@ export const GhostEngine = {
     userMsg.style.background = 'rgba(255,255,255,0.05)';
     userMsg.style.padding = '10px 14px';
     userMsg.style.borderRadius = '8px';
-    userMsg.style.fontSize = '14px';
+    userMsg.style.fontSize = '16px';
+    userMsg.style.fontFamily = "'Kalam', cursive";
+    userMsg.style.lineHeight = '1.4';
     userMsg.style.marginLeft = '20px';
     userMsg.innerHTML = `<strong>You:</strong><br>${text}`;
     this.UI.mentorChat.appendChild(userMsg);
@@ -372,7 +377,8 @@ export const GhostEngine = {
     typingMsg.style.borderLeft = '2px solid #88ccff';
     typingMsg.style.padding = '10px 14px';
     typingMsg.style.borderRadius = '8px';
-    typingMsg.style.fontSize = '14px';
+    typingMsg.style.fontSize = '16px';
+    typingMsg.style.fontFamily = "'Kalam', cursive";
     typingMsg.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong> <em>Typing...</em>`;
     this.UI.mentorChat.appendChild(typingMsg);
     this.UI.mentorChat.scrollTop = this.UI.mentorChat.scrollHeight;

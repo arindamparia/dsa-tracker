@@ -245,7 +245,8 @@ export const SocraticChat = {
         max-width: 88%;
         padding: 12px 16px;
         border-radius: 12px;
-        font-size: 14px;
+        font-family: 'Kalam', cursive;
+        font-size: 16px;
         line-height: 1.5;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       }
