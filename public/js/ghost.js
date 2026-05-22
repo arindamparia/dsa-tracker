@@ -260,7 +260,7 @@ export const GhostEngine = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
-          }).catch(err => console.warn('Background trigger error:', err)); // Fire and forget
+          }).catch(() => {}); // Fire and forget
         }
 
         // Dynamic polling: Wait 30s, 15s, 7s, then every 5s, for up to 3 minutes (180s)
@@ -309,7 +309,7 @@ export const GhostEngine = {
                   return;
                 }
               } catch (err) {
-                console.warn('Polling error:', err);
+                // Keep polling
               }
               
               // Cache miss or network error, keep polling
@@ -479,7 +479,6 @@ export const GhostEngine = {
     try {
       const token = await window.Clerk.session.getToken();
       const filteredHistory = this.state.chatHistory.filter(m => m.isGenuine !== false).slice(-5);
-      console.log('Ghost Chat: History being sent to AI:', filteredHistory);
       
       const response = await fetch('/.netlify/functions/ghost-chat', {
         method: 'POST',
@@ -511,7 +510,6 @@ export const GhostEngine = {
       this._saveGhostCache();
       
     } catch (err) {
-      console.error(err);
       typingMsg.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br><em>Sorry, I encountered an error answering that.</em>`;
     } finally {
       input.disabled = false;

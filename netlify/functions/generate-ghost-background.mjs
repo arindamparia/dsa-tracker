@@ -47,11 +47,10 @@ export const handler = async (event) => {
       `;
       if (!inserted) {
         // A lock or actual data already exists. Another process is handling this!
-        console.log(`Ghost Replay generation already in progress/completed for "${title}". Aborting duplicate.`);
         return { statusCode: 200, headers: CORS, body: "Aborted duplicate run" };
       }
     } catch (e) {
-      console.warn("Ghost cache lock error:", e.message);
+      // Ignore lock error
     }
 
     // 2. ai_access + daily limit + per-minute check (only on cache miss)
@@ -131,7 +130,6 @@ JSON Formatting Rules (CRITICAL):
     });
 
     if (!res.ok) {
-      console.error('AI service error:', await res.text());
       await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
       return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service error.' }) };
     }
@@ -148,7 +146,7 @@ JSON Formatting Rules (CRITICAL):
 
     // We log if the AI flagged it doesn't know the solution
     if (parsed.not_found) {
-      console.log(`Ghost Engine returned not_found for "${title}"`);
+      // Ignored
     }
 
     // 3. Save to Cache (Update the lock with actual data)
@@ -159,13 +157,12 @@ JSON Formatting Rules (CRITICAL):
         WHERE lc_number = ${lcNumber} AND language = ${language}
       `;
     } catch (e) {
-      console.warn("Ghost cache write error:", e.message);
+      // Ignored
     }
 
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: parsed }) };
 
   } catch (err) {
-    console.error('Generate Ghost error:', err);
     // Clear lock on critical failure
     try {
       const { lcNumber, language } = JSON.parse(event.body);
