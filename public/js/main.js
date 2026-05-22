@@ -676,7 +676,7 @@ initPWAInstall();
             <div style="font-size:32px;margin-bottom:12px;">📱</div>
             <div class="modal-title">Desktop Recommended</div>
             <div class="modal-sub" style="margin-bottom:20px;">
-              You're missing out on a lot of features! The Ghost Replay engine and Socratic Mock Interviews require a larger screen. Please open AlgoTracker on your desktop for the full experience.
+              You're missing out on a lot of features! Some of our features require a larger screen. Please open AlgoTracker on your desktop for the full experience.
             </div>
             <button class="btn-submit" onclick="this.closest('.modal-overlay').remove()">I understand</button>
           </div>
