@@ -293,8 +293,7 @@ const LearningMaterial = (() => {
         });
         _loader.classList.add('hidden');
         _docxContainer.classList.add('show');
-      } catch (e) {
-        console.error('docx-preview error:', e);
+      } catch {
         _showError('Failed to render the document. It may use unsupported formatting.');
       }
     });

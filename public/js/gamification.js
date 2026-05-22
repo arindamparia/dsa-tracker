@@ -151,8 +151,6 @@ export const SocraticChat = {
         history: this.history.filter(m => m.isGenuine !== false).slice(-10)
       };
       
-      console.log('Mock Interview: History being sent to AI:', payload.history);
-
       const res = await fetch('/.netlify/functions/mock-interview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,8 +177,7 @@ export const SocraticChat = {
       } else {
         throw new Error('Invalid response');
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       typingDiv.remove();
       this.addMessage('system', 'Sorry, I lost the scent. Try again?');
     } finally {

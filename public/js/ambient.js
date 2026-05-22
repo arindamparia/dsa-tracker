@@ -278,8 +278,8 @@ export const AmbientSound = {
           playbackRate: 1,
           position: 0
         });
-      } catch (e) {
-        console.warn('setPositionState not supported', e);
+      } catch {
+        // setPositionState not supported in this browser
       }
     }
 
@@ -493,9 +493,8 @@ export const AmbientSound = {
         this.attachMediaSession(track);
         this.updateUI();
         this.startVisualizer();
-      }).catch(err => {
+      }).catch(() => {
         this._setLoading(track, false);
-        console.warn('Audio play failed:', err);
         if (window.showToast) window.showToast('Audio playback blocked', 'error');
       });
     }

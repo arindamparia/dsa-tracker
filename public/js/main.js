@@ -454,7 +454,6 @@ import('https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.mjs').then(({ defaul
           // Retry on server errors or rate limits
           if ((res.status >= 500 || res.status === 429) && attempt < MAX_RETRIES - 1) {
             attempt++;
-            console.warn(`[API] ${res.status} on ${url}. Retrying... (${attempt}/${MAX_RETRIES - 1})`);
             await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000)); // 2s, 4s delay
             continue;
           }
@@ -463,7 +462,6 @@ import('https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.mjs').then(({ defaul
           // Retry on network errors (e.g. ENETUNREACH)
           if (attempt < MAX_RETRIES - 1) {
             attempt++;
-            console.warn(`[API] Network error on ${url}. Retrying... (${attempt}/${MAX_RETRIES - 1})`);
             await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
             continue;
           }
