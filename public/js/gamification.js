@@ -130,10 +130,10 @@ export const SocraticChat = {
         difficulty: this.currentDiff,
         url: this.currentUrl,
         platform: this.currentPlatform,
-        history: this.history.slice(-10)
+        history: this.history.filter(m => m.isGenuine !== false).slice(-10)
       };
       
-
+      console.log('Mock Interview: History being sent to AI:', payload.history);
 
       const res = await fetch('/.netlify/functions/mock-interview', {
         method: 'POST',
@@ -148,7 +148,14 @@ export const SocraticChat = {
       
       if (data.ok && data.data && data.data.reply) {
         const reply = data.data.reply;
-        this.history.push({ role: 'assistant', content: reply });
+        if (data.data.isGenuine === false) {
+          if (this.history.length > 0 && this.history[this.history.length - 1].role === 'user') {
+            this.history[this.history.length - 1].isGenuine = false;
+          }
+          this.history.push({ role: 'assistant', content: reply, isGenuine: false });
+        } else {
+          this.history.push({ role: 'assistant', content: reply, isGenuine: true });
+        }
         this._saveCache();
         this.addMessage('system', reply, true, true); // display without re-saving
       } else {

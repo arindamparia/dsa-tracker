@@ -17,6 +17,11 @@ export const handler = async (event) => {
 
   try {
     const { action, title, code, platform = 'LeetCode' } = JSON.parse(event.body);
+    
+    if (title?.length > 200 || (code && code.length > 20000)) {
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Input exceeds maximum allowed length' }) };
+    }
+
     // Sanitize platform — only allow known values to prevent prompt injection
     const KNOWN_PLATFORMS = ['LeetCode','Codeforces','AtCoder','CSES','GeeksforGeeks','SPOJ','HackerRank','HackerEarth','Codewars','Exercism','CodinGame','Project Euler','CodeChef','CodingNinjas'];
     const safePlatform = KNOWN_PLATFORMS.includes(platform) ? platform : 'LeetCode';

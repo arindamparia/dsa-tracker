@@ -18,6 +18,10 @@ export const handler = async (event) => {
   try {
     const { lcNumber, title, language = 'Python', platform = 'LeetCode', difficulty = 'Medium' } = JSON.parse(event.body);
     
+    if (title?.length > 200 || lcNumber?.toString().length > 20 || language?.length > 50 || platform?.length > 50 || difficulty?.length > 50) {
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Input exceeds maximum allowed length' }) };
+    }
+
     if (!title || !lcNumber) {
       return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing title or lcNumber' }) };
     }

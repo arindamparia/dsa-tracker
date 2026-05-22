@@ -382,6 +382,9 @@ export const GhostEngine = {
     
     try {
       const token = await window.Clerk.session.getToken();
+      const filteredHistory = this.state.chatHistory.filter(m => m.isGenuine !== false).slice(-5);
+      console.log('Ghost Chat: History being sent to AI:', filteredHistory);
+      
       const response = await fetch('/.netlify/functions/ghost-chat', {
         method: 'POST',
         headers: {
@@ -392,7 +395,7 @@ export const GhostEngine = {
           problemTitle: this.state.problemTitle,
           fullCode: this.state.code,
           ghostContext: this.state.ghostContext,
-          history: this.state.chatHistory.slice(-5)
+          history: filteredHistory
         })
       });
       
@@ -400,7 +403,15 @@ export const GhostEngine = {
       const data = await response.json();
       
       typingMsg.innerHTML = `<strong><img src="https://res.cloudinary.com/dnju7wfma/image/upload/v1779431231/snowy_shuw2h.jpg" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:4px; background:white; padding:2px; box-sizing:border-box;"> Snowy:</strong><br>${data.data.reply}`;
-      this.state.chatHistory.push({ role: 'assistant', content: data.data.reply });
+      
+      if (data.data.isGenuine === false) {
+        if (this.state.chatHistory.length > 0 && this.state.chatHistory[this.state.chatHistory.length - 1].role === 'user') {
+          this.state.chatHistory[this.state.chatHistory.length - 1].isGenuine = false;
+        }
+        this.state.chatHistory.push({ role: 'assistant', content: data.data.reply, isGenuine: false });
+      } else {
+        this.state.chatHistory.push({ role: 'assistant', content: data.data.reply, isGenuine: true });
+      }
       this._saveGhostCache();
       
     } catch (err) {
