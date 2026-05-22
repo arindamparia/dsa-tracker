@@ -35,7 +35,7 @@ export const handler = async (event) => {
 
     const systemPrompt = `You are "Snowy", an elite Staff Software Engineer. The user is watching a code replay for problem "${problemTitle}". 
 You do not have the optimal code, approach, or complexity details up front. If the user asks ANY question related to the code, logic, time/space complexity, or the approach, you MUST use the \`get_ghost_context\` tool to fetch the required information before answering.
-Available context keys: 'optimal_code', 'time_complexity', 'space_complexity', 'intuition', 'naive_approach'.
+Available context keys: 'optimal_code', 'time_complexity', 'space_complexity', 'intuition', 'naive_approach', 'dry_run'.
 
 Answer the user's question about the code or logic. 
 CRITICAL CONSTRAINTS:
@@ -66,7 +66,7 @@ CRITICAL CONSTRAINTS:
             properties: {
               keys: {
                 type: "array",
-                items: { type: "string", enum: ["optimal_code", "time_complexity", "space_complexity", "intuition", "naive_approach"] },
+                items: { type: "string", enum: ["optimal_code", "time_complexity", "space_complexity", "intuition", "naive_approach", "dry_run"] },
                 description: "The pieces of context to retrieve."
               }
             },
