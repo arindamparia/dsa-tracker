@@ -661,6 +661,31 @@ initPWAInstall();
   // Show onboarding tour to first-time users (800ms delay lets the page settle)
   setTimeout(maybeShowOnboarding, 800);
 
+  // Show mobile warning popup
+  if (window.innerWidth <= 768) {
+    const lastShown = localStorage.getItem('mobile_warning_shown_time');
+    const now = Date.now();
+    // 2 days in milliseconds
+    if (!lastShown || now - parseInt(lastShown, 10) > 2 * 24 * 60 * 60 * 1000) {
+      localStorage.setItem('mobile_warning_shown_time', now.toString());
+      setTimeout(() => {
+        const mo = document.createElement('div');
+        mo.className = 'modal-overlay open';
+        mo.innerHTML = `
+          <div class="modal" style="max-width:340px;text-align:center;">
+            <div style="font-size:32px;margin-bottom:12px;">📱</div>
+            <div class="modal-title">Desktop Recommended</div>
+            <div class="modal-sub" style="margin-bottom:20px;">
+              You're missing out on a lot of features! The Ghost Replay engine and Socratic Mock Interviews require a larger screen. Please open AlgoTracker on your desktop for the full experience.
+            </div>
+            <button class="btn-submit" onclick="this.closest('.modal-overlay').remove()">I understand</button>
+          </div>
+        `;
+        document.body.appendChild(mo);
+      }, 1200);
+    }
+  }
+
   // Skip background image on lite tier (saves ~200KB network on low-end devices)
   if (window.__perfTier !== 'lite') {
     const hideBg = localStorage.getItem('dsa_hide_bg');
