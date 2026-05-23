@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dsa-tracker-v3';
+const CACHE_NAME = 'dsa-tracker-v4';
 
 // Skip the waiting phase. When I push an update, I want it live immediately.
 // We handle the actual page reload manually in index.html so users don't get stuck. Peak desi engineering.
