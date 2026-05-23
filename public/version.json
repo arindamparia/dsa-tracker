@@ -1,5 +1,5 @@
 {
   "version": "1.1.0",
-  "force_refresh": true,
+  "force_refresh": false,
   "message": "We've made some important updates to improve your experience. Please refresh your browser to continue."
 }

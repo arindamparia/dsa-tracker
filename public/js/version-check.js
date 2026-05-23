@@ -46,7 +46,6 @@ function showMandatoryUpdate(message) {
   bannerShown = true;
 
   const overlay = document.createElement('div');
-  overlay.id = 'mandatory-update-modal'; // Added ID for tracking
   overlay.className = 'modal-overlay open';
   overlay.style.zIndex = '999999';
   overlay.innerHTML = `
@@ -60,22 +59,6 @@ function showMandatoryUpdate(message) {
     </div>
   `;
   document.body.appendChild(overlay);
-
-  // --- LAYER 1: Nuke Network ---
-  // Any attempt to make an API call will instantly force a reload
-  window.fetch = function() {
-    window.location.reload(true);
-    return new Promise(() => {}); // never resolves
-  };
-
-  // --- LAYER 2: DOM Tamper Protection ---
-  // If the user uses DevTools to delete the modal, instantly reload
-  const observer = new MutationObserver(() => {
-    if (!document.getElementById('mandatory-update-modal')) {
-      window.location.reload(true);
-    }
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 function showUpdateBanner(message) {
@@ -118,9 +101,9 @@ async function checkVersion() {
 
   if (etagChanged || versionChanged) {
     if (info && info.force_refresh) {
-      showMandatoryUpdate(info.message);
+      window.location.reload(true); // Silently reload everyone for critical updates
     } else {
-      showUpdateBanner(info ? info.message : 'New version available');
+      showUpdateBanner(info ? info.message : 'New version available'); // Show non-intrusive banner for normal updates
     }
 
     currentEtag = etag;

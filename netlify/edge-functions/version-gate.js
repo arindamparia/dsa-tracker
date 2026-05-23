@@ -53,9 +53,9 @@ export default async function handler(request, context) {
   const clientVersion = request.headers.get('x-client-version') || '';
   const origin        = request.headers.get('origin') || '*';
 
-  const isOutdated =
-    !clientVersion ||                                        // header missing = definitely old client
-    parseVersion(clientVersion) < parseVersion(minVersion); // header present but too old
+  const isOutdated = false; // Disabled by request:
+    // !clientVersion ||
+    // parseVersion(clientVersion) < parseVersion(minVersion);
 
   if (isOutdated) {
     return new Response(
