@@ -1,9 +1,22 @@
 import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
-import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
-import { aiGate } from "./ai-gate.mjs";
-import { callAI } from "./ai-service.mjs";
+import { aiGate, refundDailyUse } from "./ai-gate.mjs";
+import { callAI, parseAIJson } from "./ai-service.mjs";
 import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
+
+// Maps a thrown callAI error (timeout, provider down, missing key) to a JSON response.
+const aiFailure = (err) => {
+  const timedOut = err?.status === 504;
+  return {
+    statusCode: timedOut ? 504 : 502,
+    headers: CORS,
+    body: JSON.stringify({
+      error: timedOut
+        ? 'The AI took too long to respond. Please try again.'
+        : 'AI service returned an error. Please try again.',
+    }),
+  };
+};
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -31,12 +44,8 @@ export const handler = async (event) => {
 
     // ── Hints: free for all, just per-minute rate limit ───────────────────
     if (action === 'hint') {
-      try {
-        const allowed = await checkAIRateLimit(userEmail);
-        if (!allowed) {
-          return { statusCode: 429, headers: CORS, body: JSON.stringify({ ok: false, error: 'rate_limited', message: 'Too many requests. Please wait a moment.' }) };
-        }
-      } catch { /* allow through on DB failure */ }
+      const hintBlocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'analyze_code_hint' });
+      if (hintBlocked) return hintBlocked;
 
       const messages = [
         {
@@ -46,7 +55,9 @@ export const handler = async (event) => {
         { role: 'user', content: `Hint for ${title}?` }
       ];
 
-      const res = await callAI('analyze_code_hint', messages);
+      let res;
+      try { res = await callAI('analyze_code_hint', messages); }
+      catch (err) { console.error('analyze-code hint error:', err.message); return aiFailure(err); }
       if (!res.ok) return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service error.' }) };
       const d = await res.json();
       const content = d?.choices?.[0]?.message?.content;
@@ -58,13 +69,11 @@ export const handler = async (event) => {
     if (action === 'analyze') {
       if (!code) return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Code is required for analysis' }) };
 
-      // STAGE 0: Check ai_access + enforce daily limit
+      // STAGE 0: rate limits + ai_access + daily quota (takes one daily use).
+      // Single call — each aiGate call counts against the 1/s limiter, so a second
+      // "burst" call would reject every request.
       const blocked = await aiGate(userEmail, CORS, { fnName: 'analyze_code' });
       if (blocked) return blocked;
-
-      // Per-minute rate limit — increment counter after gate passes
-      const burstBlocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'analyze_code' });
-      if (burstBlocked) return burstBlocked;
 
       // STAGE 1: Cheap mismatch detection (~50-80 tokens)
       // Runs AFTER the counter is incremented so mismatches cost a daily use.
@@ -83,12 +92,13 @@ Reply ONLY with valid JSON: { "match": true/false, "reason": "<one sentence>" }
         ];
 
         const detectRes = await callAI('analyze_code_mismatch', messages, {
-          max_tokens: 80
+          max_tokens: 80,
+          timeoutMs: 6000,   // cheap check: don't let it eat the analysis budget
+          maxAttempts: 1
         });
         if (detectRes.ok) {
           const detectData = await detectRes.json();
-          const raw = detectData?.choices?.[0]?.message?.content || '{}';
-          const parsed = JSON.parse(raw);
+          const parsed = parseAIJson(detectData?.choices?.[0]?.message?.content || '{}');
           if (parsed.match === false) {
             isMismatch = true;
             mismatchReason = parsed.reason || 'The code does not appear to solve this problem.';
@@ -149,30 +159,42 @@ CRITICAL RULE — No Hallucination: If you do not have confident knowledge of th
         { role: 'user', content: `Problem: ${title}\n\nCode:\n${code}` }
       ];
 
-      const response = await callAI('analyze_code_full', messages, {
-        response_format: { type: 'json_object' }
-      });
+      let response;
+      try {
+        response = await callAI('analyze_code_full', messages, {
+          response_format: { type: 'json_object' },
+          timeoutMs: 9000    // 2 attempts x 9s + backoff + 6s mismatch check stays under the 26s function limit
+        });
+      } catch (err) {
+        console.error('analyze-code AI error:', err.status, err.message);
+        await refundDailyUse(userEmail);
+        return aiFailure(err);
+      }
 
       if (!response.ok) {
         const errBody = await response.text();
-        console.error('OpenAI error:', response.status, errBody);
+        console.error('AI error:', response.status, errBody);
+        await refundDailyUse(userEmail);
         return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service returned an error. Please try again.' }) };
       }
 
       const data = await response.json();
       const content = data?.choices?.[0]?.message?.content;
       if (!content) {
-        console.error('Unexpected OpenAI response shape:', JSON.stringify(data));
+        console.error('Unexpected AI response shape:', JSON.stringify(data));
+        await refundDailyUse(userEmail);
         return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'Unexpected response from AI service.' }) };
       }
 
       try {
-        const parsed = JSON.parse(content);
+        const parsed = parseAIJson(content);
         if (parsed.not_found) {
+          await refundDailyUse(userEmail);
           return { statusCode: 404, headers: CORS, body: JSON.stringify({ ok: false, error: 'NO_SOLUTION', message: `We can't analyze this question right now, sorry! Try a different problem.` }) };
         }
         return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: parsed }) };
       } catch {
+        await refundDailyUse(userEmail);
         return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI returned malformed data. Please try again.' }) };
       }
     }

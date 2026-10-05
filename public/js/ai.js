@@ -3,6 +3,7 @@ import { saveComplexity, saveAIAnalysis, toggleCheck } from './progress.js';
 import { HintCache, Cache } from './cache.js';
 import { handleError } from './errors.js';
 import { animate } from './motion.js';
+import { refreshUserSettings } from './data.js';
 
 /**
  * Normalizes AI-returned complexity strings to exactly match our accepted option values:
@@ -258,7 +259,11 @@ export const AI = {
   },
 
   async fetchAI(action, lc_number, code = '') {
-    if (!state.isSubscribed && action !== 'hint') { this._notSubscribedToast(); return null; }
+    if (!state.isSubscribed && action !== 'hint') {
+      // The cached profile can be stale (or the 5-min cache skipped the fetch) — confirm with the server before blocking.
+      await refreshUserSettings(true);
+      if (!state.isSubscribed) { this._notSubscribedToast(); return null; }
+    }
 
     const q = state.questions.find(x => String(x.lc_number) === String(lc_number));
     if (!q) {
@@ -292,7 +297,8 @@ export const AI = {
         body: JSON.stringify({ action, title: q.name, code, platform })
       });
 
-      const data = await res.json();
+      // A platform timeout (504) returns an HTML body — don't let the parse error mask the status.
+      const data = await res.json().catch(() => ({}));
 
       // AI doesn't have knowledge of this specific problem
       if (data?.error === 'NO_SOLUTION') {

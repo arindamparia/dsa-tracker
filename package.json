@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "netlify dev",
     "build": "node scripts/build.mjs",
-    "ping-index": "node scripts/ping-indexnow.js"
+    "ping-index": "node scripts/ping-indexnow.js",
+    "test": "node --experimental-test-module-mocks --test tests/"
   },
   "dependencies": {
     "@clerk/backend": "^3.2.2",

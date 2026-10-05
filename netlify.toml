@@ -15,6 +15,11 @@
 [functions."broadcast"]
   timeout = 30
 
+# Two sequential LLM calls (mismatch check + full analysis, with provider fallback).
+# 26s is the max for synchronous functions; the code budgets ~26s worst case.
+[functions."analyze-code"]
+  timeout = 26
+
 
 # HTTP preload hints for the index page — browser starts fetching these CSS files
 # the moment it receives the response headers, before it has even parsed the HTML.

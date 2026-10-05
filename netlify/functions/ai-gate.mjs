@@ -119,13 +119,64 @@ async function checkRateLimits(userEmail, fnName, CORS) {
   return null;
 }
 
+// ── Daily quota ───────────────────────────────────────────────────
+// Dedicated per-day counter. (ai_rate_limits is for per-minute windows only: it is
+// purged hourly and not written at all when Redis handles rate limiting, so it can't
+// back a daily quota.)
+let usageTableReady = false;
+async function ensureUsageTable(sql) {
+  if (usageTableReady) return;
+  await sql`
+    CREATE TABLE IF NOT EXISTS ai_daily_usage (
+      user_email TEXT    NOT NULL,
+      day        DATE    NOT NULL,
+      count      INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_email, day)
+    )
+  `;
+  usageTableReady = true;
+}
+
+const utcDay = () => new Date().toISOString().slice(0, 10);
+
+/** Atomically takes one daily use. Returns false when the quota is exhausted. */
+async function consumeDailyUse(sql, userEmail, limit) {
+  if (limit <= 0) return false;
+  await ensureUsageTable(sql);
+  const rows = await sql`
+    INSERT INTO ai_daily_usage (user_email, day, count)
+    VALUES (${userEmail}, ${utcDay()}, 1)
+    ON CONFLICT (user_email, day)
+    DO UPDATE SET count = ai_daily_usage.count + 1
+    WHERE ai_daily_usage.count < ${limit}
+    RETURNING count
+  `;
+  return rows.length > 0;
+}
+
+/** Gives back a daily use when the AI call failed through no fault of the user. */
+export async function refundDailyUse(userEmail) {
+  if (userEmail === ADMIN_EMAIL) return;
+  try {
+    const sql = getDb();
+    await ensureUsageTable(sql);
+    await sql`
+      UPDATE ai_daily_usage SET count = count - 1
+      WHERE user_email = ${userEmail} AND day = ${utcDay()} AND count > 0
+    `;
+  } catch { /* best effort */ }
+}
+
 /**
  * Centralized AI access gatekeeper.
  *
  * Checks in order:
- *   1. ai_access flag    — 403 if revoked by admin
- *   2. Daily quota       — 429 if exhausted  (only when skipDailyLimit=false)
- *   3. Multi-window RL   — 429 with Retry-After (1/s → 20/min → 200/hr)
+ *   1. Multi-window RL   — 429 with Retry-After (1/s → 20/min → 200/hr)
+ *   2. ai_access flag    — 403 if revoked by admin   (only when skipDailyLimit=false)
+ *   3. Daily quota       — 429 if exhausted; otherwise takes one use (only when skipDailyLimit=false)
+ *
+ * Call it ONCE per request: every call counts against the rate-limit windows.
+ * Rate limits run first so a burst-rejected request never burns a daily use.
  *
  * Returns null   → allowed through.
  * Returns object → ready-to-send blocked response.
@@ -146,7 +197,13 @@ export async function aiGate(userEmail, CORS, opts = {}) {
 
   if (userEmail === ADMIN_EMAIL) return null;
 
-  // ── 1. ai_access + daily limit ────────────────────────────────
+  // ── 1. Multi-window sliding rate limits ───────────────────────
+  if (!skipPerMinute) {
+    const rlBlocked = await checkRateLimits(userEmail, fnName, CORS);
+    if (rlBlocked) return rlBlocked;
+  }
+
+  // ── 2. ai_access + daily quota ────────────────────────────────
   if (!skipDailyLimit) {
     try {
       const sql = getDb();
@@ -173,16 +230,7 @@ export async function aiGate(userEmail, CORS, opts = {}) {
       const baseLimit  = row.ai_daily_limit ?? 4;
       const dailyLimit = row.is_subscribed && baseLimit < 10 ? 10 : baseLimit;
 
-      const dayStart = new Date();
-      dayStart.setUTCHours(0, 0, 0, 0);
-      const [usage] = await sql`
-        SELECT COALESCE(SUM(count), 0)::int AS total
-        FROM ai_rate_limits
-        WHERE user_email = ${userEmail}
-          AND window_start >= ${dayStart.toISOString()}
-      `;
-
-      if ((usage?.total ?? 0) >= dailyLimit) {
+      if (!(await consumeDailyUse(sql, userEmail, dailyLimit))) {
         return {
           statusCode: 429, headers: CORS,
           body: JSON.stringify({
@@ -192,12 +240,6 @@ export async function aiGate(userEmail, CORS, opts = {}) {
         };
       }
     } catch { /* fail open */ }
-  }
-
-  // ── 2. Multi-window sliding rate limits ───────────────────────
-  if (!skipPerMinute) {
-    const rlBlocked = await checkRateLimits(userEmail, fnName, CORS);
-    if (rlBlocked) return rlBlocked;
   }
 
   return null; // ✅ allowed through

@@ -447,7 +447,10 @@ import('https://cdn.jsdelivr.net/npm/lenis@1.3.1/dist/lenis.mjs').then(({ defaul
         options.headers = { ...options.headers, Authorization: `Bearer ${token}` };
       }
 
-      const MAX_RETRIES = 3; // 1 initial + 2 retries
+      // AI endpoints are metered and slow (5-25s): retrying a 5xx/429 would re-run (and re-bill)
+      // the LLM call and delay the error toast by seconds. Let the caller surface the error.
+      const noRetry = /\/(analyze-code|mock-interview|ghost-chat)(\?|$)/.test(url);
+      const MAX_RETRIES = noRetry ? 1 : 3; // 1 initial + 2 retries
       let attempt = 0;
 
       while (attempt < MAX_RETRIES) {

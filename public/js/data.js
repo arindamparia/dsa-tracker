@@ -62,6 +62,7 @@ export async function refreshUserSettings(force = false) {
     if (!data.ok) return;
     applyUserProfile(data);
     UserCache.set({
+      is_subscribed:     data.is_subscribed,   // gates AI analysis — must survive a reload from cache
       reminders_enabled: data.reminders_enabled,
       reminder_email:    data.reminder_email,
       user_name:         data.user_name,

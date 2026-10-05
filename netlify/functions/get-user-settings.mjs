@@ -11,9 +11,6 @@ function getClerk() {
   return _clerk;
 }
 
-// Runs once per warm Lambda container — skipped on subsequent warm invocations
-let schemaInitialized = false;
-
 export const handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -27,19 +24,12 @@ export const handler = async (event, context) => {
 
   try {
     const sql = getDb();
-    if (!schemaInitialized) {
-      await initSchema(sql);
-      schemaInitialized = true;
-    }
 
-    // We no longer fetch imageUrl from Clerk on the backend to save time.
-    // The frontend handles displaying the avatar directly from Clerk's SDK.
-    let imageUrl = null;
-
-    // upsert user on every login — backfills clerk_name and image_url
-    const [row] = await sql`
+    // upsert user on every login — backfills clerk_name and image_url.
+    // (Frontend shows the avatar straight from Clerk's SDK, so image_url isn't fetched here.)
+    const upsert = () => sql`
       INSERT INTO users (email, clerk_id, name, clerk_name, image_url, last_active)
-      VALUES (${userEmail}, ${clerkId}, ${clerkName}, ${clerkName}, ${imageUrl}, NOW())
+      VALUES (${userEmail}, ${clerkId}, ${clerkName}, ${clerkName}, ${null}, NOW())
       ON CONFLICT (email) DO UPDATE SET
         clerk_id   = EXCLUDED.clerk_id,
         clerk_name = COALESCE(EXCLUDED.clerk_name, users.clerk_name),
@@ -48,6 +38,18 @@ export const handler = async (event, context) => {
         last_active = NOW()
       RETURNING is_subscribed, reminders_enabled, reminder_email, name, phone, role, clerk_name, image_url
     `;
+
+    // initSchema is ~46 sequential DDL round-trips; running it on every cold start made this
+    // endpoint multi-second (and it raced get-questions' own initSchema on first load).
+    // Only migrate when the query actually reports a missing table/column.
+    let row;
+    try {
+      [row] = await upsert();
+    } catch (err) {
+      if (err?.code !== '42703' && err?.code !== '42P01' && !/does not exist/i.test(err?.message || '')) throw err;
+      await initSchema(sql);
+      [row] = await upsert();
+    }
 
     if (!row) {
       return { statusCode: 404, headers: CORS, body: JSON.stringify({ ok: false, error: "User not found" }) };
