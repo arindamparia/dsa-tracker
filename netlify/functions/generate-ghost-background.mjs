@@ -2,8 +2,24 @@ import { getAuthEmail, unauthorized } from "./clerk-auth.mjs";
 import { getDb } from "./db.mjs";
 import { CORS_HEADERS as CORS } from "./cors.mjs";
 import { aiGate } from "./ai-gate.mjs";
-import { callAI } from "./ai-service.mjs";
+import { callAI, parseAIJson } from "./ai-service.mjs";
 import { PROMPT_INJECTION_DEFENSE } from "./ai-config.mjs";
+import { publishGhostEvent, GHOST_READY, GHOST_FAILED } from "./ghost-events.mjs";
+
+// A "generating" lock older than this is treated as crashed (must exceed the worst-case
+// generation time: 2 attempts x GENERATION_TIMEOUT_MS). Keep in sync with check-ghost-cache.
+const LOCK_STALE_MS = 5 * 60 * 1000;
+const GENERATION_TIMEOUT_MS = 140000; // Hard-problem generation on the large model runs far longer than the 12s default
+
+// Terminal failure marker: lets waiting clients stop immediately instead of polling to timeout.
+const markFailed = async (sql, lcNumber, language, reason) => {
+  await sql`
+    UPDATE ghost_cache
+    SET json_data = ${JSON.stringify({ status: 'failed', reason, failed_at: Date.now() })}::jsonb
+    WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'
+  `;
+  await publishGhostEvent(lcNumber, language, GHOST_FAILED);
+};
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
@@ -16,9 +32,10 @@ export const handler = async (event) => {
   // API key check is handled by callAI
 
   try {
-    const { lcNumber, title, language = 'Python', platform = 'LeetCode', difficulty = 'Medium' } = JSON.parse(event.body);
+    const { lcNumber, title, language = 'Python', platform = 'LeetCode', difficulty: clientDifficulty = 'Medium' } = JSON.parse(event.body);
+    let difficulty = clientDifficulty;
     
-    if (title?.length > 200 || lcNumber?.toString().length > 20 || language?.length > 50 || platform?.length > 50 || difficulty?.length > 50) {
+    if (title?.length > 200 || lcNumber?.toString().length > 20 || language?.length > 50 || platform?.length > 50 || clientDifficulty?.length > 50) {
       return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Input exceeds maximum allowed length' }) };
     }
 
@@ -34,19 +51,27 @@ export const handler = async (event) => {
       if (q && q.difficulty !== 'Hard') {
         return { statusCode: 403, headers: CORS, body: JSON.stringify({ error: 'Ghost Replay is only available for Hard problems.' }) };
       }
+      // Model choice + prompt must follow the stored difficulty, not whatever the client sent.
+      if (q) difficulty = q.difficulty;
     } catch { /* if questions table lookup fails, fall through */ }
 
-    // 1. Insert a "generating" lock to prevent duplicate concurrent runs
+    // 1. Take the "generating" lock to prevent duplicate concurrent runs.
+    //    Also atomically takes over a previous failure or a crashed (stale) lock.
     try {
       const lockData = JSON.stringify({ status: "generating", started_at: Date.now() });
+      const staleBefore = Date.now() - LOCK_STALE_MS;
       const [inserted] = await sql`
         INSERT INTO ghost_cache (lc_number, language, json_data)
         VALUES (${lcNumber}, ${language}, ${lockData}::jsonb)
-        ON CONFLICT (lc_number, language) DO NOTHING
+        ON CONFLICT (lc_number, language) DO UPDATE
+          SET json_data = EXCLUDED.json_data, created_at = NOW()
+          WHERE ghost_cache.json_data->>'status' = 'failed'
+             OR (ghost_cache.json_data->>'status' = 'generating'
+                 AND (ghost_cache.json_data->>'started_at')::bigint < ${staleBefore})
         RETURNING 1
       `;
       if (!inserted) {
-        // A lock or actual data already exists. Another process is handling this!
+        // A live lock or finished data already exists. Another process is handling this!
         return { statusCode: 200, headers: CORS, body: "Aborted duplicate run" };
       }
     } catch (e) {
@@ -56,8 +81,8 @@ export const handler = async (event) => {
     // 2. ai_access + daily limit + per-minute check (only on cache miss)
     const blocked = await aiGate(userEmail, CORS, { skipDailyLimit: true, fnName: 'generate_ghost' });
     if (blocked) {
-      // Clear the lock we just created so they can try again later
-      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
+      // Release the lock as failed so waiting clients stop, and anyone can retry later
+      await markFailed(sql, lcNumber, language, 'blocked');
       return blocked;
     }
 
@@ -125,28 +150,46 @@ JSON Formatting Rules (CRITICAL):
       { role: 'user', content: `Generate the Ghost Replay for ${title} on ${platform} in ${language}.` }
     ];
 
-    const res = await callAI(featureKey, messages, {
-      response_format: { type: "json_object" }
-    });
+    let res;
+    try {
+      res = await callAI(featureKey, messages, {
+        response_format: { type: "json_object" },
+        timeoutMs: GENERATION_TIMEOUT_MS,
+        maxAttempts: 2
+      });
+    } catch (err) {
+      console.error('ghost generation AI error:', err.status, err.message);
+      await markFailed(sql, lcNumber, language, 'ai_error');
+      return { statusCode: err.status === 504 ? 504 : 502, headers: CORS, body: JSON.stringify({ error: 'AI service error.' }) };
+    }
 
     if (!res.ok) {
-      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
+      await markFailed(sql, lcNumber, language, 'ai_error');
       return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI service error.' }) };
     }
 
     const d = await res.json();
     const content = d?.choices?.[0]?.message?.content;
-    
+
     if (!content) {
-      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
+      await markFailed(sql, lcNumber, language, 'empty_response');
       return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'Unexpected AI response.' }) };
     }
 
-    const parsed = JSON.parse(content);
+    let parsed;
+    try { parsed = parseAIJson(content); }
+    catch {
+      await markFailed(sql, lcNumber, language, 'malformed_json');
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI returned malformed data.' }) };
+    }
 
-    // We log if the AI flagged it doesn't know the solution
-    if (parsed.not_found) {
-      // Ignored
+    // Never cache a half-formed replay: it would be served (and fail in the client) forever.
+    // { not_found: true } is a legitimate, cached verdict.
+    const usable = parsed.not_found === true
+      || (typeof parsed.optimal_code === 'string' && parsed.optimal_code.trim() && Array.isArray(parsed.dry_run));
+    if (!usable) {
+      await markFailed(sql, lcNumber, language, 'invalid_shape');
+      return { statusCode: 502, headers: CORS, body: JSON.stringify({ error: 'AI returned an incomplete replay.' }) };
     }
 
     // 3. Save to Cache (Update the lock with actual data)
@@ -157,8 +200,14 @@ JSON Formatting Rules (CRITICAL):
         WHERE lc_number = ${lcNumber} AND language = ${language}
       `;
     } catch (e) {
-      // Ignored
+      console.error('ghost cache write failed:', e.message);
+      await markFailed(sql, lcNumber, language, 'cache_write_failed');
+      return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Could not save the replay.' }) };
     }
+
+    // 4. Push to anyone waiting (browsers subscribed on this problem's channel).
+    //    Published only AFTER the DB write so the client's follow-up fetch always sees the data.
+    await publishGhostEvent(lcNumber, language, GHOST_READY);
 
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: true, data: parsed }) };
 
@@ -167,7 +216,7 @@ JSON Formatting Rules (CRITICAL):
     try {
       const { lcNumber, language } = JSON.parse(event.body);
       const sql = getDb();
-      await sql`DELETE FROM ghost_cache WHERE lc_number = ${lcNumber} AND language = ${language} AND json_data->>'status' = 'generating'`;
+      await markFailed(sql, lcNumber, language, 'internal_error');
     } catch (e) {}
     
     return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: 'Internal server error.' }) };

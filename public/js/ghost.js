@@ -178,9 +178,9 @@ export const GhostEngine = {
     this.stopPlayback();
     this.UI.langPicker?.classList.add('hidden');
     this._pendingSummon = null;
-    if (this._pollTimer) {
-      clearTimeout(this._pollTimer);
-      this._pollTimer = null;
+    if (this._pollAbort) {
+      this._pollAbort.abort();   // cancels the in-flight long-poll
+      this._pollAbort = null;
     }
     unlockScroll();
   },
@@ -254,82 +254,23 @@ export const GhostEngine = {
 
       if (!res.ok) throw new Error(data?.error || 'Failed to check ghost cache');
 
-      // 2. If pending or generating, poll for completion
+      // 2. If pending or generating, wait for the background generator to finish
       if (data.status === 'pending' || data.status === 'generating') {
-        if (data.status === 'pending') {
-          fetch('/.netlify/functions/generate-ghost-background', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
-          }).catch(() => {}); // Fire and forget
-        }
-
-        // Dynamic polling: Wait 30s, 15s, 7s, then every 5s, for up to 3 minutes (180s)
-        const pollResult = await new Promise((resolve, reject) => {
-          let elapsed = 0;
-          const delays = [30000, 15000, 7000];
-          let delayIndex = 0;
-          let currentDelay = delays[0];
-          
-          const doPoll = () => {
-            if (elapsed >= 180000) {
-              reject(new Error("Ghost Replay generation is taking longer than expected. Please check back later."));
-              return;
-            }
-            
-            this._pollTimer = setTimeout(async () => {
-              elapsed += currentDelay;
-              
-              // If modal was closed, stop polling
-              if (!this.UI.overlay.classList.contains('open')) return;
-
-              try {
-                const pollRes = await fetch('/.netlify/functions/check-ghost-cache', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ lcNumber, title, language, platform, difficulty })
-                });
-                const pollData = await pollRes.json();
-
-                if (pollData?.error === 'NO_SOLUTION') {
-                  resolve({ status: 'NO_SOLUTION', message: pollData.message });
-                  return;
-                }
-
-                if (pollData.ok && pollData.data) {
-                  // If it's a lock row, keep polling
-                  if (pollData.data.status === 'generating') {
-                    delayIndex++;
-                    currentDelay = delayIndex < delays.length ? delays[delayIndex] : 5000;
-                    doPoll();
-                    return;
-                  }
-                  
-                  data = pollData;
-                  resolve({ status: 'SUCCESS' });
-                  return;
-                }
-              } catch (err) {
-                // Keep polling
-              }
-              
-              // Cache miss or network error, keep polling
-              delayIndex++;
-              currentDelay = delayIndex < delays.length ? delays[delayIndex] : 5000;
-              doPoll();
-            }, currentDelay);
-          };
-          
-          doPoll();
+        const result = await this._awaitGhost({
+          payload: { lcNumber, title, language, platform, difficulty },
+          realtime: data.realtime,
+          needsTrigger: data.status === 'pending',
         });
+        if (!result) return; // modal closed while waiting
 
-        if (pollResult.status === 'NO_SOLUTION') {
+        if (result.status === 'NO_SOLUTION') {
           this.stopLoadingAnimation();
           this.setControlsEnabled(true);
           this.close();
-          showToast(pollResult.message || "Ghost Engine has no solution for this problem yet. Try a different problem!", 'info');
+          showToast(result.message || "Ghost Engine has no solution for this problem yet. Try a different problem!", 'info');
           return;
         }
+        data = result.data;
       }
 
       if (!data.data || !data.data.optimal_code) {
@@ -399,6 +340,161 @@ export const GhostEngine = {
       this.setControlsEnabled(true);
       this.close();
       showToast(err.message, 'error');
+    }
+  },
+
+  // ── Waiting for generation ────────────────────────────────────────────────
+  // Preferred: the generator pushes "ghost-ready"/"ghost-failed" over Pusher and we fetch the
+  // replay on that signal. Fallback (Pusher unconfigured/blocked): server-held long-poll.
+  // Returns { status: 'SUCCESS', data } | { status: 'NO_SOLUTION', message } | null (modal closed).
+  async _awaitGhost({ payload, realtime, needsTrigger }) {
+    const GENERATION_BUDGET_MS = 5 * 60 * 1000;
+    const SAFETY_RECHECK_MS    = 30 * 1000;   // insurance against a dropped push event
+    const FAILED_MSG = "Ghost Engine couldn't generate this replay right now. Please try again in a moment.";
+    const startedAt = Date.now();
+    const abort = this._pollAbort = new AbortController();
+    const signal = abort.signal;
+    let retriggers = 0;
+
+    const trigger = () => fetch('/.netlify/functions/generate-ghost-background', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {}); // fire and forget
+
+    const check = async (wait) => {
+      const res = await fetch('/.netlify/functions/check-ghost-cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, wait }),
+        signal
+      });
+      return { res, body: await res.json() };
+    };
+
+    // Interprets a check result: a final answer, or null meaning "keep waiting". Throws on failure.
+    const settle = ({ res, body }) => {
+      if (body?.error === 'NO_SOLUTION') return { status: 'NO_SOLUTION', message: body.message };
+      if (!res.ok) {
+        if (res.status < 500) throw new Error(body?.error || 'Failed to check ghost cache');
+        return null; // 5xx: maybe transient
+      }
+      if (body?.status === 'failed') throw new Error(FAILED_MSG);
+      if (body?.ok && body.data) return { status: 'SUCCESS', data: body };
+      return null;
+    };
+    const overBudget = () => Date.now() - startedAt > GENERATION_BUDGET_MS &&
+      (() => { throw new Error("Ghost Replay generation is taking longer than expected. Please check back later."); })();
+
+    try {
+      // Subscribe BEFORE triggering so we can't miss the event.
+      const sub = realtime ? await this._subscribeGhost(realtime) : null;
+      if (needsTrigger) trigger();
+
+      if (sub) {
+        try {
+          // Catch anything that finished between the first check and the subscription going live.
+          const early = settle(await check(false));
+          if (early) return early;
+
+          while (true) {
+            overBudget();
+            const evt = await sub.next(SAFETY_RECHECK_MS, signal);
+            if (signal.aborted) return null;
+            if (evt === 'failed') throw new Error(FAILED_MSG);
+
+            // 'ready' → fetch the replay; 'timeout' → safety re-check (event may have been dropped)
+            let out = null;
+            try {
+              const r = await check(false);
+              out = settle(r);
+              // No row at all (trigger lost) → kick generation off again, once.
+              if (!out && evt === 'timeout' && r.body?.status === 'pending' && retriggers++ < 1) trigger();
+            } catch (err) {
+              if (signal.aborted) return null;
+              if (err.name !== 'TypeError') throw err; // network blip → keep waiting
+            }
+            if (out) return out;
+          }
+        } finally { sub.close(); }
+      }
+
+      // Fallback: long-poll — each request is held open by the server (~20s) and returns the
+      // moment the background function finishes.
+      while (true) {
+        overBudget();
+        let r;
+        try { r = await check(true); }
+        catch (err) {
+          if (signal.aborted) return null;                 // modal closed
+          await new Promise(res => setTimeout(res, 2000)); // network blip — pause, then re-wait
+          continue;
+        }
+        if (signal.aborted) return null;
+        const out = settle(r);
+        if (out) return out;
+        if (!r.res.ok) { await new Promise(res => setTimeout(res, 2000)); continue; } // never spin on 5xx
+        if (r.body?.status === 'pending' && retriggers++ < 3) trigger(); // trigger request was lost
+      }
+    } finally {
+      if (this._pollAbort === abort) this._pollAbort = null;
+    }
+  },
+
+  _loadPusher() {
+    if (window.Pusher) return Promise.resolve(window.Pusher);
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js';
+      s.crossOrigin = 'anonymous';
+      s.onload = () => window.Pusher ? resolve(window.Pusher) : reject(new Error('Pusher missing'));
+      s.onerror = () => reject(new Error('Pusher failed to load'));
+      document.head.appendChild(s);
+    });
+  },
+
+  // Subscribes to the problem's channel. Resolves { next(ms, signal), close() }, or null if
+  // realtime is unavailable (blocked script, connection trouble) so the caller can long-poll.
+  async _subscribeGhost({ key, cluster, channel }) {
+    try {
+      const Pusher = await Promise.race([
+        this._loadPusher(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('Pusher load timeout')), 8000)),
+      ]);
+      this._pusher = this._pusher || new Pusher(key, { cluster });
+      const pusher = this._pusher;
+      const ch = pusher.subscribe(channel);
+
+      const queue = [];
+      let wake = null;
+      const push = (evt) => { queue.push(evt); wake?.(); };
+      ch.bind('ghost-ready',  () => push('ready'));
+      ch.bind('ghost-failed', () => push('failed'));
+
+      if (!ch.subscribed) {
+        await new Promise((resolve, reject) => {
+          const t = setTimeout(() => reject(new Error('Pusher subscribe timeout')), 6000);
+          ch.bind('pusher:subscription_succeeded', () => { clearTimeout(t); resolve(); });
+          ch.bind('pusher:subscription_error',     () => { clearTimeout(t); reject(new Error('Pusher subscribe error')); });
+        });
+      }
+
+      return {
+        // Resolves with the next event, 'timeout' after ms, or 'aborted' if the modal closes.
+        next: (ms, signal) => new Promise((resolve) => {
+          if (queue.length) return resolve(queue.shift());
+          if (signal?.aborted) return resolve('aborted');
+          const done = (v) => { clearTimeout(t); wake = null; signal?.removeEventListener('abort', onAbort); resolve(v); };
+          const onAbort = () => done('aborted');
+          const t = setTimeout(() => done('timeout'), ms);
+          wake = () => done(queue.shift());
+          signal?.addEventListener('abort', onAbort, { once: true });
+        }),
+        close: () => { try { ch.unbind_all(); pusher.unsubscribe(channel); } catch {} },
+      };
+    } catch (err) {
+      try { this._pusher?.unsubscribe(channel); } catch {}
+      return null;
     }
   },
 
